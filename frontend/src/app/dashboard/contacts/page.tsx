@@ -15,6 +15,7 @@ import { ContactFilters } from "./contact-filters";
 import { ExportButton } from "./export-button";
 import { ExportAllButton } from "./export-all-button";
 import { ImportButton } from "./import-button";
+import { ContactLogButton } from "./contact-log-button";
 import {
   UserPlus,
   Users,
@@ -283,13 +284,14 @@ export default async function ContactsPage({
                     Priority
                   </span>
                 </TableHead>
+                <TableHead className="w-8" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {contacts.map((contact) => {
                 const days = daysSince(contact.lastContactedAt);
                 return (
-                  <TableRow key={contact.id}>
+                  <TableRow key={contact.id} className="group">
                     <TableCell className="font-medium">
                       <Link
                         href={`/dashboard/contacts/${contact.id}`}
@@ -346,6 +348,12 @@ export default async function ContactsPage({
                       {contact.priorityScore !== null
                         ? contact.priorityScore
                         : "—"}
+                    </TableCell>
+                    <TableCell className="w-8 pr-3">
+                      <ContactLogButton
+                        contactId={contact.id}
+                        contactName={contact.name}
+                      />
                     </TableCell>
                   </TableRow>
                 );
