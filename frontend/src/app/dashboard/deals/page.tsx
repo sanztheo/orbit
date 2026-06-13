@@ -426,9 +426,18 @@ export default function DealsPage() {
                         isDragging ? "opacity-40 scale-95" : "hover:shadow-md",
                       )}
                     >
-                      <p className="text-sm font-medium leading-snug">
-                        {deal.title}
-                      </p>
+                      <div className="flex items-start justify-between gap-1">
+                        <p className="text-sm font-medium leading-snug">
+                          {deal.title}
+                        </p>
+                        <Link
+                          href={`/dashboard/deals/${deal.id}/edit`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="shrink-0 text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          Edit
+                        </Link>
+                      </div>
                       {deal.contactName && (
                         <Link
                           href={`/dashboard/contacts/${deal.contactId}`}
