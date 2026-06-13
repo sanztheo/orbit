@@ -173,7 +173,7 @@ export default async function FollowUpsPage() {
                   return (
                     <div
                       key={contact.id}
-                      className={`flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/40 transition-colors ${
+                      className={`group flex items-center justify-between gap-3 px-4 py-3 hover:bg-muted/40 transition-colors ${
                         i > 0 ? "border-t border-border" : ""
                       }`}
                     >

@@ -11,6 +11,7 @@ import { QuickLog } from "./quick-log";
 import { LogButton } from "./log-button";
 import { ShortcutsHelp } from "./shortcuts-help";
 import { MobileFab } from "./mobile-fab";
+import { ActivityRefresher } from "./activity-refresher";
 import {
   LayoutDashboard,
   Users,
@@ -74,6 +75,7 @@ export default async function DashboardLayout({
       <GlobalSearch />
       <QuickLog />
       <ShortcutsHelp />
+      <ActivityRefresher />
       {/* Desktop sidebar */}
       <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-border bg-muted/40 px-3 py-6">
         <div className="mb-8 px-2">
