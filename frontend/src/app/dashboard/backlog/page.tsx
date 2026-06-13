@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiClient } from "@/lib/api-client";
@@ -22,6 +23,7 @@ import {
   Zap,
   Check,
   Loader2,
+  Search,
 } from "lucide-react";
 
 type TaskStatus = "todo" | "in_progress" | "done" | "cancelled";
@@ -99,6 +101,7 @@ export default function BacklogPage() {
   const [loopDrafts, setLoopDrafts] = useState<Map<string, string>>(new Map());
   const [generatingLoop, setGeneratingLoop] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const fetchItems = useCallback(async () => {
     const token = await getToken();
@@ -170,10 +173,21 @@ export default function BacklogPage() {
     setTimeout(() => setCopiedId(null), 2000);
   }
 
+  const filteredItems = useMemo(() => {
+    const q = search.toLowerCase();
+    if (!q) return items;
+    return items.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        (t.contactName?.toLowerCase().includes(q) ?? false) ||
+        (t.description?.toLowerCase().includes(q) ?? false),
+    );
+  }, [items, search]);
+
   const byStatus = Object.fromEntries(
     COLUMNS.map(({ key }) => [
       key,
-      items
+      filteredItems
         .filter((t) => t.status === key)
         .sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0)),
     ]),
@@ -211,13 +225,26 @@ export default function BacklogPage() {
             Feature requests linked to the contacts who asked
           </p>
         </div>
-        <Link
-          href="/dashboard/tasks/new"
-          className={buttonVariants({ size: "sm" })}
-        >
-          <Plus className="mr-1.5 h-4 w-4" />
-          New item
-        </Link>
+        <div className="flex items-center gap-2">
+          {items.length > 0 && (
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search backlog…"
+                className="pl-8 h-8 text-sm w-44"
+              />
+            </div>
+          )}
+          <Link
+            href="/dashboard/tasks/new"
+            className={buttonVariants({ size: "sm" })}
+          >
+            <Plus className="mr-1.5 h-4 w-4" />
+            New item
+          </Link>
+        </div>
       </div>
 
       {items.length === 0 ? (
@@ -235,6 +262,10 @@ export default function BacklogPage() {
             Add backlog item
           </Link>
         </div>
+      ) : filteredItems.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          No backlog items match &ldquo;{search}&rdquo;
+        </p>
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-4">
           {COLUMNS.map(({ key, label, color }) => (
