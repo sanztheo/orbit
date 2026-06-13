@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
@@ -98,6 +98,8 @@ export default function BacklogPage() {
   const [items, setItems] = useState<BacklogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [movingId, setMovingId] = useState<string | null>(null);
+  const [dragOverCol, setDragOverCol] = useState<TaskStatus | null>(null);
+  const dragIdRef = useRef<string | null>(null);
   const [loopDrafts, setLoopDrafts] = useState<Map<string, string>>(new Map());
   const [generatingLoop, setGeneratingLoop] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -121,16 +123,14 @@ export default function BacklogPage() {
     fetchItems();
   }, [fetchItems]);
 
-  async function advance(item: BacklogItem) {
-    const next = STATUS_NEXT[item.status];
-    if (!next) return;
+  async function moveTo(itemId: string, next: TaskStatus) {
     const token = await getToken();
     if (!token) return;
-    setMovingId(item.id);
+    setMovingId(itemId);
     try {
-      await apiClient.patch(`/api/tasks/${item.id}`, { status: next }, token);
+      await apiClient.patch(`/api/tasks/${itemId}`, { status: next }, token);
       setItems((prev) =>
-        prev.map((t) => (t.id === item.id ? { ...t, status: next } : t)),
+        prev.map((t) => (t.id === itemId ? { ...t, status: next } : t)),
       );
     } finally {
       setMovingId(null);
@@ -269,7 +269,26 @@ export default function BacklogPage() {
       ) : (
         <div className="flex gap-4 overflow-x-auto pb-4">
           {COLUMNS.map(({ key, label, color }) => (
-            <div key={key} className="flex w-72 shrink-0 flex-col gap-2">
+            <div
+              key={key}
+              className={cn(
+                "flex w-72 shrink-0 flex-col gap-2 rounded-xl p-1 transition-colors",
+                dragOverCol === key && "bg-muted/60 ring-2 ring-primary/30",
+              )}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOverCol(key);
+              }}
+              onDragLeave={() => setDragOverCol(null)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOverCol(null);
+                const id = dragIdRef.current;
+                if (!id) return;
+                const item = items.find((t) => t.id === id);
+                if (item && item.status !== key) moveTo(id, key);
+              }}
+            >
               <div
                 className={`flex items-center justify-between rounded-t-lg border-t-2 px-1 pt-2 ${color}`}
               >
@@ -294,7 +313,18 @@ export default function BacklogPage() {
                   return (
                     <div
                       key={item.id}
-                      className="rounded-lg border border-border bg-card p-3 shadow-xs"
+                      draggable
+                      onDragStart={() => {
+                        dragIdRef.current = item.id;
+                      }}
+                      onDragEnd={() => {
+                        dragIdRef.current = null;
+                        setDragOverCol(null);
+                      }}
+                      className={cn(
+                        "rounded-lg border border-border bg-card p-3 shadow-xs cursor-grab active:cursor-grabbing",
+                        movingId === item.id && "opacity-50",
+                      )}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm font-medium leading-snug">
@@ -346,7 +376,9 @@ export default function BacklogPage() {
                         </Link>
                         {STATUS_NEXT[item.status] && (
                           <button
-                            onClick={() => advance(item)}
+                            onClick={() =>
+                              moveTo(item.id, STATUS_NEXT[item.status]!)
+                            }
                             disabled={movingId === item.id}
                             className="flex items-center gap-1 rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"
                           >
