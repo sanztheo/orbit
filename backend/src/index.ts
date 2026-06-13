@@ -8,6 +8,7 @@ import { contactsRouter } from "./routes/contacts.js";
 import { dealsRouter } from "./routes/deals.js";
 import { tasksRouter } from "./routes/tasks.js";
 import { aiRouter } from "./routes/ai.js";
+import { statsRouter } from "./routes/stats.js";
 
 const app = new Hono();
 
@@ -28,6 +29,7 @@ app.route("/api/contacts", contactsRouter);
 app.route("/api/deals", dealsRouter);
 app.route("/api/tasks", tasksRouter);
 app.route("/api/ai", aiRouter);
+app.route("/api/stats", statsRouter);
 
 const port = Number(process.env.PORT ?? 3001);
 serve({ fetch: app.fetch, port }, () => {
