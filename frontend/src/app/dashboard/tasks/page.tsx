@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Search, BarChart2 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 
 type TaskStatus = "todo" | "in_progress" | "done" | "cancelled";
@@ -46,6 +48,10 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [movingId, setMovingId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState<Set<TaskPriority>>(
+    new Set(),
+  );
 
   async function fetchTasks() {
     const token = await getToken();
@@ -85,8 +91,30 @@ export default function TasksPage() {
     }
   }
 
+  function togglePriority(p: TaskPriority) {
+    setPriorityFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(p)) next.delete(p);
+      else next.add(p);
+      return next;
+    });
+  }
+
+  const filteredTasks = useMemo(() => {
+    const q = search.toLowerCase();
+    return tasks.filter((t) => {
+      if (q && !t.title.toLowerCase().includes(q)) return false;
+      if (priorityFilter.size > 0 && !priorityFilter.has(t.priority))
+        return false;
+      return true;
+    });
+  }, [tasks, search, priorityFilter]);
+
   const byStatus = Object.fromEntries(
-    COLUMNS.map(({ key }) => [key, tasks.filter((t) => t.status === key)]),
+    COLUMNS.map(({ key }) => [
+      key,
+      filteredTasks.filter((t) => t.status === key),
+    ]),
   ) as Record<TaskStatus, Task[]>;
 
   if (loading) {
@@ -97,6 +125,8 @@ export default function TasksPage() {
     );
   }
 
+  const PRIORITIES: TaskPriority[] = ["p0", "p1", "p2", "p3"];
+
   return (
     <div className="flex flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
@@ -106,7 +136,8 @@ export default function TasksPage() {
             href="/dashboard/tasks/feature-report"
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
-            📊 Feature report
+            <BarChart2 className="h-4 w-4 mr-1.5" />
+            Feature report
           </Link>
           <Link
             href="/dashboard/tasks/new"
@@ -116,6 +147,47 @@ export default function TasksPage() {
           </Link>
         </div>
       </div>
+
+      {tasks.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex-1 min-w-48 max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search tasks…"
+              className="pl-8 h-8 text-sm"
+            />
+          </div>
+          <div className="flex gap-1">
+            {PRIORITIES.map((p) => (
+              <button
+                key={p}
+                onClick={() => togglePriority(p)}
+                className={cn(
+                  "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+                  priorityFilter.has(p)
+                    ? PRIORITY_COLOR[p]
+                    : "text-muted-foreground hover:bg-muted",
+                )}
+              >
+                {p.toUpperCase()}
+              </button>
+            ))}
+          </div>
+          {(search || priorityFilter.size > 0) && (
+            <button
+              onClick={() => {
+                setSearch("");
+                setPriorityFilter(new Set());
+              }}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      )}
 
       {tasks.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
@@ -127,6 +199,10 @@ export default function TasksPage() {
             Add your first task
           </Link>
         </div>
+      ) : filteredTasks.length === 0 ? (
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          No tasks match your filter
+        </p>
       ) : (
         <div className="flex gap-4">
           {COLUMNS.map(({ key, label }) => (
@@ -145,9 +221,12 @@ export default function TasksPage() {
                   className="rounded-lg border border-border bg-card p-3 shadow-xs"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium leading-snug">
+                    <Link
+                      href={`/dashboard/tasks/${task.id}`}
+                      className="text-sm font-medium leading-snug hover:underline"
+                    >
                       {task.title}
-                    </p>
+                    </Link>
                     <span
                       className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${PRIORITY_COLOR[task.priority]}`}
                     >
