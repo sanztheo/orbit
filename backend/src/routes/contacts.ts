@@ -47,6 +47,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
           ilike(contacts.name, `%${search}%`),
           ilike(contacts.email, `%${search}%`),
           ilike(contacts.company, `%${search}%`),
+          ilike(contacts.notes, `%${search}%`),
         )
       : undefined;
 

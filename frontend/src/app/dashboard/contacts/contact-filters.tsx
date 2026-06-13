@@ -23,7 +23,7 @@ export function ContactFilters() {
     <div className="flex items-center gap-2">
       <input
         type="search"
-        placeholder="Search name, email, company…"
+        placeholder="Search name, email, company, notes…"
         defaultValue={params.get("search") ?? ""}
         onChange={(e) => update("search", e.target.value)}
         className="w-64 rounded-lg border border-border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
