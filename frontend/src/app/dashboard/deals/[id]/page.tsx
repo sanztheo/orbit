@@ -210,14 +210,40 @@ export default async function DealDetailPage({
         </div>
         <div className="rounded-xl border border-border p-4 flex flex-col gap-1">
           <p className="text-xs text-muted-foreground">Expected close</p>
-          <p className="font-semibold text-sm">
-            {deal.expectedCloseAt
-              ? new Date(deal.expectedCloseAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })
-              : "—"}
-          </p>
+          {deal.expectedCloseAt ? (
+            (() => {
+              const daysUntil = Math.ceil(
+                (new Date(deal.expectedCloseAt).getTime() - Date.now()) /
+                  86_400_000,
+              );
+              const color =
+                daysUntil < 0
+                  ? "text-red-600 dark:text-red-400"
+                  : daysUntil <= 3
+                    ? "text-orange-600 dark:text-orange-400"
+                    : "";
+              return (
+                <p className={`font-semibold text-sm ${color}`}>
+                  {new Date(deal.expectedCloseAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
+                  {daysUntil < 0 && (
+                    <span className="ml-1 text-xs">
+                      ({Math.abs(daysUntil)}d late)
+                    </span>
+                  )}
+                  {daysUntil >= 0 && daysUntil <= 3 && (
+                    <span className="ml-1 text-xs">
+                      ({daysUntil === 0 ? "today!" : `${daysUntil}d`})
+                    </span>
+                  )}
+                </p>
+              );
+            })()
+          ) : (
+            <p className="font-semibold text-sm">—</p>
+          )}
         </div>
       </div>
 
