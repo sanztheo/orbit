@@ -75,6 +75,13 @@ export default function NewDealPage() {
       stage: stage || "prospect",
       ...(valueRaw ? { value: Number(valueRaw) } : {}),
       notes: (fd.get("notes") as string) || undefined,
+      ...(fd.get("expectedCloseAt")
+        ? {
+            expectedCloseAt: new Date(
+              fd.get("expectedCloseAt") as string,
+            ).toISOString(),
+          }
+        : {}),
       ...(contactId ? { contactId } : {}),
       ...(pipelineType === "fundraising"
         ? {
@@ -221,6 +228,17 @@ export default function NewDealPage() {
             </div>
           </div>
         )}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="expectedCloseAt">
+            Expected close date (optional)
+          </Label>
+          <Input
+            id="expectedCloseAt"
+            name="expectedCloseAt"
+            type="date"
+            className="w-[180px]"
+          />
+        </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="notes">Notes</Label>
           <Textarea
