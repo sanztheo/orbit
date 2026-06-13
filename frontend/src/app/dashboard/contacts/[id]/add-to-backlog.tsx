@@ -12,6 +12,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Plus, Loader2, X, ListTodo } from "lucide-react";
+import Link from "next/link";
 
 interface BacklogTask {
   id: string;
@@ -143,8 +144,13 @@ export function AddToBacklog({ contactId, initialTasks }: Props) {
               key={t.id}
               className="flex items-center justify-between rounded-lg bg-muted/40 px-3 py-2 text-sm"
             >
-              <span>{t.title}</span>
-              <span className="text-xs text-muted-foreground uppercase">
+              <Link
+                href={`/dashboard/tasks/${t.id}`}
+                className="hover:underline truncate"
+              >
+                {t.title}
+              </Link>
+              <span className="shrink-0 ml-2 text-xs text-muted-foreground uppercase">
                 {t.priority}
               </span>
             </li>
