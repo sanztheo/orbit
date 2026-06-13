@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
+import { ThemeToggle } from "./theme-toggle";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: "⊞" },
@@ -45,11 +46,15 @@ export default async function DashboardLayout({
             </Link>
           ))}
         </nav>
+        <div className="mt-auto px-2 pt-4">
+          <ThemeToggle />
+        </div>
       </aside>
 
       {/* Mobile top bar */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b border-border bg-background px-4 h-12">
         <span className="text-base font-semibold tracking-tight">Orbit</span>
+        <ThemeToggle />
       </div>
 
       {/* Main content — extra top + bottom padding on mobile for bars */}
