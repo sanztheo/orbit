@@ -278,9 +278,21 @@ export function GlobalSearch() {
         )}
 
         {q.length >= 2 && !loading && results && items.length === 0 && (
-          <p className="px-4 py-3 text-sm text-muted-foreground">
-            No results for &quot;{q}&quot;
-          </p>
+          <div className="px-4 py-3 flex flex-col gap-2">
+            <p className="text-sm text-muted-foreground">
+              No results for &ldquo;{q}&rdquo;
+            </p>
+            <button
+              onClick={() =>
+                navigate(
+                  `/dashboard/contacts/new?name=${encodeURIComponent(q)}`,
+                )
+              }
+              className="self-start text-xs text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              + Create contact &ldquo;{q}&rdquo;
+            </button>
+          </div>
         )}
 
         {q.length < 2 && (

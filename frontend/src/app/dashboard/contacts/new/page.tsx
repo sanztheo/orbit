@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,9 +23,10 @@ const CONTACT_TYPES: { value: ContactType; label: string }[] = [
 
 export default function NewContactPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { getToken } = useAuth();
 
-  const [name, setName] = useState("");
+  const [name, setName] = useState(searchParams.get("name") ?? "");
   const [email, setEmail] = useState("");
   const [type, setType] = useState<ContactType>("lead");
   const [company, setCompany] = useState("");
