@@ -6,13 +6,25 @@ import { ContactFilters } from "./contact-filters";
 import { ExportButton } from "./export-button";
 import { ExportAllButton } from "./export-all-button";
 import { ContactsTable } from "./contacts-table";
-import { UserPlus, Users, Sparkles, Upload } from "lucide-react";
+import {
+  UserPlus,
+  Users,
+  Sparkles,
+  Upload,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 import type { ContactRow } from "./contacts-table";
+
+const PAGE_SIZE = 50;
 
 interface ContactsResponse {
   data: ContactRow[];
   total: number;
+  page?: number;
+  pageSize?: number;
+  totalPages?: number;
 }
 
 export default async function ContactsPage({
@@ -24,11 +36,20 @@ export default async function ContactsPage({
     stale?: string;
     sort?: string;
     tag?: string;
+    page?: string;
   }>;
 }) {
   const { getToken } = await auth();
   const token = await getToken();
-  const { search, type, stale, sort, tag } = await searchParams;
+  const {
+    search,
+    type,
+    stale,
+    sort,
+    tag,
+    page: pageParam,
+  } = await searchParams;
+  const page = Math.max(parseInt(pageParam ?? "1", 10) || 1, 1);
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const qs = new URLSearchParams();
@@ -37,6 +58,8 @@ export default async function ContactsPage({
   if (stale === "1") qs.set("stale", "1");
   if (sort) qs.set("sort", sort);
   if (tag) qs.set("tag", tag);
+  qs.set("limit", String(PAGE_SIZE));
+  qs.set("page", String(page));
 
   const [res, staleRes] = await Promise.all([
     fetch(`${apiUrl}/api/contacts?${qs}`, {
@@ -52,9 +75,13 @@ export default async function ContactsPage({
   ]);
 
   let contacts: ContactRow[] = [];
+  let totalPages = 1;
+  let totalContacts = 0;
   if (res.ok) {
     const json: ContactsResponse = await res.json();
     contacts = json.data;
+    totalPages = json.totalPages ?? 1;
+    totalContacts = json.total;
   }
 
   let staleCount = 0;
@@ -125,11 +152,11 @@ export default async function ContactsPage({
       {contacts.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed py-20 text-center">
           <p className="text-muted-foreground">
-            {search || type
+            {search || type || tag
               ? "No contacts match your filter"
               : "No contacts yet — import from CSV or add one manually"}
           </p>
-          {!search && !type && (
+          {!search && !type && !tag && (
             <div className="flex gap-2">
               <Link
                 href="/dashboard/contacts/new"
@@ -147,7 +174,62 @@ export default async function ContactsPage({
           )}
         </div>
       ) : (
-        <ContactsTable contacts={contacts} />
+        <>
+          <ContactsTable contacts={contacts} />
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-border pt-4">
+              <span className="text-sm text-muted-foreground">
+                {totalContacts} contacts · page {page} of {totalPages}
+              </span>
+              <div className="flex items-center gap-2">
+                {page > 1 ? (
+                  <Link
+                    href={`/dashboard/contacts?${new URLSearchParams({ ...(search && { search }), ...(type && { type }), ...(stale === "1" && { stale: "1" }), ...(sort && { sort }), ...(tag && { tag }), page: String(page - 1) })}`}
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "sm",
+                    })}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Prev
+                  </Link>
+                ) : (
+                  <span
+                    className={
+                      buttonVariants({ variant: "outline", size: "sm" }) +
+                      " opacity-40 pointer-events-none"
+                    }
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Prev
+                  </span>
+                )}
+                {page < totalPages ? (
+                  <Link
+                    href={`/dashboard/contacts?${new URLSearchParams({ ...(search && { search }), ...(type && { type }), ...(stale === "1" && { stale: "1" }), ...(sort && { sort }), ...(tag && { tag }), page: String(page + 1) })}`}
+                    className={buttonVariants({
+                      variant: "outline",
+                      size: "sm",
+                    })}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                ) : (
+                  <span
+                    className={
+                      buttonVariants({ variant: "outline", size: "sm" }) +
+                      " opacity-40 pointer-events-none"
+                    }
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

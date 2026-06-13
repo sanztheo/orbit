@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import {
   and,
   asc,
+  count,
   desc,
   eq,
   ilike,
@@ -60,6 +61,12 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
     const company = c.req.query("company");
     const excludeId = c.req.query("excludeId");
     const tag = c.req.query("tag");
+    const limitParam = c.req.query("limit");
+    const pageParam = c.req.query("page");
+    const pageSize = limitParam
+      ? Math.min(parseInt(limitParam, 10) || 50, 200)
+      : undefined;
+    const page = pageParam ? Math.max(parseInt(pageParam, 10) || 1, 1) : 1;
     const oneEightyDaysAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
 
     const searchFilter = search
@@ -102,22 +109,44 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       }
     })();
 
-    const rows = await db
+    const whereClause = and(
+      eq(contacts.workspaceId, workspaceId),
+      searchFilter,
+      typeFilter,
+      staleFilter,
+      companyFilter,
+      excludeFilter,
+      tagFilter,
+    );
+
+    let query = db
       .select()
       .from(contacts)
-      .where(
-        and(
-          eq(contacts.workspaceId, workspaceId),
-          searchFilter,
-          typeFilter,
-          staleFilter,
-          companyFilter,
-          excludeFilter,
-          tagFilter,
-        ),
-      )
+      .where(whereClause)
       .orderBy(...orderBy);
-    return c.json({ data: rows, total: rows.length });
+    if (pageSize) {
+      query = query
+        .limit(pageSize)
+        .offset((page - 1) * pageSize) as typeof query;
+    }
+
+    const [rows, countResult] = await Promise.all([
+      query,
+      pageSize
+        ? db.select({ total: count() }).from(contacts).where(whereClause)
+        : Promise.resolve(null),
+    ]);
+
+    const total = countResult ? countResult[0].total : rows.length;
+    return c.json({
+      data: rows,
+      total,
+      ...(pageSize && {
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      }),
+    });
   })
   .get("/export", async (c) => {
     const workspaceId = c.get("workspaceId");
