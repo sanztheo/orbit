@@ -35,6 +35,7 @@ interface Deal {
   contactName: string | null;
   contactCompany: string | null;
   nextAction: string | null;
+  fundName: string | null;
 }
 
 const STAGE_ORDER: DealStage[] = [
@@ -455,6 +456,11 @@ export default function DealsPage() {
                         >
                           {deal.contactCompany} →
                         </Link>
+                      )}
+                      {deal.fundName && (
+                        <p className="mt-0.5 text-xs font-medium text-blue-700 truncate">
+                          🏦 {deal.fundName}
+                        </p>
                       )}
                       {deal.value != null && (
                         <p className="mt-1 text-xs text-muted-foreground">

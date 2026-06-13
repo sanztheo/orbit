@@ -38,6 +38,7 @@ export default function NewDealPage() {
   const [contactId, setContactId] = useState<string>(
     searchParams.get("contactId") ?? "",
   );
+  const [pipelineType, setPipelineType] = useState("sales");
 
   useEffect(() => {
     getToken().then((token) => {
@@ -57,13 +58,21 @@ export default function NewDealPage() {
     if (!title.trim()) return;
 
     const valueRaw = fd.get("value") as string;
+    const checkSizeRaw = fd.get("checkSize") as string;
     const body = {
       title: title.trim(),
-      pipelineType: (fd.get("pipelineType") as string) || "sales",
+      pipelineType: pipelineType || "sales",
       stage: (fd.get("stage") as string) || "prospect",
       ...(valueRaw ? { value: Number(valueRaw) } : {}),
       notes: (fd.get("notes") as string) || undefined,
       ...(contactId ? { contactId } : {}),
+      ...(pipelineType === "fundraising"
+        ? {
+            fundName: (fd.get("fundName") as string) || undefined,
+            checkSize: checkSizeRaw ? Number(checkSizeRaw) : undefined,
+            portfolioUrl: (fd.get("portfolioUrl") as string) || undefined,
+          }
+        : {}),
     };
 
     setLoading(true);
@@ -97,7 +106,8 @@ export default function NewDealPage() {
           <select
             id="pipelineType"
             name="pipelineType"
-            defaultValue="sales"
+            value={pipelineType}
+            onChange={(e) => setPipelineType(e.target.value)}
             className="h-9 rounded-md border border-input bg-background px-3 text-sm"
           >
             {PIPELINE_TYPES.map((p) => (
@@ -149,6 +159,40 @@ export default function NewDealPage() {
                 </option>
               ))}
             </select>
+          </div>
+        )}
+        {pipelineType === "fundraising" && (
+          <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-4 flex flex-col gap-3">
+            <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
+              Investor fields
+            </p>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="fundName">Fund name</Label>
+              <Input
+                id="fundName"
+                name="fundName"
+                placeholder="Sequoia Capital"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="checkSize">Target check size ($)</Label>
+              <Input
+                id="checkSize"
+                name="checkSize"
+                type="number"
+                min="0"
+                placeholder="500000"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="portfolioUrl">Portfolio / website</Label>
+              <Input
+                id="portfolioUrl"
+                name="portfolioUrl"
+                type="url"
+                placeholder="https://sequoiacap.com"
+              />
+            </div>
           </div>
         )}
         <div className="flex flex-col gap-1.5">
