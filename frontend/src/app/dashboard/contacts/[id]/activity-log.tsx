@@ -31,6 +31,24 @@ const TYPE_OPTIONS: { value: ActivityType; label: string }[] = [
   { value: "linkedin", label: "LinkedIn" },
 ];
 
+const DM_SOURCES: {
+  value: string;
+  label: string;
+  icon: string;
+  activityType: ActivityType;
+}[] = [
+  {
+    value: "linkedin",
+    label: "LinkedIn",
+    icon: "💼",
+    activityType: "linkedin",
+  },
+  { value: "whatsapp", label: "WhatsApp", icon: "💬", activityType: "note" },
+  { value: "x", label: "X / Twitter", icon: "🐦", activityType: "note" },
+  { value: "sms", label: "SMS / iMessage", icon: "📱", activityType: "note" },
+  { value: "other", label: "Other", icon: "📨", activityType: "note" },
+];
+
 function fmt(iso: string): string {
   const d = new Date(iso);
   const now = new Date();
@@ -50,41 +68,73 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
   const { getToken } = useAuth();
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [open, setOpen] = useState(false);
+  const [pasteOpen, setPasteOpen] = useState(false);
   const [type, setType] = useState<ActivityType>("call");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [dmSource, setDmSource] = useState("linkedin");
+  const [dmText, setDmText] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function postActivity(payload: {
+    type: ActivityType;
+    subject?: string;
+    body?: string;
+  }) {
+    const token = await getToken();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+    const res = await fetch(`${apiUrl}/api/activities`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ contactId, ...payload }),
+    });
+    if (!res.ok) throw new Error("Failed to log activity");
+    const json: { data: Activity } = await res.json();
+    return json.data;
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
     try {
-      const token = await getToken();
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-      const res = await fetch(`${apiUrl}/api/activities`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          contactId,
-          type,
-          subject: subject.trim() || undefined,
-          body: body.trim() || undefined,
-        }),
+      const activity = await postActivity({
+        type,
+        subject: subject.trim() || undefined,
+        body: body.trim() || undefined,
       });
-      if (!res.ok) {
-        setError("Failed to log activity");
-        return;
-      }
-      const json: { data: Activity } = await res.json();
-      setActivities((prev) => [json.data, ...prev]);
+      setActivities((prev) => [activity, ...prev]);
       setSubject("");
       setBody("");
       setOpen(false);
+    } catch {
+      setError("Failed to log activity");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function submitDm(e: React.FormEvent) {
+    e.preventDefault();
+    if (!dmText.trim()) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const src = DM_SOURCES.find((s) => s.value === dmSource)!;
+      const activity = await postActivity({
+        type: src.activityType,
+        subject: `${src.icon} ${src.label} DM`,
+        body: dmText.trim(),
+      });
+      setActivities((prev) => [activity, ...prev]);
+      setDmText("");
+      setPasteOpen(false);
+    } catch {
+      setError("Failed to log activity");
     } finally {
       setSaving(false);
     }
@@ -94,13 +144,85 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
     <div className="rounded-xl border border-border p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-sm">Activity log</h2>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-        >
-          + Log activity
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setPasteOpen((v) => !v);
+              setOpen(false);
+              setError(null);
+            }}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          >
+            📋 Paste DM
+          </button>
+          <button
+            onClick={() => {
+              setOpen((v) => !v);
+              setPasteOpen(false);
+              setError(null);
+            }}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+          >
+            + Log activity
+          </button>
+        </div>
       </div>
+
+      {pasteOpen && (
+        <form
+          onSubmit={submitDm}
+          className="flex flex-col gap-2 border border-border rounded-lg p-3"
+        >
+          <p className="text-xs text-muted-foreground">
+            Paste a DM conversation to log it — no re-typing needed.
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            {DM_SOURCES.map((s) => (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => setDmSource(s.value)}
+                className={cn(
+                  "rounded-md px-2.5 py-1 text-xs font-medium border transition-colors",
+                  dmSource === s.value
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border hover:border-foreground/40",
+                )}
+              >
+                {s.icon} {s.label}
+              </button>
+            ))}
+          </div>
+          <textarea
+            placeholder="Paste the conversation here…"
+            value={dmText}
+            onChange={(e) => setDmText(e.target.value)}
+            rows={6}
+            autoFocus
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={saving || !dmText.trim()}
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "disabled:opacity-50",
+              )}
+            >
+              {saving ? "Saving…" : "Log DM"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPasteOpen(false)}
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
 
       {open && (
         <form
