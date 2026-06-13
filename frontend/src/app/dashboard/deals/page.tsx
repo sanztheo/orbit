@@ -430,9 +430,22 @@ export default function DealsPage() {
               onDrop={(e) => handleDrop(e, key)}
             >
               <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  {labels[key]}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    {labels[key]}
+                  </span>
+                  {(() => {
+                    const stageTotal = byStage[key].reduce(
+                      (s, d) => s + (d.value ?? 0),
+                      0,
+                    );
+                    return stageTotal > 0 ? (
+                      <span className="text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+                        ${stageTotal.toLocaleString()}
+                      </span>
+                    ) : null;
+                  })()}
+                </div>
                 <Badge variant="secondary" className="text-xs">
                   {byStage[key].length}
                 </Badge>
