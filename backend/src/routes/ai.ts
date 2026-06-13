@@ -707,4 +707,47 @@ Generate the first-touch package.`,
 
       return c.json({ brief });
     },
+  )
+  .post(
+    "/parse-signature",
+    aiRateLimit,
+    aiQuota,
+    zValidator("json", z.object({ text: z.string().min(1).max(4000) })),
+    async (c) => {
+      const workspaceId = c.get("workspaceId");
+      const { text } = c.req.valid("json");
+
+      const message = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 300,
+        system: `Extract contact information from an email signature or email body. Return ONLY valid JSON with these exact fields (omit any field you are not confident about):
+{
+  "name": "string",
+  "email": "string",
+  "title": "string",
+  "company": "string",
+  "linkedinUrl": "string"
+}
+No explanation. No markdown. JSON only.`,
+        messages: [{ role: "user", content: text }],
+      });
+
+      const raw =
+        message.content[0].type === "text" ? message.content[0].text : "{}";
+
+      let extracted: Record<string, string> = {};
+      try {
+        const match = raw.match(/\{[\s\S]*\}/);
+        if (match) extracted = JSON.parse(match[0]) as Record<string, string>;
+      } catch {
+        extracted = {};
+      }
+
+      await db
+        .update(workspaces)
+        .set({ aiActionsUsed: sql`${workspaces.aiActionsUsed} + 1` })
+        .where(eq(workspaces.id, workspaceId));
+
+      return c.json({ extracted });
+    },
   );

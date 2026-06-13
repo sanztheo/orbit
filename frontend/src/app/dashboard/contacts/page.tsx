@@ -23,6 +23,7 @@ import {
   Star,
   AlertTriangle,
   Calendar,
+  Sparkles,
 } from "lucide-react";
 
 type ContactType = "lead" | "customer" | "investor" | "advisor" | "partner";
@@ -157,6 +158,13 @@ export default async function ContactsPage({
           <ImportButton />
           <ExportButton />
           <ExportAllButton />
+          <Link
+            href="/dashboard/contacts/from-signature"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <Sparkles className="h-4 w-4 mr-1.5" />
+            From signature
+          </Link>
           <Link
             href="/dashboard/contacts/new"
             className={buttonVariants({ size: "sm" })}
