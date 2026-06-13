@@ -46,6 +46,8 @@ interface StallingDeal {
   stage: string;
   value: number | null;
   stageChangedAt: string;
+  contactId: string | null;
+  contactName: string | null;
 }
 
 interface ColdContact {
@@ -575,6 +577,9 @@ export default function DashboardPage() {
           {a.stallingDeals.map((deal) => {
             const days = daysSince(deal.stageChangedAt);
             const isClosing = closingDealId === deal.id;
+            const isMarking = deal.contactId
+              ? markingId === deal.contactId
+              : false;
             return (
               <div
                 key={deal.id}
@@ -595,6 +600,23 @@ export default function DashboardPage() {
                     </span>
                   </p>
                 </Link>
+                {deal.contactId && (
+                  <button
+                    onClick={() => markContacted(deal.contactId!)}
+                    disabled={isMarking}
+                    title={`Log call with ${deal.contactName ?? "contact"}`}
+                    className="shrink-0 flex items-center rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-green-500 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors disabled:opacity-40"
+                  >
+                    {isMarking ? (
+                      "…"
+                    ) : (
+                      <>
+                        <Phone className="h-3.5 w-3.5 mr-1" />
+                        Called
+                      </>
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={() => closeDeal(deal.id, "closed_won")}
                   disabled={isClosing}

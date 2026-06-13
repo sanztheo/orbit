@@ -36,8 +36,11 @@ export const statsRouter = new Hono<WorkspaceEnv>()
           stage: deals.stage,
           value: deals.value,
           stageChangedAt: deals.stageChangedAt,
+          contactId: deals.contactId,
+          contactName: contacts.name,
         })
         .from(deals)
+        .leftJoin(contacts, eq(deals.contactId, contacts.id))
         .where(
           and(
             eq(deals.workspaceId, workspaceId),
