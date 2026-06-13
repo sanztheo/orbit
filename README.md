@@ -1,118 +1,51 @@
-# WaitlistKit — Expérience Claude Code en autonomie
+# Orbit — Expérience Claude Code en autonomie totale
 
 ## L'expérience
 
 Ce repo est une **expérience en temps réel** : un LLM (Claude Sonnet 4.6) construit un produit SaaS de A à Z, en **totale autonomie**, sans intervention humaine sur le code.
 
-L'objectif est de voir jusqu'où un agent peut aller seul sur un vrai produit web : architecture, base de données, API, UI, tests, sécurité, déploiement.
+L'agent choisit le produit, fait sa propre recherche marché, prend toutes les décisions d'architecture, code, teste, commite, et pousse — en continu, sans jamais s'arrêter.
 
 ### Règles
-- L'agent choisit seul le produit à construire
-- Il prend toutes les décisions techniques
-- Il commit à chaque tâche terminée
-- Le backlog ne se vide jamais (au moins 3 nouvelles tâches par tâche finie)
-- Aucun placeholder, aucun TODO laissé en plan
-- `main` est toujours déployable
+- L'agent choisit seul et ne demande pas de validation
+- Recherche marché réelle (Reddit, HN, Indie Hackers, reviews concurrents) avant tout code
+- Commit + push à chaque tâche terminée
+- Backlog infini : 3 nouvelles tâches minimum par tâche finie
+- `main` toujours déployable
 
-### Modèle utilisé
-**Claude Sonnet 4.6** via Claude Code CLI — avec boucle `/loop` toutes les 15 minutes
-
----
-
-## Le produit : WaitlistKit
-
-**WaitlistKit** est un outil SaaS pour créer des pages de waitlist virales en 5 minutes.
-
-### Problème résolu
-Tout indie hacker qui lance un produit a besoin d'une waitlist. Les solutions existantes sont trop chères ou trop basiques. WaitlistKit donne aux fondateurs un système de parrainage intégré (référal = monte dans la file), des emails automatiques, et des analytics, sans configuration complexe.
-
-### Fonctionnalités MVP
-- **Création de waitlist** — nom, slug personnalisé, description
-- **Page publique** `/w/[slug]` — formulaire d'inscription, position affichée
-- **Système de référral** — lien unique par inscrit, +1 position par parrainage
-- **Email de confirmation** — via Resend
-- **Dashboard** — liste des inscrits, stats, export CSV
-- **Rate limiting** — protection anti-spam sur l'API join
-
-### Stack
-- **Framework** : Next.js 16 (App Router)
-- **Auth** : Clerk
-- **Base de données** : PostgreSQL + Drizzle ORM
-- **Email** : Resend
-- **UI** : Tailwind CSS + shadcn/ui (base-ui)
-- **Tests** : Vitest
-
-### Business model (cible)
-| Plan | Prix | Limites |
-|------|------|---------|
-| Free | $0 | 1 waitlist, 100 inscrits |
-| Pro | $19/mo | Illimité, emails, analytics avancés |
-| Team | $49/mo | API, webhooks, 5 sièges |
+### Modèle
+**Claude Sonnet 4.6** via Claude Code CLI
 
 ---
 
-## Installation locale
+## Le produit : Orbit
 
-```bash
-# Prérequis : Node 20+, PostgreSQL 16+
+**Orbit** est l'OS du founder solo.
 
-git clone https://github.com/sanztheo/waitlistkit
-cd waitlistkit
-npm install
+### Problème
+Un founder solo jongle entre Notion, Linear, Airtable, Gmail et un CRM pour gérer ses clients, prospects, investisseurs et features. Résultat : contexte perdu, follow-ups oubliés, deals ratés.
 
-# Configurer les variables d'environnement
-cp .env.local.example .env.local
-# Remplir : DATABASE_URL, CLERK_*, RESEND_API_KEY
+### Solution
+Un seul outil qui unifie CRM (clients + prospects + investisseurs), backlog produit, pipeline de deals, et boîte mail — avec une IA qui lit tes emails, catégorise les contacts, priorise les actions, et rédige les réponses.
 
-# Créer la DB et appliquer le schéma
-createdb waitlistkit
-npm run db:push
+### Pour qui
+Founders solo et petites équipes (1-3 personnes) qui lancent un SaaS.
 
-# Lancer en dev
-npm run dev
-```
-
-Ouvrir [http://localhost:3000](http://localhost:3000)
-
-### Variables d'environnement requises
-
-```env
-DATABASE_URL=postgresql://user@localhost:5432/waitlistkit
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-RESEND_API_KEY=re_...
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
-
----
-
-## Structure du projet
-
-```
-src/
-├── app/
-│   ├── (auth)/          # Pages sign-in / sign-up (Clerk)
-│   ├── api/
-│   │   ├── join/        # POST /api/join — inscription + référral
-│   │   └── waitlists/   # CRUD waitlists + export CSV
-│   ├── dashboard/       # Interface admin (protégée)
-│   └── w/[slug]/        # Page publique de waitlist
-├── db/
-│   ├── index.ts         # Connexion Drizzle + Pool pg
-│   └── schema.ts        # Tables : waitlists, subscribers
-└── lib/
-    ├── ids.ts           # Génération IDs + codes référral (nanoid)
-    ├── rate-limit.ts    # Rate limiter in-memory
-    ├── validations.ts   # Schémas Zod partagés
-    └── db-queries.ts    # Helpers de requêtes Drizzle
-```
+### Ce qui est techniquement dur
+- Sync email bidirectionnelle (OAuth Gmail/Outlook, webhooks)
+- Extraction d'entités et de contexte depuis les emails par LLM
+- Modèle de données unifié (une personne peut être client + investisseur + utilisateur beta)
+- Scoring de priorité IA basé sur le stage, le revenu potentiel, le dernier contact
+- Backlog lié aux feedbacks clients (feature requests extraits des emails)
 
 ---
 
 ## Suivre l'expérience
 
+- **PRODUCT.md** — vision, stack, positionnement
+- **RESEARCH.md** — notebook de recherche marché avec sources
 - **BACKLOG.md** — toutes les tâches (jamais vide)
-- **PROGRESS.md** — journal de ce qui a été construit session par session
+- **PROGRESS.md** — journal de build session par session
 
 ---
 
