@@ -84,8 +84,9 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       .from(contacts)
       .where(eq(contacts.workspaceId, workspaceId));
 
-    const header = "name,email,company,type,notes,lastContactedAt,createdAt";
-    const escape = (v: string | null) =>
+    const header =
+      "name,email,company,type,notes,linkedinUrl,twitterHandle,cadenceDays,lastContactedAt,nextFollowUpAt,priorityScore,createdAt";
+    const escape = (v: string | null | undefined) =>
       v == null ? "" : `"${v.replace(/"/g, '""')}"`;
     const lines = rows.map((r) =>
       [
@@ -94,7 +95,12 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
         escape(r.company),
         escape(r.type),
         escape(r.notes),
+        escape(r.linkedinUrl),
+        escape(r.twitterHandle),
+        r.cadenceDays ?? "",
         r.lastContactedAt ? r.lastContactedAt.toISOString() : "",
+        r.nextFollowUpAt ? r.nextFollowUpAt.toISOString() : "",
+        r.priorityScore ?? "",
         r.createdAt.toISOString(),
       ].join(","),
     );
@@ -404,6 +410,13 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       .returning();
     if (!row)
       return c.json({ error: "not_found", message: "Contact not found" }, 404);
+    fireWebhook(workspaceId, "contact.updated", {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      company: row.company,
+      type: row.type,
+    });
     return c.json({ data: row });
   })
   .delete("/:id", async (c) => {
