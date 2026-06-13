@@ -116,19 +116,43 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
         400,
       );
 
-    // Parse header — normalise to lowercase, strip quotes/spaces
+    // Parse a single CSV line respecting quoted fields
+    function parseCsvRow(line: string): string[] {
+      const fields: string[] = [];
+      let cur = "";
+      let inQ = false;
+      for (let k = 0; k < line.length; k++) {
+        const ch = line[k];
+        if (ch === '"') {
+          if (inQ && line[k + 1] === '"') {
+            cur += '"';
+            k++;
+          } else {
+            inQ = !inQ;
+          }
+        } else if (ch === "," && !inQ) {
+          fields.push(cur.trim());
+          cur = "";
+        } else {
+          cur += ch;
+        }
+      }
+      fields.push(cur.trim());
+      return fields;
+    }
+
+    // Normalise header token — lowercase, strip quotes/spaces
     const normalise = (s: string) =>
       s
         .replace(/^["']|["']$/g, "")
         .trim()
         .toLowerCase();
-    const headers = lines[0].split(",").map(normalise);
+    const headers = parseCsvRow(lines[0]).map(normalise);
 
     const col = (row: string[], candidates: string[]): string | null => {
       for (const c of candidates) {
         const idx = headers.indexOf(c);
-        if (idx >= 0 && row[idx])
-          return row[idx].replace(/^["']|["']$/g, "").trim() || null;
+        if (idx >= 0 && row[idx]) return row[idx] || null;
       }
       return null;
     };
@@ -155,20 +179,39 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
 
     const BATCH_LIMIT = 500;
     for (let i = 1; i < Math.min(lines.length, BATCH_LIMIT + 1); i++) {
-      const row = lines[i].split(",");
-      const name = col(row, ["name", "full name", "fullname", "contact name"]);
+      const row = parseCsvRow(lines[i]);
+
+      // Support "name" column OR "first name" + "last name" (Folk, HubSpot, Google)
+      let name = col(row, [
+        "name",
+        "full name",
+        "fullname",
+        "contact name",
+        "display name",
+      ]);
+      if (!name) {
+        const first = col(row, ["first name", "firstname", "given name"]);
+        const last = col(row, [
+          "last name",
+          "lastname",
+          "surname",
+          "family name",
+        ]);
+        if (first || last) name = [first, last].filter(Boolean).join(" ");
+      }
       if (!name) {
         errors.push(`Row ${i}: missing name`);
         continue;
       }
 
-      const email = col(row, ["email", "email address"]);
+      const email = col(row, ["email", "email address", "e-mail"]);
       if (email && existingEmails.has(email.toLowerCase())) {
         skipped++;
         continue;
       }
 
-      const rawType = col(row, ["type", "contact type", "role"]) ?? "lead";
+      const rawType =
+        col(row, ["type", "contact type", "role", "lifecycle stage"]) ?? "lead";
       const type = VALID_TYPES.has(rawType)
         ? (rawType as "lead" | "customer" | "investor" | "advisor" | "partner")
         : "lead";
@@ -178,9 +221,17 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
         workspaceId,
         name,
         email: email ?? null,
-        company: col(row, ["company", "organization", "org"]),
+        company: col(row, [
+          "company",
+          "organization",
+          "org",
+          "company name",
+          "associated company",
+          "account name",
+        ]),
         type,
-        notes: col(row, ["notes", "note", "description"]),
+        notes: col(row, ["notes", "note", "description", "memo"]),
+        linkedinUrl: col(row, ["linkedin", "linkedin url", "linkedin profile"]),
       });
       if (email) existingEmails.add(email.toLowerCase());
       imported++;
