@@ -23,14 +23,39 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Contacts", href: "/dashboard/contacts", icon: Users },
-  { label: "Companies", href: "/dashboard/companies", icon: Building2 },
-  { label: "Follow-ups", href: "/dashboard/follow-ups", icon: Calendar },
-  { label: "Deals", href: "/dashboard/deals", icon: Briefcase },
-  { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
-  { label: "Backlog", href: "/dashboard/backlog", icon: BookOpen },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings2 },
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+    mobile: true,
+  },
+  { label: "Contacts", href: "/dashboard/contacts", icon: Users, mobile: true },
+  {
+    label: "Companies",
+    href: "/dashboard/companies",
+    icon: Building2,
+    mobile: false,
+  },
+  {
+    label: "Follow-ups",
+    href: "/dashboard/follow-ups",
+    icon: Calendar,
+    mobile: true,
+  },
+  { label: "Deals", href: "/dashboard/deals", icon: Briefcase, mobile: true },
+  { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare, mobile: true },
+  {
+    label: "Backlog",
+    href: "/dashboard/backlog",
+    icon: BookOpen,
+    mobile: false,
+  },
+  {
+    label: "Settings",
+    href: "/dashboard/settings",
+    icon: Settings2,
+    mobile: false,
+  },
 ] as const;
 
 export default async function DashboardLayout({
@@ -94,9 +119,9 @@ export default async function DashboardLayout({
 
       <MobileFab />
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav — top 5 items only */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t border-border bg-background">
-        {NAV_ITEMS.map((item) => {
+        {NAV_ITEMS.filter((item) => item.mobile).map((item) => {
           const Icon = item.icon;
           return (
             <Link
