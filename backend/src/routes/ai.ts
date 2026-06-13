@@ -839,4 +839,77 @@ Suggest the single most important next action.`,
 
       return c.json({ action });
     },
-  );
+  )
+  .post("/prioritize-backlog", aiRateLimit, aiQuota, async (c) => {
+    const workspaceId = c.get("workspaceId");
+
+    const openTasks = await db
+      .select({
+        id: tasks.id,
+        title: tasks.title,
+        priority: tasks.priority,
+        contactId: tasks.contactId,
+        contactName: contacts.name,
+        contactCompany: contacts.company,
+        priorityScore: sql<number>`COALESCE((SELECT SUM(${deals.value}) FROM ${deals} WHERE ${deals.contactId} = ${tasks.contactId} AND ${deals.workspaceId} = ${tasks.workspaceId}), 0)`,
+      })
+      .from(tasks)
+      .leftJoin(contacts, eq(tasks.contactId, contacts.id))
+      .where(
+        and(
+          eq(tasks.workspaceId, workspaceId),
+          ne(tasks.status, "done"),
+          ne(tasks.status, "cancelled"),
+        ),
+      )
+      .orderBy(
+        desc(
+          sql`COALESCE((SELECT SUM(${deals.value}) FROM ${deals} WHERE ${deals.contactId} = ${tasks.contactId} AND ${deals.workspaceId} = ${tasks.workspaceId}), 0)`,
+        ),
+      )
+      .limit(30);
+
+    if (openTasks.length === 0) {
+      return c.json({ ranked: [] });
+    }
+
+    const taskList = openTasks
+      .map(
+        (t, i) =>
+          `${i + 1}. [${t.id}] "${t.title}"${t.contactName ? ` — requested by ${t.contactName}${t.contactCompany ? ` (${t.contactCompany})` : ""}` : ""}${t.priorityScore ? ` · $${t.priorityScore.toLocaleString()} deal value at stake` : ""}`,
+      )
+      .join("\n");
+
+    const message = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 800,
+      system: `You are a product strategy advisor for a solo founder. Given a list of feature requests with requester info and associated deal values, rank them by business impact. Return ONLY a JSON array — no explanation, no markdown:
+[{"id":"<task_id>","reason":"<one short sentence why this is ranked here>"},...]
+Include ALL items. Rank by: deal value at risk > customer demand frequency > strategic fit.`,
+      messages: [
+        {
+          role: "user",
+          content: `Feature requests to prioritize:\n\n${taskList}\n\nReturn the ranked JSON array.`,
+        },
+      ],
+    });
+
+    const raw =
+      message.content[0].type === "text" ? message.content[0].text : "[]";
+
+    let ranked: { id: string; reason: string }[] = [];
+    try {
+      const match = raw.match(/\[[\s\S]*\]/);
+      if (match)
+        ranked = JSON.parse(match[0]) as { id: string; reason: string }[];
+    } catch {
+      ranked = [];
+    }
+
+    await db
+      .update(workspaces)
+      .set({ aiActionsUsed: sql`${workspaces.aiActionsUsed} + 1` })
+      .where(eq(workspaces.id, workspaceId));
+
+    return c.json({ ranked });
+  });

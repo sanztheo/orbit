@@ -24,6 +24,8 @@ import {
   Check,
   Loader2,
   Search,
+  Sparkles,
+  X,
 } from "lucide-react";
 
 type TaskStatus = "todo" | "in_progress" | "done" | "cancelled";
@@ -104,6 +106,10 @@ export default function BacklogPage() {
   const [generatingLoop, setGeneratingLoop] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [prioritizing, setPrioritizing] = useState(false);
+  const [ranked, setRanked] = useState<{ id: string; reason: string }[] | null>(
+    null,
+  );
 
   const fetchItems = useCallback(async () => {
     const token = await getToken();
@@ -173,6 +179,27 @@ export default function BacklogPage() {
     setTimeout(() => setCopiedId(null), 2000);
   }
 
+  async function prioritize() {
+    setPrioritizing(true);
+    setRanked(null);
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API_URL}/api/ai/prioritize-backlog`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({}),
+      });
+      const json: { ranked?: { id: string; reason: string }[] } =
+        await res.json();
+      if (res.ok) setRanked(json.ranked ?? []);
+    } finally {
+      setPrioritizing(false);
+    }
+  }
+
   const filteredItems = useMemo(() => {
     const q = search.toLowerCase();
     if (!q) return items;
@@ -237,6 +264,20 @@ export default function BacklogPage() {
               />
             </div>
           )}
+          {items.length > 0 && (
+            <button
+              onClick={prioritize}
+              disabled={prioritizing}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              {prioritizing ? (
+                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="mr-1.5 h-4 w-4" />
+              )}
+              {prioritizing ? "Prioritizing…" : "AI Prioritize"}
+            </button>
+          )}
           <Link
             href="/dashboard/tasks/new"
             className={buttonVariants({ size: "sm" })}
@@ -246,6 +287,42 @@ export default function BacklogPage() {
           </Link>
         </div>
       </div>
+
+      {ranked && ranked.length > 0 && (
+        <div className="rounded-xl border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/20 p-4 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4" />
+              AI suggested priority order
+            </p>
+            <button
+              onClick={() => setRanked(null)}
+              className="text-purple-500 hover:text-purple-700"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <ol className="flex flex-col gap-2">
+            {ranked.map((r, i) => {
+              const item = items.find((t) => t.id === r.id);
+              if (!item) return null;
+              return (
+                <li key={r.id} className="flex gap-3 text-sm">
+                  <span className="shrink-0 w-5 text-right text-xs font-bold text-purple-500 mt-0.5">
+                    {i + 1}.
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{item.title}</p>
+                    <p className="text-xs text-purple-700 dark:text-purple-300">
+                      {r.reason}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+      )}
 
       {items.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
