@@ -6,6 +6,30 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ---
 
+## Infrastructure — Monorepo + Backend/Frontend Split
+
+[P0] [TODO] Initialize Turborepo monorepo: move current Next.js code to `apps/web`, create `apps/api` (Hono), create `packages/db` (Drizzle schema), create `packages/types` (shared interfaces) — All product work depends on this structure. One-time migration, must land before any feature work.
+
+[P0] [TODO] Create `packages/db`: extract Drizzle schema + `db` client into shared package exported as `@orbit/db`; both `apps/web` (server components) and `apps/api` (Hono routes) import from here — Prevents schema drift between two apps. Single source of truth for all table definitions.
+
+[P0] [TODO] Create `packages/types`: define shared TypeScript interfaces (Contact, Deal, Task, Activity, Workspace) matching Drizzle inferred types, exported as `@orbit/types` — API responses and frontend fetch calls must share the same contract. Compile-time mismatch detection.
+
+[P0] [TODO] Initialize `apps/api` with Hono.js (Node.js): `src/index.ts` entry, `GET /health` route, `tsx` dev runner, Zod + `@hono/zod-validator` wired — First running API server on port 3001. Validates monorepo wiring before business logic.
+
+[P0] [TODO] Implement Clerk JWT verification middleware in `apps/api` using `@clerk/backend`: verify `Authorization: Bearer <token>` on every protected route, attach `userId` to Hono context — Without server-side JWT verification the API trusts any caller. This is the auth perimeter for all data.
+
+[P0] [TODO] Configure CORS in `apps/api` via `hono/cors`: allow `NEXT_PUBLIC_APP_URL` origin, `Authorization` + `Content-Type` headers — Frontend (localhost:3000) and API (localhost:3001) are different origins. Missing CORS = every browser request blocked.
+
+[P0] [TODO] Wire `turbo.json` build pipeline: `build` depends on `^build`; `dev` runs `web` + `api` in parallel via `turbo run dev --parallel` — Without pipeline, packages build wrong order; `dev` requires two terminals. Turborepo fixes both.
+
+[P0] [TODO] Update root `package.json` as workspace root: `"workspaces": ["apps/*", "packages/*"]`, Turborepo dev script — npm workspaces is the symlink layer under Turborepo. Required for cross-package imports to resolve at runtime.
+
+[P0] [TODO] Move `drizzle.config.ts` to monorepo root pointing at `packages/db/src/schema.ts`; migrate `drizzle/` output to root — Migrations run from root. Breaks if still pointing at `apps/web/src/db/schema.ts` after migration.
+
+[P1] [TODO] Add Railway deploy config (`railway.toml`) for `apps/api` — Hono needs a long-lived Node.js process with a persistent DB pool. Vercel edge functions can't hold pg Pool. Railway is the correct host for the API.
+
+---
+
 ## Database Schema
 
 [P0] [TODO] Design and migrate unified contact schema with role_type enum (customer / investor / partner / candidate) — Research shows founders manage 4 relationship types in 4 different tools; one person-record with a tag eliminates the split.
