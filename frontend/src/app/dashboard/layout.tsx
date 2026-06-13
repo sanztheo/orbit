@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { KeyboardShortcuts } from "./keyboard-shortcuts";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: "⊞" },
@@ -24,6 +25,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen">
+      <KeyboardShortcuts />
       {/* Desktop sidebar */}
       <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-border bg-muted/40 px-3 py-6">
         <div className="mb-8 px-2">
