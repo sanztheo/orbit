@@ -17,6 +17,7 @@ const TYPES = ["lead", "customer", "investor", "advisor", "partner"] as const;
 
 const SORTS = [
   { value: "name", label: "Name A–Z" },
+  { value: "priority", label: "By deal value" },
   { value: "stale", label: "Least recently contacted" },
   { value: "recently_contacted", label: "Recently contacted" },
   { value: "newest", label: "Newest first" },

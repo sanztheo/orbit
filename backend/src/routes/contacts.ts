@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
-import { db, contacts } from "../db/index.js";
+import { db, contacts, deals } from "../db/index.js";
 import { generateId } from "../lib/ids.js";
 import { fireWebhook } from "../lib/fire-webhook.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
@@ -90,6 +90,10 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
           return [desc(contacts.createdAt)];
         case "recently_contacted":
           return [sql`${contacts.lastContactedAt} DESC NULLS LAST`];
+        case "priority":
+          return [
+            sql`COALESCE((SELECT SUM(${deals.value}) FROM ${deals} WHERE ${deals.contactId} = ${contacts.id} AND ${deals.workspaceId} = ${contacts.workspaceId}), 0) DESC`,
+          ];
         default:
           return [asc(contacts.name)];
       }
