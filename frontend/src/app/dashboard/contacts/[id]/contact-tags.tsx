@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useRef, useTransition } from "react";
+import { useState, useRef, useTransition, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { X, Tag, Plus } from "lucide-react";
 
 interface Props {
@@ -17,8 +15,24 @@ export function ContactTags({ contactId, initialTags }: Props) {
   const router = useRouter();
   const [tags, setTags] = useState<string[]>(initialTags);
   const [input, setInput] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    async function loadTags() {
+      const token = await getToken();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+      const res = await fetch(`${apiUrl}/api/contacts/tags`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const json: { data: string[] } = await res.json();
+        setSuggestions(json.data);
+      }
+    }
+    loadTags();
+  }, [getToken]);
 
   async function saveTags(next: string[]) {
     const token = await getToken();
@@ -57,6 +71,12 @@ export function ContactTags({ contactId, initialTags }: Props) {
       removeTag(tags[tags.length - 1]);
     }
   }
+
+  const filtered = input.trim()
+    ? suggestions.filter(
+        (s) => s.includes(input.toLowerCase()) && !tags.includes(s),
+      )
+    : suggestions.filter((s) => !tags.includes(s)).slice(0, 8);
 
   return (
     <div>
@@ -106,6 +126,24 @@ export function ContactTags({ contactId, initialTags }: Props) {
           <Plus className="h-3 w-3 text-muted-foreground pointer-events-none" />
         )}
       </div>
+      {filtered.length > 0 && (
+        <div className="flex flex-wrap gap-1 mt-1.5">
+          {filtered.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                addTag(s);
+                setInput("");
+              }}
+              className="text-[10px] rounded-full border border-border px-2 py-0.5 text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+            >
+              + {s}
+            </button>
+          ))}
+        </div>
+      )}
       <p className="text-[11px] text-muted-foreground mt-1">
         Enter or comma to add · Backspace to remove
       </p>
