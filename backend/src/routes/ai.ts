@@ -750,4 +750,93 @@ No explanation. No markdown. JSON only.`,
 
       return c.json({ extracted });
     },
+  )
+  .post(
+    "/suggest-deal-action",
+    aiRateLimit,
+    aiQuota,
+    zValidator("json", z.object({ dealId: z.string().min(1) })),
+    async (c) => {
+      const workspaceId = c.get("workspaceId");
+      const { dealId } = c.req.valid("json");
+
+      const [deal] = await db
+        .select()
+        .from(deals)
+        .where(and(eq(deals.id, dealId), eq(deals.workspaceId, workspaceId)))
+        .limit(1);
+
+      if (!deal) return c.json({ error: "not_found" }, 404);
+
+      let contactName = "";
+      let contactCompany = "";
+      if (deal.contactId) {
+        const [c2] = await db
+          .select({ name: contacts.name, company: contacts.company })
+          .from(contacts)
+          .where(eq(contacts.id, deal.contactId))
+          .limit(1);
+        if (c2) {
+          contactName = c2.name;
+          contactCompany = c2.company ?? "";
+        }
+      }
+
+      const recentActs = await db
+        .select({
+          type: activities.type,
+          subject: activities.subject,
+          occurredAt: activities.occurredAt,
+        })
+        .from(activities)
+        .where(eq(activities.dealId, dealId))
+        .orderBy(desc(activities.occurredAt))
+        .limit(3);
+
+      const daysInStage = Math.floor(
+        (Date.now() - new Date(deal.stageChangedAt).getTime()) / 86_400_000,
+      );
+
+      const actLine =
+        recentActs.length > 0
+          ? recentActs
+              .map(
+                (a) =>
+                  `${a.type}${a.subject ? `: ${a.subject}` : ""} (${new Date(a.occurredAt).toLocaleDateString()})`,
+              )
+              .join("; ")
+          : "No recent activity";
+
+      const message = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 100,
+        system: `You are a sales coach for a solo founder. Given a deal's current state, suggest the single most important next action. Reply in one clear, specific, actionable sentence. No preamble, no "I suggest", no bullet points. Just the action.`,
+        messages: [
+          {
+            role: "user",
+            content: `Deal: ${deal.title}
+Pipeline: ${deal.pipelineType}
+Stage: ${deal.stage} (${daysInStage} days in this stage)
+Value: ${deal.value ? `$${deal.value.toLocaleString()}` : "unknown"}
+Contact: ${contactName}${contactCompany ? ` at ${contactCompany}` : ""}
+Recent activity: ${actLine}
+Current next action: ${deal.nextAction ?? "none set"}
+
+Suggest the single most important next action.`,
+          },
+        ],
+      });
+
+      const action =
+        message.content[0].type === "text"
+          ? message.content[0].text.trim()
+          : "";
+
+      await db
+        .update(workspaces)
+        .set({ aiActionsUsed: sql`${workspaces.aiActionsUsed} + 1` })
+        .where(eq(workspaces.id, workspaceId));
+
+      return c.json({ action });
+    },
   );
