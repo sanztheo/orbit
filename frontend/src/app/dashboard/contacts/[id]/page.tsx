@@ -64,13 +64,16 @@ export default async function ContactDetailPage({
     status: string;
   }[] = tasksRes.ok ? (await tasksRes.json()).data : [];
 
-  const activitiesRes = await fetch(
-    `${apiUrl}/api/activities?contactId=${id}`,
-    {
+  const [activitiesRes, dealsRes] = await Promise.all([
+    fetch(`${apiUrl}/api/activities?contactId=${id}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       cache: "no-store",
-    },
-  );
+    }),
+    fetch(`${apiUrl}/api/deals?contactId=${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      cache: "no-store",
+    }),
+  ]);
   const initialActivities: {
     id: string;
     type: "email" | "call" | "meeting" | "note" | "linkedin";
@@ -78,6 +81,13 @@ export default async function ContactDetailPage({
     body: string | null;
     occurredAt: string;
   }[] = activitiesRes.ok ? (await activitiesRes.json()).data : [];
+  const linkedDeals: {
+    id: string;
+    title: string;
+    stage: string;
+    value: number | null;
+    pipelineType: string;
+  }[] = dealsRes.ok ? (await dealsRes.json()).data : [];
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-2xl">
@@ -185,6 +195,41 @@ export default async function ContactDetailPage({
           initialCadence={contact.cadenceDays}
         />
       </div>
+
+      {/* Linked deals */}
+      {linkedDeals.length > 0 && (
+        <div className="rounded-xl border border-border p-5 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-sm">Linked deals</h2>
+            <Link
+              href="/dashboard/deals/new"
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              + New deal
+            </Link>
+          </div>
+          <div className="flex flex-col gap-2">
+            {linkedDeals.map((deal) => (
+              <div
+                key={deal.id}
+                className="flex items-center justify-between text-sm"
+              >
+                <div className="min-w-0">
+                  <p className="font-medium truncate">{deal.title}</p>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {deal.stage.replace(/_/g, " ")} · {deal.pipelineType}
+                  </p>
+                </div>
+                {deal.value != null && (
+                  <span className="shrink-0 ml-2 text-xs font-medium text-emerald-700">
+                    ${deal.value.toLocaleString()}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Activity timeline */}
       <ActivityLog
