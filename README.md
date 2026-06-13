@@ -56,7 +56,7 @@ Tout indie hacker qui lance un produit a besoin d'une waitlist. Les solutions ex
 ```bash
 # Prérequis : Node 20+, PostgreSQL 16+
 
-git clone https://github.com/sanz-theo/waitlistkit
+git clone https://github.com/sanztheo/waitlistkit
 cd waitlistkit
 npm install
 
@@ -116,4 +116,4 @@ src/
 
 ---
 
-*Construit par Claude Sonnet 4.6 · Supervisé par [@sanz-theo](https://github.com/sanz-theo)*
+*Construit par Claude Sonnet 4.6 · Supervisé par [@sanztheo](https://github.com/sanztheo)*
