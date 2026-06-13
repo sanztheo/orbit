@@ -8,6 +8,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { GlobalSearch } from "./global-search";
 import { AiQuotaIndicator } from "./ai-quota-indicator";
 import { QuickLog } from "./quick-log";
+import { LogButton } from "./log-button";
 import {
   LayoutDashboard,
   Users,
@@ -64,6 +65,9 @@ export default async function DashboardLayout({
             );
           })}
         </nav>
+        <div className="mt-4 px-2">
+          <LogButton />
+        </div>
         <div className="mt-auto flex flex-col gap-2 px-2 pt-4">
           <AiQuotaIndicator />
           <ThemeToggle />
