@@ -13,6 +13,8 @@ import {
   Sun,
   Moon,
   Monitor,
+  Download,
+  Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,6 +47,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [workspace, setWorkspace] = useState<WorkspaceInfo | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -95,6 +98,41 @@ export default function SettingsPage() {
       setError("Network error");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const token = await getToken();
+      const headers: Record<string, string> = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+      const [contactsRes, dealsRes, tasksRes, activitiesRes] =
+        await Promise.all([
+          fetch(`${API_URL}/api/contacts`, { headers }),
+          fetch(`${API_URL}/api/deals`, { headers }),
+          fetch(`${API_URL}/api/tasks`, { headers }),
+          fetch(`${API_URL}/api/activities`, { headers }),
+        ]);
+      const bundle = {
+        exportedAt: new Date().toISOString(),
+        contacts: contactsRes.ok ? (await contactsRes.json()).data : [],
+        deals: dealsRes.ok ? (await dealsRes.json()).data : [],
+        tasks: tasksRes.ok ? (await tasksRes.json()).data : [],
+        activities: activitiesRes.ok ? (await activitiesRes.json()).data : [],
+      };
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `orbit-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
     }
   }
 
@@ -257,6 +295,38 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+      </section>
+
+      <section className="rounded-xl border border-border p-5 flex flex-col gap-4">
+        <div>
+          <h2 className="font-semibold text-sm flex items-center">
+            <Download className="h-4 w-4 mr-2" />
+            Data export
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Download all your contacts, deals, tasks, and activities as JSON.
+            Your data is yours.
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleExport}
+          disabled={exporting}
+          className="self-start"
+        >
+          {exporting ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Exporting…
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4 mr-2" />
+              Download JSON export
+            </>
+          )}
+        </Button>
       </section>
     </div>
   );
