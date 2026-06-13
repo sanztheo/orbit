@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { FollowUpDraft } from "./follow-up-draft";
 import { AddToBacklog } from "./add-to-backlog";
 import { CadencePicker } from "./cadence-picker";
+import { ActivityLog } from "./activity-log";
 
 interface Contact {
   id: string;
@@ -61,6 +62,21 @@ export default async function ContactDetailPage({
     priority: string;
     status: string;
   }[] = tasksRes.ok ? (await tasksRes.json()).data : [];
+
+  const activitiesRes = await fetch(
+    `${apiUrl}/api/activities?contactId=${id}`,
+    {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      cache: "no-store",
+    },
+  );
+  const initialActivities: {
+    id: string;
+    type: "email" | "call" | "meeting" | "note" | "linkedin";
+    subject: string | null;
+    body: string | null;
+    occurredAt: string;
+  }[] = activitiesRes.ok ? (await activitiesRes.json()).data : [];
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-2xl">
@@ -136,6 +152,12 @@ export default async function ContactDetailPage({
           initialCadence={contact.cadenceDays}
         />
       </div>
+
+      {/* Activity timeline */}
+      <ActivityLog
+        contactId={contact.id}
+        initialActivities={initialActivities}
+      />
 
       {/* Backlog requests */}
       <AddToBacklog contactId={contact.id} initialTasks={linkedTasks} />
