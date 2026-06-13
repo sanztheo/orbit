@@ -298,9 +298,13 @@ export default async function ContactsPage({
                         {contact.name}
                       </Link>
                       {contact.email && (
-                        <div className="text-xs text-muted-foreground">
+                        <a
+                          href={`mailto:${contact.email}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-xs text-muted-foreground hover:text-blue-600 hover:underline"
+                        >
                           {contact.email}
-                        </div>
+                        </a>
                       )}
                     </TableCell>
                     <TableCell>{contact.company ?? "—"}</TableCell>

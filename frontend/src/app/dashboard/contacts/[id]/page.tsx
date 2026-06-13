@@ -206,7 +206,16 @@ export default async function ContactDetailPage({
             <Mail className="h-3 w-3" />
             Email
           </p>
-          <p>{contact.email ?? "—"}</p>
+          {contact.email ? (
+            <a
+              href={`mailto:${contact.email}`}
+              className="text-blue-600 hover:underline text-sm"
+            >
+              {contact.email}
+            </a>
+          ) : (
+            <p>—</p>
+          )}
         </div>
         <div>
           <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
