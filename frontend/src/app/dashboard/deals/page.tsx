@@ -5,6 +5,8 @@ import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { PipelineVelocity } from "./pipeline-velocity";
@@ -113,6 +115,7 @@ export default function DealsPage() {
     null,
   );
   const [nextActionDraft, setNextActionDraft] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   async function fetchDeals() {
     const token = await getToken();
@@ -249,7 +252,15 @@ export default function DealsPage() {
     dragDealRef.current = null;
   }
 
-  const deals = allDeals.filter((d) => d.pipelineType === activePipeline);
+  const q = searchQuery.toLowerCase();
+  const deals = allDeals.filter(
+    (d) =>
+      d.pipelineType === activePipeline &&
+      (!q ||
+        d.title.toLowerCase().includes(q) ||
+        (d.contactName ?? "").toLowerCase().includes(q) ||
+        (d.contactCompany ?? "").toLowerCase().includes(q)),
+  );
   const labels = STAGE_LABELS[activePipeline];
   const byStage = Object.fromEntries(
     STAGE_ORDER.map((s) => [s, deals.filter((d) => d.stage === s)]),
@@ -329,6 +340,24 @@ export default function DealsPage() {
             </span>
           </button>
         ))}
+      </div>
+
+      {/* Deal search */}
+      <div className="relative max-w-xs">
+        <Input
+          placeholder="Search deals…"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pr-7 h-8 text-sm"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
       </div>
 
       {wonDeal && (
