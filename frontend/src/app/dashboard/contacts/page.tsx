@@ -97,17 +97,23 @@ function formatDate(value: string | null): string {
 export default async function ContactsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; type?: string; stale?: string }>;
+  searchParams: Promise<{
+    search?: string;
+    type?: string;
+    stale?: string;
+    sort?: string;
+  }>;
 }) {
   const { getToken } = await auth();
   const token = await getToken();
-  const { search, type, stale } = await searchParams;
+  const { search, type, stale, sort } = await searchParams;
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const qs = new URLSearchParams();
   if (search) qs.set("search", search);
   if (type) qs.set("type", type);
   if (stale === "1") qs.set("stale", "1");
+  if (sort) qs.set("sort", sort);
 
   const [res, staleRes] = await Promise.all([
     fetch(`${apiUrl}/api/contacts?${qs}`, {

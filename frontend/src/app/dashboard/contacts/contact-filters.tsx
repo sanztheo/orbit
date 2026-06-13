@@ -49,6 +49,16 @@ export function ContactFilters() {
           </option>
         ))}
       </select>
+      <select
+        defaultValue={params.get("sort") ?? "name"}
+        onChange={(e) => update("sort", e.target.value)}
+        className="rounded-lg border border-border px-2 py-1.5 text-sm"
+      >
+        <option value="name">Name A–Z</option>
+        <option value="stale">Least recently contacted</option>
+        <option value="recently_contacted">Recently contacted</option>
+        <option value="newest">Newest first</option>
+      </select>
       <button
         onClick={toggleStale}
         className={cn(

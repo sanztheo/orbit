@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, ilike, isNull, lt, or } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, isNull, lt, or, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db, contacts } from "../db/index.js";
@@ -44,6 +44,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       | undefined;
 
     const stale = c.req.query("stale") === "1";
+    const sort = c.req.query("sort") ?? "name";
     const oneEightyDaysAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
 
     const searchFilter = search
@@ -64,6 +65,19 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
         )
       : undefined;
 
+    const orderBy = (() => {
+      switch (sort) {
+        case "stale":
+          return [sql`${contacts.lastContactedAt} ASC NULLS FIRST`];
+        case "newest":
+          return [desc(contacts.createdAt)];
+        case "recently_contacted":
+          return [sql`${contacts.lastContactedAt} DESC NULLS LAST`];
+        default:
+          return [asc(contacts.name)];
+      }
+    })();
+
     const rows = await db
       .select()
       .from(contacts)
@@ -74,7 +88,8 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
           typeFilter,
           staleFilter,
         ),
-      );
+      )
+      .orderBy(...orderBy);
     return c.json({ data: rows, total: rows.length });
   })
   .get("/export", async (c) => {
