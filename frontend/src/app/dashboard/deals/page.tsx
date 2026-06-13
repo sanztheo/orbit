@@ -29,6 +29,7 @@ interface Deal {
   pipelineType: PipelineType;
   stageChangedAt: string;
   probability: number | null;
+  expectedCloseAt: string | null;
   notes: string | null;
   contactId: string | null;
   contactName: string | null;
@@ -404,6 +405,20 @@ export default function DealsPage() {
                           ? "Moved today"
                           : `${staleDays}d in stage${isStale ? " ⚠" : ""}`}
                       </p>
+                      {deal.expectedCloseAt && (
+                        <p className="mt-0.5 text-xs text-amber-700">
+                          Close by{" "}
+                          {new Date(deal.expectedCloseAt).toLocaleDateString(
+                            "en-US",
+                            { month: "short", day: "numeric" },
+                          )}
+                        </p>
+                      )}
+                      {deal.notes && (
+                        <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+                          {deal.notes}
+                        </p>
+                      )}
                     </div>
                   );
                 })
