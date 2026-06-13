@@ -60,7 +60,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P0] [TODO] Add workspace membership table with role enum (owner / member) and enforce row-level workspace isolation on all DB queries — Multi-user (up to 3 seats on Founder tier) requires workspace-scoped access. Missing this is a data leak.
 
-[P1] [TODO] Implement seat count enforcement middleware — Pricing tiers cap seats (1 / 3 / 10). Enforce at API layer, not just UI, to prevent billing bypass.
+[P1] [DONE] Implement seat count enforcement middleware — Pricing tiers cap seats (1 / 3 / 10). Enforce at API layer, not just UI, to prevent billing bypass.
 
 ---
 
