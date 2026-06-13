@@ -91,10 +91,12 @@ export default async function ContactsPage({
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Contacts</h1>
+          <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
+            Contacts
+          </h1>
           <p className="text-sm text-muted-foreground">
             {contacts.length} contact{contacts.length !== 1 ? "s" : ""}
           </p>
@@ -103,9 +105,9 @@ export default async function ContactsPage({
           <ExportButton />
           <Link
             href="/dashboard/contacts/new"
-            className={buttonVariants({ variant: "default" })}
+            className={buttonVariants({ size: "sm" })}
           >
-            Add contact
+            + Add
           </Link>
         </div>
       </div>
@@ -131,62 +133,105 @@ export default async function ContactsPage({
           )}
         </div>
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Last contacted</TableHead>
-              <TableHead>Priority</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+        <>
+          {/* Mobile card list */}
+          <div className="flex flex-col gap-2 md:hidden">
             {contacts.map((contact) => {
               const days = daysSince(contact.lastContactedAt);
               return (
-                <TableRow key={contact.id}>
-                  <TableCell className="font-medium">
-                    <Link
-                      href={`/dashboard/contacts/${contact.id}`}
-                      className="hover:underline"
-                    >
-                      {contact.name}
-                    </Link>
+                <Link
+                  key={contact.id}
+                  href={`/dashboard/contacts/${contact.id}`}
+                  className="flex items-start justify-between rounded-lg border border-border p-3 hover:bg-muted/40 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{contact.name}</p>
                     {contact.email && (
-                      <div className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground truncate">
                         {contact.email}
-                      </div>
+                      </p>
                     )}
-                  </TableCell>
-                  <TableCell>{contact.company ?? "—"}</TableCell>
-                  <TableCell>
+                    {contact.company && (
+                      <p className="text-xs text-muted-foreground">
+                        {contact.company}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end shrink-0 gap-1 ml-2">
                     <Badge variant={TYPE_VARIANT[contact.type]}>
                       {contact.type}
                     </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`text-sm ${healthColor(days)}`}>
+                    <span className={`text-xs ${healthColor(days)}`}>
                       {days === null
                         ? "Never"
                         : days === 0
                           ? "Today"
                           : `${days}d ago`}
                     </span>
-                    <div className="text-xs text-muted-foreground">
-                      {formatDate(contact.lastContactedAt)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {contact.priorityScore !== null
-                      ? contact.priorityScore
-                      : "—"}
-                  </TableCell>
-                </TableRow>
+                  </div>
+                </Link>
               );
             })}
-          </TableBody>
-        </Table>
+          </div>
+
+          {/* Desktop table */}
+          <Table className="hidden md:table">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Company</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Last contacted</TableHead>
+                <TableHead>Priority</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {contacts.map((contact) => {
+                const days = daysSince(contact.lastContactedAt);
+                return (
+                  <TableRow key={contact.id}>
+                    <TableCell className="font-medium">
+                      <Link
+                        href={`/dashboard/contacts/${contact.id}`}
+                        className="hover:underline"
+                      >
+                        {contact.name}
+                      </Link>
+                      {contact.email && (
+                        <div className="text-xs text-muted-foreground">
+                          {contact.email}
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell>{contact.company ?? "—"}</TableCell>
+                    <TableCell>
+                      <Badge variant={TYPE_VARIANT[contact.type]}>
+                        {contact.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`text-sm ${healthColor(days)}`}>
+                        {days === null
+                          ? "Never"
+                          : days === 0
+                            ? "Today"
+                            : `${days}d ago`}
+                      </span>
+                      <div className="text-xs text-muted-foreground">
+                        {formatDate(contact.lastContactedAt)}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {contact.priorityScore !== null
+                        ? contact.priorityScore
+                        : "—"}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </>
       )}
     </div>
   );

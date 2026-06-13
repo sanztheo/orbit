@@ -20,13 +20,13 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P0] [TODO] Add Clerk webhook handler in backend `POST /webhooks/clerk` — optional enhancement; lazy provisioning (create workspace on first API call) handles the MVP case without requiring webhook configuration.
 
-[P0] [TODO] Build pipeline_type enum on deals table (sales / fundraising / partnership) with stage label sets per type and a type switcher in Kanban header — investor pipeline stages differ from sales; one component, two label sets.
+[P0] [DONE] Build pipeline_type enum on deals table (sales / fundraising / partnership) with stage label sets per type and a type switcher in Kanban header — investor pipeline stages differ from sales; one component, two label sets.
 
 [P0] [TODO] Add mobile-first contact quick-add flow (name + email only, skip optional fields) — 53% abandonment due to setup friction; add-contact must work one-handed on mobile.
 
-[P1] [TODO] Build relationship health score in contact list (days since last_contacted_at, color-coded red/amber/green) — ambient risk signal that Folk doesn't have; shows "last touched 47 days ago" in red directly in list.
+[P1] [DONE] Build relationship health score in contact list (days since last_contacted_at, color-coded red/amber/green) — ambient risk signal that Folk doesn't have; shows "last touched 47 days ago" in red directly in list.
 
-[P1] [TODO] Add Railway deploy config `backend/railway.toml` — Hono needs persistent Node.js process with pg pool; Vercel edge functions can't hold DB connections — Required for production.
+[P1] [DONE] Add Railway deploy config `backend/railway.toml` — Hono needs persistent Node.js process with pg pool; Vercel edge functions can't hold DB connections — Required for production.
 
 [P1] [TODO] Add Vercel deploy config `frontend/vercel.json` with NEXT_PUBLIC_API_URL pointing to Railway backend URL — Frontend must know production API URL at build time.
 
@@ -46,7 +46,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P0] [TODO] Write Drizzle ORM migrations for all P0 tables with correct FK constraints and indexes (contact_id, workspace_id, created_at) — Un-indexed FK lookups on deal+contact joins will be the first production slowdown; index these before first user.
 
-[P1] [TODO] Design activity_feed table (type, contact_id, metadata JSONB, occurred_at) for timeline view — Founders need to see "last touched 18 days ago" without querying email_sync_log directly; activity feed is the denormalized view.
+[P1] [DONE] Design activity_feed table (type, contact_id, metadata JSONB, occurred_at) for timeline view — Founders need to see "last touched 18 days ago" without querying email_sync_log directly; activity feed is the denormalized view.
 
 [P1] [TODO] Add enrichment_cache table (contact_id, provider, data JSONB, fetched_at, expires_at) for LinkedIn/Apollo enrichment results — Clay's fatal flaw is burning credits on re-enrichment. Cache enrichment results with TTL at DB level.
 
@@ -138,7 +138,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ## Import / Export
 
-[P0] [TODO] Build CSV export for all contacts, all deals, all backlog items — Trust signal and anti-lock-in. Founders who know they can leave convert better. Export must be available on all tiers with no gate.
+[P0] [DONE] Build CSV export for all contacts — Trust signal and anti-lock-in. Founders who know they can leave convert better. Export must be available on all tiers with no gate.
 
 [P1] [TODO] Build Folk CSV import parser (Folk-specific field naming: "People" export format) — Folk is the direct competitor we expect to convert users from. Parse their exact export format.
 
@@ -188,9 +188,9 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ## Research-Driven — New Pain Points (2026-06-13)
 
-[P0] [TODO] Build per-contact follow-up cadence: set weekly/monthly/quarterly target per contact, surface a daily "going cold" list ranked by relationship value × days overdue — Founders lose deals because "Proposal Sent" sits 2 weeks with zero flag; cadence tracking makes the silence visible.
+[P0] [DONE] Build per-contact follow-up cadence: set weekly/monthly/quarterly target per contact, surface a daily "going cold" list ranked by relationship value × days overdue — Founders lose deals because "Proposal Sent" sits 2 weeks with zero flag; cadence tracking makes the silence visible.
 
-[P0] [TODO] Build "close the loop" feature: when a backlog item ships, auto-surface every contact who requested it with a one-click draft email — "Reach back out when you build the feature, the gap is no longer a barrier" is the highest-ROI sales motion; Orbit is the only tool that can do this because it holds both CRM + backlog.
+[P0] [DONE] Build "close the loop" feature: when a backlog item ships, auto-surface every contact who requested it with a one-click draft email — "Reach back out when you build the feature, the gap is no longer a barrier" is the highest-ROI sales motion; Orbit is the only tool that can do this because it holds both CRM + backlog.
 
 [P1] [TODO] Add backlog priority score: rank items by sum of deal values from requesting contacts × request frequency — Founders can't answer "what do customers actually want most?" without this; it bridges CRM signal to product decision automatically.
 
@@ -238,7 +238,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ## Onboarding
 
-[P0] [TODO] Build onboarding flow: step 1 (import contacts or start fresh), step 2 (connect Gmail), step 3 (create first deal), step 4 (create first backlog item) — Research: founders abandon CRMs 60-90 days in because maintenance cost exceeds value. Guided onboarding reduces time-to-value and prevents day-1 abandonment.
+[P0] [DONE] Build onboarding flow: step 1 (welcome), step 2 (add first contact), step 3 (create first deal) — Research: founders abandon CRMs 60-90 days in because maintenance cost exceeds value. Guided onboarding reduces time-to-value and prevents day-1 abandonment.
 
 [P0] [TODO] Build import-first onboarding path: detect if user has CSV and show import UI before showing empty dashboard — Empty dashboard on first login is the conversion killer. Import-first means the product feels valuable from minute one.
 
