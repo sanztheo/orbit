@@ -158,6 +158,45 @@ export default async function ContactDetailPage({
         </div>
       )}
 
+      {/* Completeness indicator */}
+      {(() => {
+        const fields = [
+          { key: "email", done: !!contact.email, label: "Email" },
+          { key: "company", done: !!contact.company, label: "Company" },
+          { key: "linkedin", done: !!contact.linkedinUrl, label: "LinkedIn" },
+          { key: "cadence", done: !!contact.cadenceDays, label: "Cadence" },
+          {
+            key: "activity",
+            done: initialActivities.length > 0,
+            label: "Activity logged",
+          },
+        ];
+        const score = fields.filter((f) => f.done).length;
+        if (score === 5) return null;
+        return (
+          <div className="flex items-center gap-3 text-xs">
+            <span className="text-muted-foreground shrink-0">
+              Profile {score}/5
+            </span>
+            <div className="flex gap-1">
+              {fields.map((f) => (
+                <span
+                  key={f.key}
+                  title={f.label}
+                  className={`h-2 w-6 rounded-full ${f.done ? "bg-emerald-500" : "bg-muted-foreground/20"}`}
+                />
+              ))}
+            </div>
+            <Link
+              href={`/dashboard/contacts/${contact.id}/edit`}
+              className="text-blue-600 hover:underline shrink-0"
+            >
+              Fill in {5 - score} missing →
+            </Link>
+          </div>
+        );
+      })()}
+
       {/* Info grid */}
       <div className="rounded-xl border border-border p-5 grid grid-cols-2 gap-4 text-sm">
         <div>

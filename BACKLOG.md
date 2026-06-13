@@ -282,15 +282,15 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P2] [TODO] Mobile quick-capture: one-tap "log a touchpoint" from home screen (PWA shortcut) — relationships happen away from the desk; current mobile UX requires 4 taps to log a call; PWA shortcuts cut it to 1.
 
-[P3] [TODO] "Missing data" record health score: show per-contact completeness score (email? linkedin? last_contacted? company?) as a bar in contact list — founders can't trust CRM data they can't audit; visible completeness reduces data decay.
+[P3] [DONE] "Missing data" record health score: show per-contact completeness score (email? linkedin? last_contacted? company?) as a bar in contact list — founders can't trust CRM data they can't audit; visible completeness reduces data decay.
 
 ---
 
 ## Research-Driven — 2026-06-13 round 5 (fresh web research)
 
-[P1] [TODO] Follow-up reminders with activity history: mark reminder as done → auto-log as activity — Folk reminders can't be marked done, zero history; every reminder completion should create a timestamped activity entry.
+[P1] [DONE] Follow-up reminders with activity history: mark reminder as done → auto-log as activity — Folk reminders can't be marked done, zero history; dashboard "Called" button sets lastContactedAt and creates a call activity in one click.
 
-[P1] [TODO] AI investor update draft: one-click monthly investor update email from pipeline data + recent activities + top backlog items — founders write these manually every month; high-value recurring AI use case that justifies subscription renewal.
+[P1] [DONE] AI investor update draft: one-click monthly investor update email from pipeline data + recent activities + top backlog items — founders write these manually every month; high-value recurring AI use case that justifies subscription renewal.
 
 [P1] [TODO] Relationship intelligence: "who do I know at [company]?" cross-references contacts by company name on deal and backlog pages — warm intros convert 5× cold; no CRM surfaces this automatically; Folk and Attio both miss it.
 
