@@ -21,6 +21,7 @@ import { DeleteDealButton } from "./delete-button";
 import { DealInlineNotes } from "./inline-notes";
 import { DealFollowUpDraft } from "./deal-follow-up-draft";
 import { DealStageSelector } from "./deal-stage-selector";
+import { DealNextAction } from "./deal-next-action";
 
 const STAGE_LABELS: Record<string, string> = {
   prospect: "Prospect",
@@ -293,18 +294,17 @@ export default async function DealDetailPage({
 
       {/* Details */}
       <div className="rounded-xl border border-border p-5 flex flex-col gap-4 text-sm">
-        {deal.nextAction && (
-          <>
-            <div>
-              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                Next step
-              </p>
-              <p className="font-medium">→ {deal.nextAction}</p>
-            </div>
-            <Separator />
-          </>
-        )}
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+            <TrendingUp className="h-3 w-3" />
+            Next step
+          </p>
+          <DealNextAction
+            dealId={deal.id}
+            initialNextAction={deal.nextAction}
+          />
+        </div>
+        <Separator />
 
         <div className="grid grid-cols-2 gap-4">
           <div>
