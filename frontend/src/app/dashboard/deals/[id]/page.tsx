@@ -14,12 +14,12 @@ import {
   User,
   Users,
   Link2,
-  StickyNote,
   ChevronRight,
 } from "lucide-react";
 import { DealCloseButtons } from "./close-buttons";
 import { DealActivityLog } from "./deal-activity-log";
 import { DeleteDealButton } from "./delete-button";
+import { DealInlineNotes } from "./inline-notes";
 
 const STAGE_LABELS: Record<string, string> = {
   prospect: "Prospect",
@@ -363,18 +363,8 @@ export default async function DealDetailPage({
           </>
         )}
 
-        {deal.notes && (
-          <>
-            <Separator />
-            <div>
-              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-                <StickyNote className="h-3 w-3" />
-                Notes
-              </p>
-              <p className="whitespace-pre-wrap text-sm">{deal.notes}</p>
-            </div>
-          </>
-        )}
+        <Separator />
+        <DealInlineNotes dealId={deal.id} initialNotes={deal.notes} />
       </div>
 
       {/* Close actions */}
