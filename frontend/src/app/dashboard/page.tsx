@@ -138,10 +138,54 @@ export default function DashboardPage() {
   const [actions, setActions] = useState<ActionItems | null>(null);
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
+  const [markingId, setMarkingId] = useState<string | null>(null);
   const [checklistDismissed, setChecklistDismissed] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("orbit_checklist_dismissed") === "1";
   });
+
+  async function markContacted(contactId: string) {
+    setMarkingId(contactId);
+    try {
+      const token = await getToken();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+      const h: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+      const now = new Date().toISOString();
+      await Promise.all([
+        fetch(`${apiUrl}/api/contacts/${contactId}`, {
+          method: "PATCH",
+          headers: h,
+          body: JSON.stringify({ lastContactedAt: now }),
+        }),
+        fetch(`${apiUrl}/api/activities`, {
+          method: "POST",
+          headers: h,
+          body: JSON.stringify({
+            contactId,
+            type: "call",
+            subject: "Quick check-in",
+            occurredAt: now,
+          }),
+        }),
+      ]);
+      // Remove from list optimistically
+      setActions((prev) =>
+        prev
+          ? {
+              ...prev,
+              overdueFollowUps: prev.overdueFollowUps.filter(
+                (c) => c.id !== contactId,
+              ),
+            }
+          : prev,
+      );
+    } finally {
+      setMarkingId(null);
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -512,22 +556,33 @@ export default function DashboardPage() {
           {a.overdueFollowUps.map((c) => {
             const days = daysSince(c.lastContactedAt);
             const overdue = days - (c.cadenceDays ?? 0);
+            const isMarking = markingId === c.id;
             return (
-              <Link
+              <div
                 key={c.id}
-                href={`/dashboard/contacts/${c.id}`}
-                className="flex items-start justify-between rounded-lg border border-border p-2.5 hover:bg-muted/40 transition-colors"
+                className="flex items-center gap-2 rounded-lg border border-border p-2.5"
               >
-                <div className="min-w-0">
+                <Link
+                  href={`/dashboard/contacts/${c.id}`}
+                  className="flex-1 min-w-0 hover:opacity-80"
+                >
                   <p className="text-sm font-medium truncate">{c.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    every {c.cadenceDays}d cadence
+                    every {c.cadenceDays}d ·{" "}
+                    <span className="text-red-600 font-medium">
+                      +{overdue}d late
+                    </span>
                   </p>
-                </div>
-                <span className="shrink-0 ml-2 text-xs font-medium text-red-600">
-                  +{overdue}d late
-                </span>
-              </Link>
+                </Link>
+                <button
+                  onClick={() => markContacted(c.id)}
+                  disabled={isMarking}
+                  title="Mark as contacted"
+                  className="shrink-0 rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-green-500 hover:text-green-700 hover:bg-green-50 transition-colors disabled:opacity-40"
+                >
+                  {isMarking ? "…" : "✓ Called"}
+                </button>
+              </div>
             );
           })}
           {stats && s.overdueFollowUps > a.overdueFollowUps.length && (
