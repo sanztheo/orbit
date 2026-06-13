@@ -88,6 +88,7 @@ interface ActionItems {
   overdueFollowUps: OverdueContact[];
   atRiskDeals: AtRiskDeal[];
   upcomingFollowUps: UpcomingContact[];
+  missedFollowUps: UpcomingContact[];
 }
 
 function daysSince(iso: string | null): number {
@@ -315,6 +316,7 @@ export default function DashboardPage() {
     overdueFollowUps: [],
     atRiskDeals: [],
     upcomingFollowUps: [],
+    missedFollowUps: [],
   };
 
   if (!loading && !offline && s.totalContacts === 0) {
@@ -583,6 +585,63 @@ export default function DashboardPage() {
                         ? "tomorrow"
                         : `in ${daysUntil}d`}
                   </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {a.missedFollowUps.length > 0 && (
+        <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Bell className="h-4 w-4 text-red-600" />
+            <h2 className="text-sm font-semibold text-red-900 dark:text-red-200">
+              Missed Follow-ups
+            </h2>
+            <span className="rounded-full bg-red-100 dark:bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">
+              {a.missedFollowUps.length}
+            </span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {a.missedFollowUps.map((c) => {
+              const daysAgo = Math.floor(
+                (Date.now() - new Date(c.nextFollowUpAt).getTime()) /
+                  86_400_000,
+              );
+              return (
+                <div
+                  key={c.id}
+                  className="flex items-center gap-2 rounded-lg border border-red-200 dark:border-red-800 bg-card px-3 py-2 text-sm"
+                >
+                  <Link
+                    href={`/dashboard/contacts/${c.id}`}
+                    className="flex-1 min-w-0 hover:opacity-80"
+                  >
+                    <p className="font-medium truncate">{c.name}</p>
+                    {c.company && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        {c.company}
+                      </p>
+                    )}
+                  </Link>
+                  <span className="shrink-0 text-xs font-medium text-red-600 dark:text-red-400">
+                    {daysAgo === 0 ? "today" : `${daysAgo}d overdue`}
+                  </span>
+                  <button
+                    onClick={() =>
+                      window.dispatchEvent(
+                        new CustomEvent("orbit:quick-log", {
+                          detail: { id: c.id, name: c.name },
+                        }),
+                      )
+                    }
+                    title="Log activity"
+                    className="shrink-0 flex items-center rounded-md border border-red-200 dark:border-red-700 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                  >
+                    <PenLine className="h-3.5 w-3.5 mr-1" />
+                    Log
+                  </button>
                 </div>
               );
             })}

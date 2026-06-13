@@ -31,6 +31,7 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       overdueFollowUpsList,
       atRiskDealsList,
       upcomingFollowUpsList,
+      missedFollowUpsList,
     ] = await Promise.all([
       db
         .select({
@@ -135,6 +136,25 @@ export const statsRouter = new Hono<WorkspaceEnv>()
         )
         .orderBy(asc(contacts.nextFollowUpAt))
         .limit(5),
+
+      // Missed follow-ups: nextFollowUpAt is in the past
+      db
+        .select({
+          id: contacts.id,
+          name: contacts.name,
+          company: contacts.company,
+          nextFollowUpAt: contacts.nextFollowUpAt,
+        })
+        .from(contacts)
+        .where(
+          and(
+            eq(contacts.workspaceId, workspaceId),
+            isNotNull(contacts.nextFollowUpAt),
+            lt(contacts.nextFollowUpAt, now),
+          ),
+        )
+        .orderBy(desc(contacts.nextFollowUpAt))
+        .limit(5),
     ]);
 
     return c.json({
@@ -143,6 +163,7 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       overdueFollowUps: overdueFollowUpsList,
       atRiskDeals: atRiskDealsList,
       upcomingFollowUps: upcomingFollowUpsList,
+      missedFollowUps: missedFollowUpsList,
     });
   })
   .get("/", async (c) => {
