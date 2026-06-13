@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SprawlCalculator } from "./sprawl-calculator";
 
 const PAINS = [
   {
@@ -168,6 +169,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Tool sprawl calculator */}
+      <SprawlCalculator />
 
       {/* Competitors */}
       <section className="border-t border-border bg-muted/30 px-6 py-20">
