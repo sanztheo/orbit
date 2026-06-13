@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   Bell,
   Briefcase,
+  Calendar,
   CheckCircle2,
   CheckSquare,
   DollarSign,
@@ -73,11 +74,19 @@ interface AtRiskDeal {
   stageChangedAt: string;
 }
 
+interface UpcomingContact {
+  id: string;
+  name: string;
+  company: string | null;
+  nextFollowUpAt: string;
+}
+
 interface ActionItems {
   stallingDeals: StallingDeal[];
   coldContacts: ColdContact[];
   overdueFollowUps: OverdueContact[];
   atRiskDeals: AtRiskDeal[];
+  upcomingFollowUps: UpcomingContact[];
 }
 
 function daysSince(iso: string | null): number {
@@ -304,6 +313,7 @@ export default function DashboardPage() {
     coldContacts: [],
     overdueFollowUps: [],
     atRiskDeals: [],
+    upcomingFollowUps: [],
   };
 
   if (!loading && !offline && s.totalContacts === 0) {
@@ -528,6 +538,56 @@ export default function DashboardPage() {
             </div>
           );
         })()}
+
+      {a.upcomingFollowUps.length > 0 && (
+        <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar className="h-4 w-4 text-emerald-600" />
+            <h2 className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
+              Upcoming Follow-ups
+            </h2>
+            <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+              {a.upcomingFollowUps.length}
+            </span>
+            <span className="text-xs text-emerald-700 dark:text-emerald-300 ml-1">
+              · next 7 days
+            </span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {a.upcomingFollowUps.map((c) => {
+              const daysUntil = Math.ceil(
+                (new Date(c.nextFollowUpAt).getTime() - Date.now()) /
+                  86_400_000,
+              );
+              return (
+                <div
+                  key={c.id}
+                  className="flex items-center gap-2 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-card px-3 py-2 text-sm"
+                >
+                  <Link
+                    href={`/dashboard/contacts/${c.id}`}
+                    className="flex-1 min-w-0 hover:opacity-80"
+                  >
+                    <p className="font-medium truncate">{c.name}</p>
+                    {c.company && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        {c.company}
+                      </p>
+                    )}
+                  </Link>
+                  <span className="shrink-0 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                    {daysUntil === 0
+                      ? "today"
+                      : daysUntil === 1
+                        ? "tomorrow"
+                        : `in ${daysUntil}d`}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {a.atRiskDeals.length > 0 && (
         <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 p-4">

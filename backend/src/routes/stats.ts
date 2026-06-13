@@ -22,12 +22,15 @@ export const statsRouter = new Hono<WorkspaceEnv>()
     const workspaceId = c.get("workspaceId");
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const sevenDaysFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     const [
       stallingDealsList,
       coldContactsList,
       overdueFollowUpsList,
       atRiskDealsList,
+      upcomingFollowUpsList,
     ] = await Promise.all([
       db
         .select({
@@ -112,6 +115,26 @@ export const statsRouter = new Hono<WorkspaceEnv>()
         )
         .orderBy(asc(deals.stageChangedAt))
         .limit(5),
+
+      // Upcoming follow-ups: nextFollowUpAt within next 7 days
+      db
+        .select({
+          id: contacts.id,
+          name: contacts.name,
+          company: contacts.company,
+          nextFollowUpAt: contacts.nextFollowUpAt,
+        })
+        .from(contacts)
+        .where(
+          and(
+            eq(contacts.workspaceId, workspaceId),
+            isNotNull(contacts.nextFollowUpAt),
+            gte(contacts.nextFollowUpAt, now),
+            lt(contacts.nextFollowUpAt, sevenDaysFromNow),
+          ),
+        )
+        .orderBy(asc(contacts.nextFollowUpAt))
+        .limit(5),
     ]);
 
     return c.json({
@@ -119,6 +142,7 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       coldContacts: coldContactsList,
       overdueFollowUps: overdueFollowUpsList,
       atRiskDeals: atRiskDealsList,
+      upcomingFollowUps: upcomingFollowUpsList,
     });
   })
   .get("/", async (c) => {
