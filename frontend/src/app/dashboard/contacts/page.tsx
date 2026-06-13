@@ -163,12 +163,15 @@ export default async function ContactsPage({
               : "No contacts yet — import from CSV or add one manually"}
           </p>
           {!search && !type && (
-            <Link
-              href="/dashboard/contacts/new"
-              className={buttonVariants({ variant: "default" })}
-            >
-              Add contact
-            </Link>
+            <div className="flex gap-2">
+              <Link
+                href="/dashboard/contacts/new"
+                className={buttonVariants({ variant: "default" })}
+              >
+                Add contact
+              </Link>
+              <ImportButton label="Import CSV" />
+            </div>
           )}
         </div>
       ) : (
