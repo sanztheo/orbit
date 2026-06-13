@@ -16,6 +16,12 @@ const STAGES = [
   { value: "negotiation", label: "Negotiation" },
 ];
 
+const PIPELINE_TYPES = [
+  { value: "sales", label: "Sales" },
+  { value: "fundraising", label: "Fundraising" },
+  { value: "partnership", label: "Partnership" },
+];
+
 export default function NewDealPage() {
   const router = useRouter();
   const { getToken } = useAuth();
@@ -32,6 +38,7 @@ export default function NewDealPage() {
     const valueRaw = fd.get("value") as string;
     const body = {
       title: title.trim(),
+      pipelineType: (fd.get("pipelineType") as string) || "sales",
       stage: (fd.get("stage") as string) || "prospect",
       ...(valueRaw ? { value: Number(valueRaw) } : {}),
       notes: (fd.get("notes") as string) || undefined,
@@ -62,6 +69,21 @@ export default function NewDealPage() {
             placeholder="Acme Corp — Series A"
             required
           />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="pipelineType">Pipeline type</Label>
+          <select
+            id="pipelineType"
+            name="pipelineType"
+            defaultValue="sales"
+            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            {PIPELINE_TYPES.map((p) => (
+              <option key={p.value} value={p.value}>
+                {p.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="stage">Stage</Label>
