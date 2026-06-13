@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { PipelineVelocity } from "./pipeline-velocity";
+import { InvestorUpdate } from "./investor-update";
 
 type DealStage =
   | "prospect"
@@ -338,6 +339,7 @@ export default function DealsPage() {
         </p>
       )}
 
+      <InvestorUpdate />
       <PipelineVelocity />
     </div>
   );

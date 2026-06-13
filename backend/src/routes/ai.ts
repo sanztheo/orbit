@@ -505,4 +505,122 @@ Generate today's brief.`,
       .where(eq(workspaces.id, workspaceId));
 
     return c.json({ brief });
+  })
+  .post("/investor-update", aiRateLimit, async (c) => {
+    const workspaceId = c.get("workspaceId");
+    const thisMonthStart = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      1,
+    );
+
+    const [fundraisingDeals, recentWins, topBacklogItems] = await Promise.all([
+      db
+        .select({
+          title: deals.title,
+          stage: deals.stage,
+          value: deals.value,
+          contactId: deals.contactId,
+          stageChangedAt: deals.stageChangedAt,
+        })
+        .from(deals)
+        .where(
+          and(
+            eq(deals.workspaceId, workspaceId),
+            eq(deals.pipelineType, "fundraising"),
+            ne(deals.stage, "closed_won"),
+            ne(deals.stage, "closed_lost"),
+          ),
+        )
+        .orderBy(asc(deals.stageChangedAt))
+        .limit(10),
+
+      db
+        .select({ title: deals.title, value: deals.value })
+        .from(deals)
+        .where(
+          and(
+            eq(deals.workspaceId, workspaceId),
+            eq(deals.stage, "closed_won"),
+            gte(deals.stageChangedAt, thisMonthStart),
+          ),
+        )
+        .limit(5),
+
+      db
+        .select({ title: tasks.title, priority: tasks.priority })
+        .from(tasks)
+        .where(
+          and(
+            eq(tasks.workspaceId, workspaceId),
+            ne(tasks.status, "done"),
+            ne(tasks.status, "cancelled"),
+            or(eq(tasks.priority, "p0"), eq(tasks.priority, "p1")),
+          ),
+        )
+        .limit(8),
+    ]);
+
+    const pipelineLine = fundraisingDeals.length
+      ? fundraisingDeals
+          .map(
+            (d) =>
+              `${d.title} — ${d.stage}${d.value ? ` ($${d.value.toLocaleString()})` : ""}`,
+          )
+          .join("\n")
+      : "No active fundraising deals.";
+
+    const winsLine = recentWins.length
+      ? recentWins
+          .map(
+            (d) =>
+              `${d.title}${d.value ? ` ($${d.value.toLocaleString()})` : ""}`,
+          )
+          .join(", ")
+      : "None this month.";
+
+    const backlogLine = topBacklogItems.length
+      ? topBacklogItems
+          .map((t) => `[${t.priority.toUpperCase()}] ${t.title}`)
+          .join("\n")
+      : "No active backlog items.";
+
+    const message = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 800,
+      system: `You are an AI that drafts concise investor update emails for founders.
+The update should be authentic, brief (under 200 words), and cover:
+1. Key progress / wins this month
+2. Current fundraising pipeline status
+3. What you're building next (top priorities)
+4. Any specific ask or next steps for investors
+
+Format as a plain email body — no subject line, no signature. Use simple prose, not bullet lists.
+Sound like a confident founder talking to their investors, not a consultant writing a report.`,
+      messages: [
+        {
+          role: "user",
+          content: `Company context:
+Recent wins this month: ${winsLine}
+
+Active fundraising pipeline:
+${pipelineLine}
+
+Top product priorities (what we're building):
+${backlogLine}
+
+Draft a concise investor update email.`,
+        },
+      ],
+    });
+
+    const draft =
+      message.content[0].type === "text" ? message.content[0].text : "";
+
+    await db
+      .update(workspaces)
+      .set({ aiActionsUsed: sql`${workspaces.aiActionsUsed} + 1` })
+      .where(eq(workspaces.id, workspaceId));
+
+    return c.json({ draft });
   });

@@ -102,7 +102,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P0] [TODO] Build backlog item detail with: description, linked contacts (who asked), priority score (frequency × deal size), and status — Priority score auto-calculated from how many contacts asked + their deal value. Surfaces "what to build next" from CRM data automatically.
 
-[P1] [TODO] Build "Feature Request Report" view: backlog items ranked by number of contacts requesting, with deal value sum per item — Founders need to answer "what do customers actually want most?" This report generates that answer from CRM data without manual counting.
+[P1] [DONE] Build "Feature Request Report" view: backlog items ranked by number of contacts requesting, with deal value sum per item — Founders need to answer "what do customers actually want most?" This report generates that answer from CRM data without manual counting.
 
 ---
 
@@ -152,7 +152,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P0] [DONE] Build founder dashboard: stalling deals (30+ days no move), overdue follow-ups (no activity in N days per contact), top feature requests, contacts not touched in 30 days — The "single screen that shows your entire business" that research says does not exist. This is the product promise on the landing page.
 
-[P1] [TODO] Build deal pipeline velocity metrics: average days per stage, conversion rate stage-to-stage — Founders want to know "where do deals die?" without opening Salesforce. Simple stage analytics with no configuration.
+[P1] [DONE] Build deal pipeline velocity metrics: average days per stage, conversion rate stage-to-stage — Founders want to know "where do deals die?" without opening Salesforce. Simple stage analytics with no configuration.
 
 [P2] [TODO] Build weekly digest email (Resend): stalling deals, follow-ups due this week, AI-generated suggested next action per deal — Passive re-engagement with the product. Founders who don't log in daily still get value. Reduces churn.
 
@@ -212,7 +212,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P1] [TODO] Implement optimistic UI updates for deal drag-and-drop (update UI immediately, sync to server in background, rollback on error) — Laggy Kanban boards kill daily use. Optimistic updates make the tool feel fast even on slow connections.
 
-[P1] [TODO] Build keyboard shortcuts for common actions: N (new contact), D (new deal), B (new backlog item), / (search) — Power users discover keyboard shortcuts and become the loudest advocates. Table stakes for a "founder OS" positioning.
+[P1] [DONE] Build keyboard shortcuts for common actions: N (new contact), D (new deal), B (new backlog item), / (search) — Power users discover keyboard shortcuts and become the loudest advocates. Table stakes for a "founder OS" positioning.
 
 [P2] [DONE] Implement dark mode with system preference detection — Standard expectation for developer-adjacent founders. No design argument needed; just ship it.
 
@@ -256,7 +256,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P1] [DONE] Pre-meeting context brief: one-card auto-summary before a call (last touchpoint, open commitments, deal status, relevant backlog asks) triggered from contact detail — founders blank on context mid-call; this is the first thing they'd google instead of using CRM.
 
-[P1] [TODO] Contact data staleness alert: flag contacts with no email update + no activity in 180d with a "verify or archive" nudge — contact data decays 25–35%/year; stale data turns CRM from asset to liability without visible signal.
+[P1] [DONE] Contact data staleness alert: flag contacts with no email update + no activity in 180d with a "verify or archive" nudge — contact data decays 25–35%/year; stale data turns CRM from asset to liability without visible signal.
 
 [P2] [TODO] Full-text search over contact notes (not just name/email/company) — founders search by what someone said, not who they are; "who mentioned pricing was a blocker" requires notes-level search.
 
