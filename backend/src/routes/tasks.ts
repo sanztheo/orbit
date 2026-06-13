@@ -29,9 +29,11 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
   .get("/", async (c) => {
     const workspaceId = c.get("workspaceId");
     const contactId = c.req.query("contactId");
+    const dealId = c.req.query("dealId");
     const overdue = c.req.query("overdue") === "1";
     const filters = [eq(tasks.workspaceId, workspaceId)];
     if (contactId) filters.push(eq(tasks.contactId, contactId));
+    if (dealId) filters.push(eq(tasks.dealId, dealId));
     if (overdue) {
       filters.push(lte(tasks.dueAt, new Date()));
       filters.push(ne(tasks.status, "done"));

@@ -22,6 +22,7 @@ import { DealInlineNotes } from "./inline-notes";
 import { DealFollowUpDraft } from "./deal-follow-up-draft";
 import { DealStageSelector } from "./deal-stage-selector";
 import { DealNextAction } from "./deal-next-action";
+import { DealAddTask } from "./deal-add-task";
 
 const STAGE_LABELS: Record<string, string> = {
   prospect: "Prospect",
@@ -133,10 +134,17 @@ export default async function DealDetailPage({
     }
   }
 
-  const actsRes = await fetch(`${apiUrl}/api/activities?dealId=${id}`, {
-    headers,
-    cache: "no-store",
-  });
+  const [actsRes, dealTasksRes] = await Promise.all([
+    fetch(`${apiUrl}/api/activities?dealId=${id}`, {
+      headers,
+      cache: "no-store",
+    }),
+    fetch(`${apiUrl}/api/tasks?dealId=${id}`, {
+      headers,
+      cache: "no-store",
+    }),
+  ]);
+
   const initialActivities: {
     id: string;
     contactName: string | null;
@@ -145,6 +153,14 @@ export default async function DealDetailPage({
     body: string | null;
     occurredAt: string;
   }[] = actsRes.ok ? (await actsRes.json()).data : [];
+
+  const initialDealTasks: {
+    id: string;
+    title: string;
+    priority: "p0" | "p1" | "p2" | "p3";
+    status: string;
+    dueAt: string | null;
+  }[] = dealTasksRes.ok ? (await dealTasksRes.json()).data : [];
 
   const stageAge = daysSince(deal.stageChangedAt);
   const isStale = stageAge !== null && stageAge >= 30;
@@ -394,6 +410,11 @@ export default async function DealDetailPage({
         contactId={deal.contactId}
         initialActivities={initialActivities}
       />
+
+      {/* Tasks linked to this deal */}
+      <div className="rounded-xl border border-border p-5">
+        <DealAddTask dealId={deal.id} initialTasks={initialDealTasks} />
+      </div>
 
       {contact && (
         <Link
