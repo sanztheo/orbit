@@ -12,6 +12,7 @@ import {
   Clock,
   TrendingUp,
   User,
+  Users,
   Link2,
   StickyNote,
   ChevronRight,
@@ -115,6 +116,18 @@ export default async function DealDetailPage({
     if (cRes.ok) {
       const cJson: { data: Contact } = await cRes.json();
       contact = cJson.data;
+    }
+  }
+
+  let companyContacts: Contact[] = [];
+  if (contact?.company) {
+    const ccRes = await fetch(
+      `${apiUrl}/api/contacts?company=${encodeURIComponent(contact.company)}&excludeId=${contact.id}`,
+      { headers, cache: "no-store" },
+    );
+    if (ccRes.ok) {
+      const ccJson: { data: Contact[] } = await ccRes.json();
+      companyContacts = ccJson.data.slice(0, 5);
     }
   }
 
@@ -225,6 +238,30 @@ export default async function DealDetailPage({
           </div>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </Link>
+      )}
+
+      {/* Relationship intelligence */}
+      {companyContacts.length > 0 && contact?.company && (
+        <div className="rounded-xl border border-border p-4 flex flex-col gap-2">
+          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5" />
+            Others at {contact.company}
+          </p>
+          <div className="flex flex-col gap-1">
+            {companyContacts.map((c) => (
+              <Link
+                key={c.id}
+                href={`/dashboard/contacts/${c.id}`}
+                className="flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors text-sm"
+              >
+                <span className="font-medium">{c.name}</span>
+                <span className="text-xs text-muted-foreground capitalize">
+                  {c.type}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Details */}

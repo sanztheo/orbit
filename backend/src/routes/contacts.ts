@@ -1,5 +1,16 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, asc, desc, eq, ilike, isNull, lt, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  ilike,
+  isNull,
+  lt,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db, contacts } from "../db/index.js";
@@ -45,6 +56,8 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
 
     const stale = c.req.query("stale") === "1";
     const sort = c.req.query("sort") ?? "name";
+    const company = c.req.query("company");
+    const excludeId = c.req.query("excludeId");
     const oneEightyDaysAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
 
     const searchFilter = search
@@ -57,6 +70,10 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       : undefined;
 
     const typeFilter = type ? eq(contacts.type, type) : undefined;
+    const companyFilter = company
+      ? ilike(contacts.company, company)
+      : undefined;
+    const excludeFilter = excludeId ? ne(contacts.id, excludeId) : undefined;
 
     const staleFilter = stale
       ? or(
@@ -87,6 +104,8 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
           searchFilter,
           typeFilter,
           staleFilter,
+          companyFilter,
+          excludeFilter,
         ),
       )
       .orderBy(...orderBy);
