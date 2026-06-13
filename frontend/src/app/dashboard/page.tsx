@@ -10,9 +10,13 @@ import {
   CheckCircle2,
   CheckSquare,
   DollarSign,
+  Link2,
+  Mail,
   Phone,
+  StickyNote,
   Trophy,
   Users,
+  Video,
   XCircle,
 } from "lucide-react";
 import {
@@ -166,6 +170,16 @@ export default function DashboardPage() {
     hasCadence: boolean;
     hasBacklogItem: boolean;
   } | null>(null);
+  const [recentActivities, setRecentActivities] = useState<
+    {
+      id: string;
+      contactId: string | null;
+      contactName: string | null;
+      type: string;
+      subject: string | null;
+      occurredAt: string;
+    }[]
+  >([]);
 
   async function markContacted(contactId: string) {
     setMarkingId(contactId);
@@ -248,15 +262,21 @@ export default function DashboardPage() {
         ? { Authorization: `Bearer ${token}` }
         : {};
       try {
-        const [statsRes, actionsRes, onboardingRes] = await Promise.all([
-          fetch(`${apiUrl}/api/stats`, { headers }),
-          fetch(`${apiUrl}/api/stats/action-items`, { headers }),
-          fetch(`${apiUrl}/api/stats/onboarding`, { headers }),
-        ]);
+        const [statsRes, actionsRes, onboardingRes, activitiesRes] =
+          await Promise.all([
+            fetch(`${apiUrl}/api/stats`, { headers }),
+            fetch(`${apiUrl}/api/stats/action-items`, { headers }),
+            fetch(`${apiUrl}/api/stats/onboarding`, { headers }),
+            fetch(`${apiUrl}/api/activities`, { headers }),
+          ]);
         if (statsRes.ok) setStats(await statsRes.json());
         else setOffline(true);
         if (actionsRes.ok) setActions(await actionsRes.json());
         if (onboardingRes.ok) setOnboarding(await onboardingRes.json());
+        if (activitiesRes.ok) {
+          const json = await activitiesRes.json();
+          setRecentActivities((json.data ?? []).slice(0, 8));
+        }
       } catch {
         setOffline(true);
       } finally {
@@ -694,6 +714,62 @@ export default function DashboardPage() {
           )}
         </ActionSection>
       </div>
+
+      {recentActivities.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h2 className="text-sm font-semibold">Recent Activity</h2>
+          <div className="flex flex-col gap-1">
+            {recentActivities.map((act) => {
+              const ICONS: Record<string, React.ReactNode> = {
+                email: <Mail className="h-3.5 w-3.5" />,
+                call: <Phone className="h-3.5 w-3.5" />,
+                meeting: <Video className="h-3.5 w-3.5" />,
+                note: <StickyNote className="h-3.5 w-3.5" />,
+                linkedin: <Link2 className="h-3.5 w-3.5" />,
+              };
+              const daysAgo = Math.floor(
+                (Date.now() - new Date(act.occurredAt).getTime()) / 86_400_000,
+              );
+              const timeLabel =
+                daysAgo === 0
+                  ? "today"
+                  : daysAgo === 1
+                    ? "yesterday"
+                    : `${daysAgo}d ago`;
+              return (
+                <div
+                  key={act.id}
+                  className="flex items-center gap-2 text-sm py-1"
+                >
+                  <span className="shrink-0 text-muted-foreground">
+                    {ICONS[act.type] ?? <StickyNote className="h-3.5 w-3.5" />}
+                  </span>
+                  {act.contactId ? (
+                    <Link
+                      href={`/dashboard/contacts/${act.contactId}`}
+                      className="font-medium text-xs hover:underline shrink-0"
+                    >
+                      {act.contactName ?? "Contact"}
+                    </Link>
+                  ) : (
+                    <span className="font-medium text-xs text-muted-foreground shrink-0">
+                      {act.contactName ?? "Contact"}
+                    </span>
+                  )}
+                  {act.subject && (
+                    <span className="text-xs text-muted-foreground truncate">
+                      · {act.subject}
+                    </span>
+                  )}
+                  <span className="ml-auto shrink-0 text-xs text-muted-foreground">
+                    {timeLabel}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2 border-t border-border pt-4">
         <Link
