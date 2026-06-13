@@ -10,6 +10,7 @@ import { CadencePicker } from "./cadence-picker";
 import { ActivityLog } from "./activity-log";
 import { ColdStart } from "./cold-start";
 import { DeleteContactButton } from "./delete-button";
+import { FollowUpDatePicker } from "./follow-up-date-picker";
 import {
   ArrowLeft,
   Pencil,
@@ -237,7 +238,10 @@ export default async function ContactDetailPage({
             <Calendar className="h-3 w-3" />
             Next follow-up
           </p>
-          <p>{fmt(contact.nextFollowUpAt)}</p>
+          <FollowUpDatePicker
+            contactId={contact.id}
+            initialDate={contact.nextFollowUpAt}
+          />
         </div>
         {contact.linkedinUrl && (
           <div>
