@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,9 +14,33 @@ import {
   Plus,
   Loader2,
   X,
+  Mic,
+  MicOff,
+  Square,
 } from "lucide-react";
 
 type ActivityType = "email" | "call" | "meeting" | "note" | "linkedin";
+
+interface WebSpeechRec {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult:
+    | ((e: { results: ArrayLike<[{ transcript: string }]> }) => void)
+    | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+}
+type SpeechWin = typeof window & {
+  SpeechRecognition?: new () => WebSpeechRec;
+  webkitSpeechRecognition?: new () => WebSpeechRec;
+};
+function getSR(): (new () => WebSpeechRec) | undefined {
+  const w = window as SpeechWin;
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition;
+}
 
 interface Activity {
   id: string;
@@ -80,6 +104,14 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
   const [activities, setActivities] = useState<Activity[]>(initialActivities);
   const [open, setOpen] = useState(false);
   const [pasteOpen, setPasteOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const recognitionRef = useRef<WebSpeechRec | null>(null);
+  const [voiceSupported] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return !!getSR();
+  });
   const [type, setType] = useState<ActivityType>("call");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -87,6 +119,51 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
   const [dmText, setDmText] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function startRecording() {
+    const SR = getSR();
+    if (!SR) return;
+    const rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = "en-US";
+    rec.onresult = (e) => {
+      let t = "";
+      for (let i = 0; i < e.results.length; i++)
+        t += e.results[i][0].transcript;
+      setTranscript(t);
+    };
+    rec.onerror = () => setRecording(false);
+    rec.onend = () => setRecording(false);
+    recognitionRef.current = rec;
+    rec.start();
+    setRecording(true);
+  }
+
+  function stopRecording() {
+    recognitionRef.current?.stop();
+    setRecording(false);
+  }
+
+  async function submitVoice() {
+    if (!transcript.trim()) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const activity = await postActivity({
+        type: "note",
+        subject: "🎤 Voice note",
+        body: transcript.trim(),
+      });
+      setActivities((prev) => [activity, ...prev]);
+      setTranscript("");
+      setVoiceOpen(false);
+    } catch {
+      setError("Failed to log voice note");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function postActivity(payload: {
     type: ActivityType;
@@ -156,12 +233,28 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-sm">Activity log</h2>
         <div className="flex gap-2">
+          {voiceSupported && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setVoiceOpen((v) => !v);
+                setOpen(false);
+                setPasteOpen(false);
+                setError(null);
+              }}
+            >
+              <Mic className="h-4 w-4 mr-1" />
+              Voice
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
               setPasteOpen((v) => !v);
               setOpen(false);
+              setVoiceOpen(false);
               setError(null);
             }}
           >
@@ -173,6 +266,7 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
             onClick={() => {
               setOpen((v) => !v);
               setPasteOpen(false);
+              setVoiceOpen(false);
               setError(null);
             }}
           >
@@ -238,6 +332,82 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
             </Button>
           </div>
         </form>
+      )}
+
+      {voiceOpen && (
+        <div className="flex flex-col gap-2 border border-border rounded-lg p-3">
+          <p className="text-xs text-muted-foreground">
+            Tap record, speak your note, stop when done — it logs instantly.
+          </p>
+          <div className="flex items-center gap-3">
+            {recording ? (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                onClick={stopRecording}
+              >
+                <Square className="h-4 w-4 mr-1.5" />
+                Stop
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                size="sm"
+                onClick={startRecording}
+                disabled={saving}
+              >
+                <Mic className="h-4 w-4 mr-1.5" />
+                {transcript ? "Re-record" : "Record"}
+              </Button>
+            )}
+            {recording && (
+              <span className="flex items-center gap-1.5 text-xs text-red-600 font-medium">
+                <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                Recording…
+              </span>
+            )}
+          </div>
+          {transcript && (
+            <div className="rounded-md bg-muted/40 px-3 py-2 text-sm text-foreground">
+              {transcript}
+            </div>
+          )}
+          {error && <p className="text-xs text-red-600">{error}</p>}
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              size="sm"
+              disabled={!transcript.trim() || saving || recording}
+              onClick={submitVoice}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Saving…
+                </>
+              ) : (
+                <>
+                  <MicOff className="h-4 w-4 mr-1.5" />
+                  Log note
+                </>
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                stopRecording();
+                setVoiceOpen(false);
+                setTranscript("");
+              }}
+            >
+              <X className="h-4 w-4 mr-1" />
+              Cancel
+            </Button>
+          </div>
+        </div>
       )}
 
       {open && (

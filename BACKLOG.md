@@ -286,7 +286,21 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ---
 
-## Research-Driven — New Pain Points (2026-06-13 round 4)
+## Research-Driven — 2026-06-13 round 5 (fresh web research)
+
+[P1] [TODO] Follow-up reminders with activity history: mark reminder as done → auto-log as activity — Folk reminders can't be marked done, zero history; every reminder completion should create a timestamped activity entry.
+
+[P1] [TODO] AI investor update draft: one-click monthly investor update email from pipeline data + recent activities + top backlog items — founders write these manually every month; high-value recurring AI use case that justifies subscription renewal.
+
+[P1] [TODO] Relationship intelligence: "who do I know at [company]?" cross-references contacts by company name on deal and backlog pages — warm intros convert 5× cold; no CRM surfaces this automatically; Folk and Attio both miss it.
+
+[P2] [TODO] Transparent AI quota display: show remaining AI actions this month inline on every AI button tooltip — Attio's automation credit caps "catch teams off guard mid-month"; visible remaining quota prevents surprise 429s.
+
+[P2] [TODO] Contact completeness nudge: when adding a new contact, show a completeness bar (email? linkedin? company? cadence?) with one-tap "fill in later" — Folk and HubSpot get abandoned because data quality decays silently; visible completeness creates habit of better data.
+
+[P2] [TODO] Stage-change forced next-action: when moving a deal to a new stage, show a single-line input "What's the next step?" before saving — the most common pipeline rot cause is a stage move with no committed next action; forcing it at move time prevents stall.
+
+## Research-Driven — 2026-06-13 round 4 (previous)
 
 [P1] [TODO] Voice note to activity: record a 30-second voice memo from contact page, transcribe via Whisper/Claude, auto-log as activity — data entry is the core CRM hatred; 6+ hrs/week lost to manual logging; voice capture eliminates it without typing.
 
