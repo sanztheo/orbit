@@ -45,7 +45,7 @@ export default async function DashboardLayout({
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
         <header className="flex h-14 items-center justify-end border-b bg-card px-6">
-          <UserButton afterSignOutUrl="/" />
+          <UserButton />
         </header>
 
         {/* Page content */}

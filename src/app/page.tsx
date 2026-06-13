@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { Users, Bell, BarChart3, Check } from "lucide-react";
 
-export default function Home() {
+export default async function Home() {
+  const { userId } = await auth();
   return (
     <div className="min-h-screen bg-white text-zinc-900">
       {/* Nav */}
@@ -16,28 +17,29 @@ export default function Home() {
             >
               Pricing
             </Link>
-            <SignedIn>
+            {userId ? (
               <Link
                 href="/dashboard"
                 className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
               >
                 Dashboard
               </Link>
-            </SignedIn>
-            <SignedOut>
-              <Link
-                href="/sign-in"
-                className="text-sm text-zinc-500 hover:text-zinc-900"
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/sign-up"
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
-              >
-                Get Started
-              </Link>
-            </SignedOut>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  className="text-sm text-zinc-500 hover:text-zinc-900"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/sign-up"
+                  className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700"
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>

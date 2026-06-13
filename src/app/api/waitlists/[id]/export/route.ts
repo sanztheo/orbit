@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import db from "@/db";
+import { db } from "@/db";
 import { waitlists, subscribers } from "@/db/schema";
 import { eq, and, asc } from "drizzle-orm";
 

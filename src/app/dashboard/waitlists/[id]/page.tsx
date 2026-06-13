@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Users, Globe, Copy, TrendingUp, Download } from "lucide-react";
 
 type Props = {
@@ -194,12 +194,14 @@ export default async function WaitlistDetailPage({ params }: Props) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">Subscribers</h2>
-          <Button variant="outline" size="sm" asChild>
-            <a href={`/api/waitlists/${id}/export`} download>
-              <Download className="h-4 w-4 mr-2" />
-              Export CSV
-            </a>
-          </Button>
+          <a
+            href={`/api/waitlists/${id}/export`}
+            download
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </a>
         </div>
 
         {waitlistSubscribers.length === 0 ? (

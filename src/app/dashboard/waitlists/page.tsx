@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { waitlists, subscribers } from "@/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -51,12 +51,10 @@ export default async function WaitlistsPage() {
             Manage your waitlist campaigns.
           </p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/waitlists/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Waitlist
-          </Link>
-        </Button>
+        <Link href="/dashboard/waitlists/new" className={buttonVariants()}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Waitlist
+        </Link>
       </div>
 
       {rows.length === 0 ? (
@@ -66,12 +64,10 @@ export default async function WaitlistsPage() {
           <p className="text-sm text-muted-foreground mt-1 mb-6">
             Create your first waitlist to start collecting subscribers.
           </p>
-          <Button asChild>
-            <Link href="/dashboard/waitlists/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Waitlist
-            </Link>
-          </Button>
+          <Link href="/dashboard/waitlists/new" className={buttonVariants()}>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Waitlist
+          </Link>
         </div>
       ) : (
         <div className="rounded-xl border">
