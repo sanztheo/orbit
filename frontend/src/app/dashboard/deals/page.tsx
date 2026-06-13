@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
@@ -90,8 +90,10 @@ export default function DealsPage() {
   const { getToken } = useAuth();
   const [allDeals, setAllDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [movingId, setMovingId] = useState<string | null>(null);
   const [activePipeline, setActivePipeline] = useState<PipelineType>("sales");
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverStage, setDragOverStage] = useState<DealStage | null>(null);
+  const dragDealRef = useRef<Deal | null>(null);
 
   async function fetchDeals() {
     const token = await getToken();
@@ -108,25 +110,68 @@ export default function DealsPage() {
     fetchDeals();
   }, []);
 
-  async function moveStage(deal: Deal, direction: 1 | -1) {
-    const idx = STAGE_ORDER.indexOf(deal.stage);
-    const next = STAGE_ORDER[idx + direction];
-    if (!next) return;
+  async function moveDealToStage(deal: Deal, newStage: DealStage) {
+    if (deal.stage === newStage) return;
     const token = await getToken();
     if (!token) return;
-    setMovingId(deal.id);
+    // Optimistic update
+    setAllDeals((prev) =>
+      prev.map((d) =>
+        d.id === deal.id
+          ? { ...d, stage: newStage, stageChangedAt: new Date().toISOString() }
+          : d,
+      ),
+    );
     try {
-      await apiClient.patch(`/api/deals/${deal.id}`, { stage: next }, token);
+      await apiClient.patch(
+        `/api/deals/${deal.id}`,
+        { stage: newStage },
+        token,
+      );
+    } catch {
+      // Rollback on error
       setAllDeals((prev) =>
         prev.map((d) =>
           d.id === deal.id
-            ? { ...d, stage: next, stageChangedAt: new Date().toISOString() }
+            ? { ...d, stage: deal.stage, stageChangedAt: deal.stageChangedAt }
             : d,
         ),
       );
-    } finally {
-      setMovingId(null);
     }
+  }
+
+  function handleDragStart(e: React.DragEvent, deal: Deal) {
+    dragDealRef.current = deal;
+    setDraggingId(deal.id);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", deal.id);
+  }
+
+  function handleDragEnd() {
+    setDraggingId(null);
+    setDragOverStage(null);
+    dragDealRef.current = null;
+  }
+
+  function handleDragOver(e: React.DragEvent, stage: DealStage) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverStage(stage);
+  }
+
+  function handleDragLeave() {
+    setDragOverStage(null);
+  }
+
+  async function handleDrop(e: React.DragEvent, stage: DealStage) {
+    e.preventDefault();
+    setDragOverStage(null);
+    const deal = dragDealRef.current;
+    if (deal) {
+      await moveDealToStage(deal, stage);
+    }
+    setDraggingId(null);
+    dragDealRef.current = null;
   }
 
   const deals = allDeals.filter((d) => d.pipelineType === activePipeline);
@@ -144,7 +189,7 @@ export default function DealsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-6">
+    <div className="flex flex-col gap-4 p-4 md:p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Deal Pipeline</h1>
         <Link
@@ -196,7 +241,18 @@ export default function DealsPage() {
       ) : (
         <div className="flex gap-3 overflow-x-auto pb-4">
           {STAGE_ORDER.map((key) => (
-            <div key={key} className="flex w-56 shrink-0 flex-col gap-2">
+            <div
+              key={key}
+              className={cn(
+                "flex w-56 shrink-0 flex-col gap-2 rounded-lg p-1 transition-colors",
+                dragOverStage === key && draggingId
+                  ? "bg-primary/5 ring-2 ring-primary/20"
+                  : "",
+              )}
+              onDragOver={(e) => handleDragOver(e, key)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, key)}
+            >
               <div className="flex items-center justify-between px-1">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   {labels[key]}
@@ -206,18 +262,34 @@ export default function DealsPage() {
                 </Badge>
               </div>
 
+              {/* Drop zone hint when empty column is targeted */}
               {byStage[key].length === 0 ? (
-                <div className="rounded-lg border border-dashed border-border py-6 text-center text-xs text-muted-foreground">
-                  Empty
+                <div
+                  className={cn(
+                    "rounded-lg border border-dashed py-6 text-center text-xs text-muted-foreground transition-colors",
+                    dragOverStage === key && draggingId
+                      ? "border-primary/40 bg-primary/5"
+                      : "border-border",
+                  )}
+                >
+                  {dragOverStage === key && draggingId ? "Drop here" : "Empty"}
                 </div>
               ) : (
                 byStage[key].map((deal) => {
                   const staleDays = daysSince(deal.stageChangedAt);
                   const isStale = staleDays >= 30;
+                  const isDragging = draggingId === deal.id;
                   return (
                     <div
                       key={deal.id}
-                      className={`rounded-lg border p-3 shadow-xs ${stageColor(key)}`}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, deal)}
+                      onDragEnd={handleDragEnd}
+                      className={cn(
+                        "rounded-lg border p-3 shadow-xs cursor-grab active:cursor-grabbing transition-all select-none",
+                        stageColor(key),
+                        isDragging ? "opacity-40 scale-95" : "hover:shadow-md",
+                      )}
                     >
                       <p className="text-sm font-medium leading-snug">
                         {deal.title}
@@ -228,32 +300,17 @@ export default function DealsPage() {
                         </p>
                       )}
                       <p
-                        className={`mt-1 text-xs ${isStale ? "font-medium text-red-600" : "text-muted-foreground"}`}
+                        className={cn(
+                          "mt-1 text-xs",
+                          isStale
+                            ? "font-medium text-red-600"
+                            : "text-muted-foreground",
+                        )}
                       >
                         {staleDays === 0
                           ? "Moved today"
                           : `${staleDays}d in stage${isStale ? " ⚠" : ""}`}
                       </p>
-                      <div className="mt-2 flex gap-1">
-                        {STAGE_ORDER.indexOf(key) > 0 && (
-                          <button
-                            onClick={() => moveStage(deal, -1)}
-                            disabled={movingId === deal.id}
-                            className="rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"
-                          >
-                            ←
-                          </button>
-                        )}
-                        {STAGE_ORDER.indexOf(key) < STAGE_ORDER.length - 1 && (
-                          <button
-                            onClick={() => moveStage(deal, 1)}
-                            disabled={movingId === deal.id}
-                            className="rounded px-1.5 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"
-                          >
-                            →
-                          </button>
-                        )}
-                      </div>
                     </div>
                   );
                 })
@@ -261,6 +318,12 @@ export default function DealsPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {draggingId && (
+        <p className="text-xs text-center text-muted-foreground animate-pulse">
+          Drop onto a column to move
+        </p>
       )}
     </div>
   );

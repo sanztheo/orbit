@@ -1,11 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -52,38 +54,18 @@ function daysSince(iso: string | null): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
 }
 
-async function fetchAll(token: string | null): Promise<{
-  stats: Stats | null;
-  actions: ActionItems | null;
-}> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
-  const headers: HeadersInit = token
-    ? { Authorization: `Bearer ${token}` }
-    : {};
-  try {
-    const [statsRes, actionsRes] = await Promise.all([
-      fetch(`${apiUrl}/api/stats`, { headers, cache: "no-store" }),
-      fetch(`${apiUrl}/api/stats/action-items`, { headers, cache: "no-store" }),
-    ]);
-    return {
-      stats: statsRes.ok ? await statsRes.json() : null,
-      actions: actionsRes.ok ? await actionsRes.json() : null,
-    };
-  } catch {
-    return { stats: null, actions: null };
-  }
-}
-
 function StatCard({
   title,
   value,
   urgent,
   href,
+  loading,
 }: {
   title: string;
   value: number;
   urgent?: boolean;
   href: string;
+  loading?: boolean;
 }) {
   return (
     <Link href={href} className="block">
@@ -95,9 +77,9 @@ function StatCard({
         </CardHeader>
         <CardContent className="pb-4 px-4">
           <p
-            className={`text-3xl font-bold ${urgent && value > 0 ? "text-red-600" : ""}`}
+            className={`text-3xl font-bold ${loading ? "text-muted-foreground/40" : ""} ${urgent && value > 0 && !loading ? "text-red-600" : ""}`}
           >
-            {value}
+            {loading ? "…" : value}
           </p>
         </CardContent>
       </Card>
@@ -135,10 +117,36 @@ function ActionSection({
   );
 }
 
-export default async function DashboardPage() {
-  const { getToken } = await auth();
-  const token = await getToken();
-  const { stats, actions } = await fetchAll(token);
+export default function DashboardPage() {
+  const { getToken } = useAuth();
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [actions, setActions] = useState<ActionItems | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [offline, setOffline] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const token = await getToken();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+      const headers: HeadersInit = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+      try {
+        const [statsRes, actionsRes] = await Promise.all([
+          fetch(`${apiUrl}/api/stats`, { headers }),
+          fetch(`${apiUrl}/api/stats/action-items`, { headers }),
+        ]);
+        if (statsRes.ok) setStats(await statsRes.json());
+        else setOffline(true);
+        if (actionsRes.ok) setActions(await actionsRes.json());
+      } catch {
+        setOffline(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [getToken]);
 
   const s = stats ?? {
     stallingDeals: 0,
@@ -165,46 +173,49 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
           title="Stalling Deals"
           value={s.stallingDeals}
           urgent
           href="/dashboard/deals"
+          loading={loading}
         />
         <StatCard
           title="Cold Contacts"
           value={s.coldContacts}
           urgent
           href="/dashboard/contacts"
+          loading={loading}
         />
         <StatCard
           title="Overdue Follow-ups"
           value={s.overdueFollowUps}
           urgent
           href="/dashboard/contacts"
+          loading={loading}
         />
         <StatCard
           title="Open Tasks"
           value={s.openTasks}
           href="/dashboard/tasks"
+          loading={loading}
         />
         <StatCard
           title="Won This Month"
           value={s.wonThisMonth}
           href="/dashboard/deals"
+          loading={loading}
         />
         <StatCard
           title="Total Contacts"
           value={s.totalContacts}
           href="/dashboard/contacts"
+          loading={loading}
         />
       </div>
 
-      {/* Action lists */}
       <div className="grid gap-6 md:grid-cols-3">
-        {/* Stalling deals */}
         <ActionSection
           title="Stalling Deals"
           count={a.stallingDeals.length}
@@ -231,7 +242,7 @@ export default async function DashboardPage() {
               </Link>
             );
           })}
-          {s.stallingDeals > a.stallingDeals.length && (
+          {stats && s.stallingDeals > a.stallingDeals.length && (
             <Link
               href="/dashboard/deals"
               className="text-xs text-muted-foreground hover:text-foreground"
@@ -241,7 +252,6 @@ export default async function DashboardPage() {
           )}
         </ActionSection>
 
-        {/* Cold contacts */}
         <ActionSection
           title="Cold Contacts"
           count={a.coldContacts.length}
@@ -269,7 +279,7 @@ export default async function DashboardPage() {
               </Link>
             );
           })}
-          {s.coldContacts > a.coldContacts.length && (
+          {stats && s.coldContacts > a.coldContacts.length && (
             <Link
               href="/dashboard/contacts"
               className="text-xs text-muted-foreground hover:text-foreground"
@@ -279,7 +289,6 @@ export default async function DashboardPage() {
           )}
         </ActionSection>
 
-        {/* Overdue follow-ups */}
         <ActionSection
           title="Overdue Follow-ups"
           count={a.overdueFollowUps.length}
@@ -306,7 +315,7 @@ export default async function DashboardPage() {
               </Link>
             );
           })}
-          {s.overdueFollowUps > a.overdueFollowUps.length && (
+          {stats && s.overdueFollowUps > a.overdueFollowUps.length && (
             <Link
               href="/dashboard/contacts"
               className="text-xs text-muted-foreground hover:text-foreground"
@@ -317,7 +326,6 @@ export default async function DashboardPage() {
         </ActionSection>
       </div>
 
-      {/* Quick actions */}
       <div className="flex flex-wrap gap-2 border-t border-border pt-4">
         <Link
           href="/dashboard/contacts/new"
@@ -339,7 +347,7 @@ export default async function DashboardPage() {
         </Link>
       </div>
 
-      {!stats && (
+      {offline && (
         <p className="text-xs text-muted-foreground">
           Backend offline — stats unavailable.
         </p>
