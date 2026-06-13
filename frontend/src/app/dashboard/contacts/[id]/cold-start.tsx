@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { parseAiError } from "@/lib/ai-error";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -51,7 +52,7 @@ export function ColdStart({ contactId }: Props) {
         body: JSON.stringify({ contactId }),
       });
       if (!res.ok) {
-        setError("Failed to generate");
+        setError(await parseAiError(res));
         return;
       }
       const json: { brief: string } = await res.json();

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { parseAiError } from "@/lib/ai-error";
 
 interface Props {
   contactId: string;
@@ -32,8 +33,7 @@ export function FollowUpDraft({ contactId, contactName }: Props) {
         body: JSON.stringify({ contactId }),
       });
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        setError(body.message ?? "Failed to generate draft");
+        setError(await parseAiError(res));
         return;
       }
       const json: { draft: string } = await res.json();

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Zap, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { parseAiError } from "@/lib/ai-error";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -51,7 +52,7 @@ export function MorningBrief() {
         },
       });
       if (!res.ok) {
-        setError("Failed to generate brief");
+        setError(await parseAiError(res));
         return;
       }
       const json: { brief: string } = await res.json();

@@ -146,7 +146,16 @@ export default function BacklogPage() {
         },
         body: JSON.stringify({ taskId: item.id }),
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        const msg =
+          res.status === 429
+            ? ((j as { message?: string }).message ??
+              "Monthly AI limit reached. Check Settings.")
+            : "Failed to generate — try again";
+        setLoopDrafts((prev) => new Map(prev).set(item.id, msg));
+        return;
+      }
       const json: { draft: string } = await res.json();
       setLoopDrafts((prev) => new Map(prev).set(item.id, json.draft));
     } finally {
