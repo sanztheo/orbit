@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   CheckSquare,
   DollarSign,
-  Lock,
   Phone,
   Trophy,
   Users,
@@ -160,6 +159,13 @@ export default function DashboardPage() {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("orbit_checklist_dismissed") === "1";
   });
+  const [onboarding, setOnboarding] = useState<{
+    hasContact: boolean;
+    hasDeal: boolean;
+    hasActivity: boolean;
+    hasCadence: boolean;
+    hasBacklogItem: boolean;
+  } | null>(null);
 
   async function markContacted(contactId: string) {
     setMarkingId(contactId);
@@ -242,13 +248,15 @@ export default function DashboardPage() {
         ? { Authorization: `Bearer ${token}` }
         : {};
       try {
-        const [statsRes, actionsRes] = await Promise.all([
+        const [statsRes, actionsRes, onboardingRes] = await Promise.all([
           fetch(`${apiUrl}/api/stats`, { headers }),
           fetch(`${apiUrl}/api/stats/action-items`, { headers }),
+          fetch(`${apiUrl}/api/stats/onboarding`, { headers }),
         ]);
         if (statsRes.ok) setStats(await statsRes.json());
         else setOffline(true);
         if (actionsRes.ok) setActions(await actionsRes.json());
+        if (onboardingRes.ok) setOnboarding(await onboardingRes.json());
       } catch {
         setOffline(true);
       } finally {
@@ -401,37 +409,44 @@ export default function DashboardPage() {
 
       {!loading &&
         !checklistDismissed &&
+        onboarding !== null &&
         (() => {
+          const ob = onboarding;
           const steps = [
             {
-              label: "Import your contacts",
-              done: s.totalContacts > 0,
+              label: "Add your first contact",
+              done: ob.hasContact,
+              href: "/dashboard/contacts/new",
+              action: "Add Contact →",
+            },
+            {
+              label: "Log an activity (call, email, note)",
+              done: ob.hasActivity,
               href: "/dashboard/contacts",
-              action: "Go to Contacts →",
+              action: "Open Contacts →",
             },
             {
               label: "Create your first deal",
-              done: s.totalDeals > 0,
+              done: ob.hasDeal,
               href: "/dashboard/deals/new",
               action: "New Deal →",
             },
             {
+              label: "Set a follow-up cadence on a contact",
+              done: ob.hasCadence,
+              href: "/dashboard/contacts",
+              action: "Open Contacts →",
+            },
+            {
               label: "Add a backlog item",
-              done: s.openTasks > 0,
+              done: ob.hasBacklogItem,
               href: "/dashboard/tasks/new",
               action: "New Task →",
             },
-            {
-              label: "Connect Gmail (coming soon)",
-              done: false,
-              locked: true,
-            },
           ];
           const doneCount = steps.filter((s) => s.done).length;
-          const activeDoneCount = steps.filter(
-            (s) => !s.locked && s.done,
-          ).length;
-          const activeTotal = steps.filter((s) => !s.locked).length;
+          const activeDoneCount = doneCount;
+          const activeTotal = steps.length;
           if (activeDoneCount === activeTotal) return null;
           return (
             <div className="rounded-xl border border-border bg-muted/20 p-4">
@@ -456,15 +471,15 @@ export default function DashboardPage() {
                 {steps.map((step) => (
                   <div
                     key={step.label}
-                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${step.done ? "bg-emerald-50" : step.locked ? "bg-muted/40 opacity-60" : "bg-white border border-border"}`}
+                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${step.done ? "bg-emerald-50 dark:bg-emerald-950/20" : "bg-card border border-border"}`}
                   >
                     <div className="flex items-center gap-2">
                       {step.done ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                      ) : step.locked ? (
-                        <Lock className="h-4 w-4 text-muted-foreground" />
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                       ) : (
-                        <span className="text-muted-foreground">○</span>
+                        <span className="text-muted-foreground shrink-0">
+                          ○
+                        </span>
                       )}
                       <span
                         className={
@@ -476,10 +491,10 @@ export default function DashboardPage() {
                         {step.label}
                       </span>
                     </div>
-                    {!step.done && !step.locked && step.href && (
+                    {!step.done && step.href && (
                       <Link
                         href={step.href}
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline shrink-0"
+                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline shrink-0 ml-2"
                       >
                         {step.action}
                       </Link>

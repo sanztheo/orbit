@@ -12,7 +12,7 @@ import {
   asc,
   desc,
 } from "drizzle-orm";
-import { db, contacts, deals, tasks } from "../db/index.js";
+import { db, contacts, deals, tasks, activities } from "../db/index.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -258,4 +258,44 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       won + lost > 0 ? Math.round((won / (won + lost)) * 100) : null;
 
     return c.json({ stages: rows, winRate, totalWon: won, totalLost: lost });
+  })
+  .get("/onboarding", async (c) => {
+    const workspaceId = c.get("workspaceId");
+
+    const [contactRow, dealRow, activityRow, cadenceRow, taskRow] =
+      await Promise.all([
+        db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(contacts)
+          .where(eq(contacts.workspaceId, workspaceId)),
+        db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(deals)
+          .where(eq(deals.workspaceId, workspaceId)),
+        db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(activities)
+          .where(eq(activities.workspaceId, workspaceId)),
+        db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(contacts)
+          .where(
+            and(
+              eq(contacts.workspaceId, workspaceId),
+              isNotNull(contacts.cadenceDays),
+            ),
+          ),
+        db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(tasks)
+          .where(eq(tasks.workspaceId, workspaceId)),
+      ]);
+
+    return c.json({
+      hasContact: (contactRow[0]?.count ?? 0) > 0,
+      hasDeal: (dealRow[0]?.count ?? 0) > 0,
+      hasActivity: (activityRow[0]?.count ?? 0) > 0,
+      hasCadence: (cadenceRow[0]?.count ?? 0) > 0,
+      hasBacklogItem: (taskRow[0]?.count ?? 0) > 0,
+    });
   });
