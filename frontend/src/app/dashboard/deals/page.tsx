@@ -28,6 +28,8 @@ interface Deal {
   stageChangedAt: string;
   probability: number | null;
   notes: string | null;
+  contactId: string | null;
+  contactName: string | null;
 }
 
 const STAGE_ORDER: DealStage[] = [
@@ -294,6 +296,15 @@ export default function DealsPage() {
                       <p className="text-sm font-medium leading-snug">
                         {deal.title}
                       </p>
+                      {deal.contactName && (
+                        <Link
+                          href={`/dashboard/contacts/${deal.contactId}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="mt-0.5 block text-xs text-blue-600 hover:underline truncate"
+                        >
+                          {deal.contactName}
+                        </Link>
+                      )}
                       {deal.value != null && (
                         <p className="mt-1 text-xs text-muted-foreground">
                           ${deal.value.toLocaleString()}
