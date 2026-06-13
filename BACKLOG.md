@@ -210,7 +210,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P0] [TODO] Design and implement empty states for each main view (no contacts, no deals, no backlog items) as action prompts, not failure states — Research insight: Orbit's UX must never make founders feel guilty for having an empty CRM. Empty state = onboarding prompt, not a blank void.
 
-[P1] [TODO] Implement optimistic UI updates for deal drag-and-drop (update UI immediately, sync to server in background, rollback on error) — Laggy Kanban boards kill daily use. Optimistic updates make the tool feel fast even on slow connections.
+[P1] [DONE] Implement optimistic UI updates for deal drag-and-drop (update UI immediately, sync to server in background, rollback on error) — Laggy Kanban boards kill daily use. Optimistic updates make the tool feel fast even on slow connections.
 
 [P1] [DONE] Build keyboard shortcuts for common actions: N (new contact), D (new deal), B (new backlog item), / (search) — Power users discover keyboard shortcuts and become the loudest advocates. Table stakes for a "founder OS" positioning.
 

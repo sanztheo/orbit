@@ -98,6 +98,9 @@ export default function DealsPage() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverStage, setDragOverStage] = useState<DealStage | null>(null);
   const dragDealRef = useRef<Deal | null>(null);
+  const [wonDeal, setWonDeal] = useState<Deal | null>(null);
+  const [winReason, setWinReason] = useState("");
+  const [winSubmitting, setWinSubmitting] = useState(false);
 
   async function fetchDeals() {
     const token = await getToken();
@@ -132,6 +135,10 @@ export default function DealsPage() {
         { stage: newStage },
         token,
       );
+      if (newStage === "closed_won") {
+        setWonDeal(deal);
+        setWinReason("");
+      }
     } catch {
       // Rollback on error
       setAllDeals((prev) =>
@@ -141,6 +148,37 @@ export default function DealsPage() {
             : d,
         ),
       );
+    }
+  }
+
+  async function submitWinReason() {
+    if (!wonDeal?.contactId || !winReason.trim()) {
+      setWonDeal(null);
+      return;
+    }
+    setWinSubmitting(true);
+    try {
+      const token = await getToken();
+      if (token) {
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+        await fetch(`${apiUrl}/api/activities`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            contactId: wonDeal.contactId,
+            type: "note",
+            subject: `🏆 Won: ${wonDeal.title}`,
+            body: winReason.trim(),
+          }),
+        });
+      }
+    } finally {
+      setWinSubmitting(false);
+      setWonDeal(null);
     }
   }
 
@@ -231,6 +269,48 @@ export default function DealsPage() {
           </button>
         ))}
       </div>
+
+      {wonDeal && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-emerald-900">
+                🏆 Deal won: {wonDeal.title}
+              </p>
+              <p className="text-xs text-emerald-700 mt-0.5">
+                What closed it? (logged to contact timeline)
+              </p>
+              <input
+                type="text"
+                placeholder="e.g. pricing flexibility, demo convinced CEO, competitor dropped out…"
+                value={winReason}
+                onChange={(e) => setWinReason(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && submitWinReason()}
+                className="mt-2 w-full rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-2 shrink-0 mt-6">
+              <button
+                onClick={submitWinReason}
+                disabled={winSubmitting}
+                className={cn(
+                  buttonVariants({ size: "sm" }),
+                  "bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50",
+                )}
+              >
+                {winSubmitting ? "Saving…" : "Log it"}
+              </button>
+              <button
+                onClick={() => setWonDeal(null)}
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+              >
+                Skip
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {deals.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
