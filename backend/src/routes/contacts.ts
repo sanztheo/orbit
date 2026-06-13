@@ -26,6 +26,7 @@ const toDate = z
 const updateSchema = createSchema.partial().extend({
   lastContactedAt: toDate.optional(),
   nextFollowUpAt: toDate.optional(),
+  cadenceDays: z.number().int().min(1).max(365).nullable().optional(),
   priorityScore: z.number().int().min(0).optional(),
 });
 

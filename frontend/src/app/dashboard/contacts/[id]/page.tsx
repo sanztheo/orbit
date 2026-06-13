@@ -5,6 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FollowUpDraft } from "./follow-up-draft";
 import { AddToBacklog } from "./add-to-backlog";
+import { CadencePicker } from "./cadence-picker";
 
 interface Contact {
   id: string;
@@ -17,6 +18,7 @@ interface Contact {
   twitterHandle: string | null;
   lastContactedAt: string | null;
   nextFollowUpAt: string | null;
+  cadenceDays: number | null;
   priorityScore: number | null;
   createdAt: string;
 }
@@ -125,6 +127,14 @@ export default async function ContactDetailPage({
             <p className="whitespace-pre-wrap">{contact.notes}</p>
           </div>
         )}
+      </div>
+
+      {/* Cadence */}
+      <div className="rounded-xl border border-border p-5">
+        <CadencePicker
+          contactId={contact.id}
+          initialCadence={contact.cadenceDays}
+        />
       </div>
 
       {/* Backlog requests */}

@@ -15,6 +15,7 @@ interface Stats {
   openTasks: number;
   totalContacts: number;
   wonThisMonth: number;
+  overdueFollowUps: number;
 }
 
 async function fetchStats(token: string | null): Promise<Stats | null> {
@@ -82,6 +83,7 @@ export default async function DashboardPage() {
     openTasks: 0,
     totalContacts: 0,
     wonThisMonth: 0,
+    overdueFollowUps: 0,
   };
 
   return (
@@ -125,6 +127,13 @@ export default async function DashboardPage() {
           description="Deals closed won"
           value={s.wonThisMonth}
           href="/dashboard/deals"
+        />
+        <StatCard
+          title="Overdue Follow-ups"
+          description="Past their target cadence"
+          value={s.overdueFollowUps}
+          urgent
+          href="/dashboard/contacts"
         />
       </div>
 

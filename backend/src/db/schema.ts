@@ -103,6 +103,7 @@ export const contacts = pgTable(
     twitterHandle: text("twitter_handle"),
     lastContactedAt: timestamp("last_contacted_at"),
     nextFollowUpAt: timestamp("next_follow_up_at"),
+    cadenceDays: integer("cadence_days"),
     priorityScore: integer("priority_score").default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
