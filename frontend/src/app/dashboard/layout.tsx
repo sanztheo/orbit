@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { label: "Deals", href: "/dashboard/deals", icon: "◈" },
   { label: "Tasks", href: "/dashboard/tasks", icon: "☑" },
   { label: "Backlog", href: "/dashboard/backlog", icon: "▤" },
+  { label: "Settings", href: "/dashboard/settings", icon: "⚙" },
 ] as const;
 
 export default async function DashboardLayout({

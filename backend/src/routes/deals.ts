@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db, deals, contacts } from "../db/index.js";
 import { generateId } from "../lib/ids.js";
+import { fireWebhook } from "../lib/fire-webhook.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
 
 const toDate = z
@@ -112,6 +113,14 @@ export const dealsRouter = new Hono<WorkspaceEnv>()
       .returning();
     if (!row)
       return c.json({ error: "not_found", message: "Deal not found" }, 404);
+    if (stageChanged) {
+      fireWebhook(workspaceId, "deal.stage_changed", {
+        id: row.id,
+        title: row.title,
+        stage: row.stage,
+        previousStage: body.stage,
+      });
+    }
     return c.json({ data: row });
   })
   .delete("/:id", async (c) => {

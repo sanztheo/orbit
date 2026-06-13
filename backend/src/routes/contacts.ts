@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db, contacts } from "../db/index.js";
 import { generateId } from "../lib/ids.js";
+import { fireWebhook } from "../lib/fire-webhook.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
 
 const createSchema = z.object({
@@ -288,6 +289,13 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       .insert(contacts)
       .values({ id: generateId(), workspaceId, ...body })
       .returning();
+    fireWebhook(workspaceId, "contact.created", {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      company: row.company,
+      type: row.type,
+    });
     return c.json({ data: row }, 201);
   })
   .get("/:id", async (c) => {

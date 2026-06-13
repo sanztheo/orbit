@@ -60,6 +60,7 @@ export const workspaces = pgTable(
     plan: planEnum("plan").notNull().default("solo"),
     aiActionsUsed: integer("ai_actions_used").notNull().default(0),
     aiActionsResetAt: timestamp("ai_actions_reset_at").notNull().defaultNow(),
+    webhookUrl: text("webhook_url"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
