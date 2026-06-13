@@ -92,6 +92,13 @@ export const dealsRouter = new Hono<WorkspaceEnv>()
       .insert(deals)
       .values({ id: generateId(), workspaceId, ...body })
       .returning();
+    fireWebhook(workspaceId, "deal.created", {
+      id: row.id,
+      title: row.title,
+      stage: row.stage,
+      value: row.value,
+      contactId: row.contactId,
+    });
     return c.json({ data: row }, 201);
   })
   .get("/:id", async (c) => {
@@ -136,6 +143,21 @@ export const dealsRouter = new Hono<WorkspaceEnv>()
         stage: row.stage,
         previousStage: body.stage,
       });
+      if (row.stage === "closed_won") {
+        fireWebhook(workspaceId, "deal.won", {
+          id: row.id,
+          title: row.title,
+          value: row.value,
+          contactId: row.contactId,
+        });
+      } else if (row.stage === "closed_lost") {
+        fireWebhook(workspaceId, "deal.lost", {
+          id: row.id,
+          title: row.title,
+          value: row.value,
+          contactId: row.contactId,
+        });
+      }
     }
     return c.json({ data: row });
   })

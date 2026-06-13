@@ -4,6 +4,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db, tasks, contacts, deals } from "../db/index.js";
 import { generateId } from "../lib/ids.js";
+import { fireWebhook } from "../lib/fire-webhook.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
 
 const toDate = z
@@ -151,6 +152,14 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
       .returning();
     if (!row)
       return c.json({ error: "not_found", message: "Task not found" }, 404);
+    if (body.status === "done" || body.completedAt) {
+      fireWebhook(workspaceId, "task.completed", {
+        id: row.id,
+        title: row.title,
+        contactId: row.contactId,
+        dealId: row.dealId,
+      });
+    }
     return c.json({ data: row });
   })
   .delete("/:id", async (c) => {

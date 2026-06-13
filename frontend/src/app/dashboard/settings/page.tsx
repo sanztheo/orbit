@@ -269,16 +269,46 @@ export default function SettingsPage() {
                 Events fired:
               </p>
               <p>
-                <span className="text-blue-700">deal.stage_changed</span> — deal
-                id, title, stage
+                <span className="text-blue-700 dark:text-blue-400">
+                  deal.created
+                </span>{" "}
+                — id, title, stage, value, contactId
               </p>
               <p>
-                <span className="text-blue-700">contact.created</span> — id,
-                name, email, company, type
+                <span className="text-blue-700 dark:text-blue-400">
+                  deal.stage_changed
+                </span>{" "}
+                — id, title, stage
               </p>
               <p>
-                <span className="text-blue-700">contact.updated</span> — id,
-                name, email, company, type
+                <span className="text-blue-700 dark:text-blue-400">
+                  deal.won
+                </span>{" "}
+                — id, title, value, contactId
+              </p>
+              <p>
+                <span className="text-blue-700 dark:text-blue-400">
+                  deal.lost
+                </span>{" "}
+                — id, title, value, contactId
+              </p>
+              <p>
+                <span className="text-blue-700 dark:text-blue-400">
+                  contact.created
+                </span>{" "}
+                — id, name, email, company, type
+              </p>
+              <p>
+                <span className="text-blue-700 dark:text-blue-400">
+                  contact.updated
+                </span>{" "}
+                — id, name, email, company, type
+              </p>
+              <p>
+                <span className="text-blue-700 dark:text-blue-400">
+                  task.completed
+                </span>{" "}
+                — id, title, contactId, dealId
               </p>
             </div>
           </div>
