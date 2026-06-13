@@ -621,15 +621,31 @@ export default function DealsPage() {
                           ? "Moved today"
                           : `${staleDays}d in stage${isStale ? " ⚠" : ""}`}
                       </p>
-                      {deal.expectedCloseAt && (
-                        <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
-                          Close by{" "}
-                          {new Date(deal.expectedCloseAt).toLocaleDateString(
-                            "en-US",
-                            { month: "short", day: "numeric" },
-                          )}
-                        </p>
-                      )}
+                      {deal.expectedCloseAt &&
+                        (() => {
+                          const daysUntil = Math.ceil(
+                            (new Date(deal.expectedCloseAt).getTime() -
+                              Date.now()) /
+                              86_400_000,
+                          );
+                          const color =
+                            daysUntil < 0
+                              ? "text-red-600 dark:text-red-400 font-medium"
+                              : daysUntil <= 3
+                                ? "text-orange-600 dark:text-orange-400 font-medium"
+                                : "text-amber-700 dark:text-amber-300";
+                          const label =
+                            daysUntil < 0
+                              ? `Close overdue ${Math.abs(daysUntil)}d`
+                              : daysUntil === 0
+                                ? "Close today!"
+                                : daysUntil <= 3
+                                  ? `Close in ${daysUntil}d`
+                                  : `Close by ${new Date(deal.expectedCloseAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+                          return (
+                            <p className={`mt-0.5 text-xs ${color}`}>{label}</p>
+                          );
+                        })()}
                       {deal.notes && (
                         <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
                           {deal.notes}
