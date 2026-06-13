@@ -12,6 +12,7 @@ import { statsRouter } from "./routes/stats.js";
 import { activitiesRouter } from "./routes/activities.js";
 import { exportRouter } from "./routes/export.js";
 import { webhooksRouter } from "./routes/webhooks.js";
+import { searchRouter } from "./routes/search.js";
 
 const app = new Hono();
 
@@ -36,6 +37,7 @@ app.route("/api/stats", statsRouter);
 app.route("/api/activities", activitiesRouter);
 app.route("/api/export", exportRouter);
 app.route("/api/webhooks", webhooksRouter);
+app.route("/api/search", searchRouter);
 
 const port = Number(process.env.PORT ?? 3001);
 serve({ fetch: app.fetch, port }, () => {
