@@ -481,9 +481,13 @@ export default function DealsPage() {
                       )}
                     >
                       <div className="flex items-start justify-between gap-1">
-                        <p className="text-sm font-medium leading-snug">
+                        <Link
+                          href={`/dashboard/deals/${deal.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-sm font-medium leading-snug hover:underline"
+                        >
                           {deal.title}
-                        </p>
+                        </Link>
                         <Link
                           href={`/dashboard/deals/${deal.id}/edit`}
                           onClick={(e) => e.stopPropagation()}
