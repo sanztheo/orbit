@@ -151,6 +151,7 @@ export function QuickLog() {
         }),
       });
       setDone(true);
+      window.dispatchEvent(new CustomEvent("orbit:activity-logged"));
       setTimeout(close, 800);
     } finally {
       setSubmitting(false);

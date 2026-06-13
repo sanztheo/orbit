@@ -300,6 +300,28 @@ export default function DashboardPage() {
     load();
   }, [getToken]);
 
+  useEffect(() => {
+    async function refreshActions() {
+      const token = await getToken();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+      const headers: HeadersInit = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+      const [actionsRes, activitiesRes] = await Promise.all([
+        fetch(`${apiUrl}/api/stats/action-items`, { headers }),
+        fetch(`${apiUrl}/api/activities`, { headers }),
+      ]);
+      if (actionsRes.ok) setActions(await actionsRes.json());
+      if (activitiesRes.ok) {
+        const json = await activitiesRes.json();
+        setRecentActivities((json.data ?? []).slice(0, 8));
+      }
+    }
+    window.addEventListener("orbit:activity-logged", refreshActions);
+    return () =>
+      window.removeEventListener("orbit:activity-logged", refreshActions);
+  }, [getToken]);
+
   const s = stats ?? {
     stallingDeals: 0,
     coldContacts: 0,
