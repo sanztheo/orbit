@@ -210,12 +210,21 @@ export default async function ContactDetailPage({
       </div>
 
       {/* Linked deals */}
+      {linkedDeals.length === 0 && (
+        <Link
+          href={`/dashboard/deals/new?contactId=${contact.id}`}
+          className="flex items-center gap-2 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground hover:border-primary/40 hover:text-foreground transition-colors"
+        >
+          <span>◈</span>
+          <span>Create a deal for {contact.name}</span>
+        </Link>
+      )}
       {linkedDeals.length > 0 && (
         <div className="rounded-xl border border-border p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-sm">Linked deals</h2>
             <Link
-              href="/dashboard/deals/new"
+              href={`/dashboard/deals/new?contactId=${contact.id}`}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
               + New deal

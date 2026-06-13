@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,14 @@ interface Contact {
 
 export default function NewDealPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { getToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [contactId, setContactId] = useState<string>("");
+  const [contactId, setContactId] = useState<string>(
+    searchParams.get("contactId") ?? "",
+  );
 
   useEffect(() => {
     getToken().then((token) => {
