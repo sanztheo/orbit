@@ -75,4 +75,21 @@ Status: TODO, IN_PROGRESS, DONE
 
 ---
 
+## New Tasks Added
+
+- [P1] [TODO] Implement confirmation email on join (Resend integration)
+- [P1] [TODO] Add invite email blast (send to top N subscribers)
+- [P2] [TODO] Add waitlist [id] detail page tabs (Overview vs Subscribers)
+- [P2] [TODO] Add daily growth chart to analytics (recharts or chart.js)
+- [P2] [TODO] Add referral leaderboard on dashboard
+- [P2] [TODO] Add custom OG meta tags per waitlist page (/w/[slug])
+- [P2] [TODO] Add waitlist embed widget (iframe snippet generator)
+- [P2] [TODO] Persist rate limit state to Redis (upgrade from in-memory)
+- [P3] [TODO] Add Stripe billing integration (free/pro/team tiers)
+- [P3] [TODO] Add custom domain support for waitlist pages
+- [P3] [TODO] Add Zapier webhook trigger on new subscriber
+- [P3] [TODO] E2E tests with Playwright (join flow, dashboard flow)
+- [P3] [TODO] Add dark mode toggle
+- [P3] [TODO] Add subscriber search and filter on detail page
+
 Last updated: 2026-06-13
