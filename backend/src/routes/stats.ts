@@ -21,73 +21,101 @@ export const statsRouter = new Hono<WorkspaceEnv>()
   .get("/action-items", async (c) => {
     const workspaceId = c.get("workspaceId");
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
 
-    const [stallingDealsList, coldContactsList, overdueFollowUpsList] =
-      await Promise.all([
-        db
-          .select({
-            id: deals.id,
-            title: deals.title,
-            stage: deals.stage,
-            value: deals.value,
-            stageChangedAt: deals.stageChangedAt,
-          })
-          .from(deals)
-          .where(
-            and(
-              eq(deals.workspaceId, workspaceId),
-              ne(deals.stage, "closed_won"),
-              ne(deals.stage, "closed_lost"),
-              lt(deals.stageChangedAt, thirtyDaysAgo),
-            ),
-          )
-          .orderBy(asc(deals.stageChangedAt))
-          .limit(5),
+    const [
+      stallingDealsList,
+      coldContactsList,
+      overdueFollowUpsList,
+      atRiskDealsList,
+    ] = await Promise.all([
+      db
+        .select({
+          id: deals.id,
+          title: deals.title,
+          stage: deals.stage,
+          value: deals.value,
+          stageChangedAt: deals.stageChangedAt,
+        })
+        .from(deals)
+        .where(
+          and(
+            eq(deals.workspaceId, workspaceId),
+            ne(deals.stage, "closed_won"),
+            ne(deals.stage, "closed_lost"),
+            lt(deals.stageChangedAt, thirtyDaysAgo),
+          ),
+        )
+        .orderBy(asc(deals.stageChangedAt))
+        .limit(5),
 
-        db
-          .select({
-            id: contacts.id,
-            name: contacts.name,
-            company: contacts.company,
-            lastContactedAt: contacts.lastContactedAt,
-          })
-          .from(contacts)
-          .where(
-            and(
-              eq(contacts.workspaceId, workspaceId),
-              or(
-                isNull(contacts.lastContactedAt),
-                lt(contacts.lastContactedAt, thirtyDaysAgo),
-              ),
+      db
+        .select({
+          id: contacts.id,
+          name: contacts.name,
+          company: contacts.company,
+          lastContactedAt: contacts.lastContactedAt,
+        })
+        .from(contacts)
+        .where(
+          and(
+            eq(contacts.workspaceId, workspaceId),
+            or(
+              isNull(contacts.lastContactedAt),
+              lt(contacts.lastContactedAt, thirtyDaysAgo),
             ),
-          )
-          .orderBy(asc(contacts.lastContactedAt))
-          .limit(5),
+          ),
+        )
+        .orderBy(asc(contacts.lastContactedAt))
+        .limit(5),
 
-        db
-          .select({
-            id: contacts.id,
-            name: contacts.name,
-            company: contacts.company,
-            lastContactedAt: contacts.lastContactedAt,
-            cadenceDays: contacts.cadenceDays,
-          })
-          .from(contacts)
-          .where(
-            and(
-              eq(contacts.workspaceId, workspaceId),
-              isNotNull(contacts.cadenceDays),
-              sql`(${contacts.lastContactedAt} IS NULL OR ${contacts.lastContactedAt} < NOW() - (${contacts.cadenceDays} * INTERVAL '1 day'))`,
-            ),
-          )
-          .orderBy(asc(contacts.lastContactedAt))
-          .limit(5),
-      ]);
+      db
+        .select({
+          id: contacts.id,
+          name: contacts.name,
+          company: contacts.company,
+          lastContactedAt: contacts.lastContactedAt,
+          cadenceDays: contacts.cadenceDays,
+        })
+        .from(contacts)
+        .where(
+          and(
+            eq(contacts.workspaceId, workspaceId),
+            isNotNull(contacts.cadenceDays),
+            sql`(${contacts.lastContactedAt} IS NULL OR ${contacts.lastContactedAt} < NOW() - (${contacts.cadenceDays} * INTERVAL '1 day'))`,
+          ),
+        )
+        .orderBy(asc(contacts.lastContactedAt))
+        .limit(5),
+
+      // At-risk deals: 14-29 days no movement (pre-stall warning)
+      db
+        .select({
+          id: deals.id,
+          title: deals.title,
+          stage: deals.stage,
+          value: deals.value,
+          stageChangedAt: deals.stageChangedAt,
+        })
+        .from(deals)
+        .where(
+          and(
+            eq(deals.workspaceId, workspaceId),
+            ne(deals.stage, "closed_won"),
+            ne(deals.stage, "closed_lost"),
+            lt(deals.stageChangedAt, fourteenDaysAgo),
+            gte(deals.stageChangedAt, thirtyDaysAgo),
+          ),
+        )
+        .orderBy(asc(deals.stageChangedAt))
+        .limit(5),
+    ]);
 
     return c.json({
       stallingDeals: stallingDealsList,
       coldContacts: coldContactsList,
       overdueFollowUps: overdueFollowUpsList,
+      atRiskDeals: atRiskDealsList,
     });
   })
   .get("/", async (c) => {

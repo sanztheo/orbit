@@ -46,10 +46,19 @@ interface OverdueContact {
   cadenceDays: number;
 }
 
+interface AtRiskDeal {
+  id: string;
+  title: string;
+  stage: string;
+  value: number | null;
+  stageChangedAt: string;
+}
+
 interface ActionItems {
   stallingDeals: StallingDeal[];
   coldContacts: ColdContact[];
   overdueFollowUps: OverdueContact[];
+  atRiskDeals: AtRiskDeal[];
 }
 
 function daysSince(iso: string | null): number {
@@ -168,6 +177,7 @@ export default function DashboardPage() {
     stallingDeals: [],
     coldContacts: [],
     overdueFollowUps: [],
+    atRiskDeals: [],
   };
 
   if (!loading && !offline && s.totalContacts === 0) {
@@ -369,6 +379,43 @@ export default function DashboardPage() {
             </div>
           );
         })()}
+
+      {a.atRiskDeals.length > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-amber-600">⚠</span>
+            <h2 className="text-sm font-semibold text-amber-900">At Risk</h2>
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+              {a.atRiskDeals.length}
+            </span>
+            <span className="text-xs text-amber-700 ml-1">
+              deals 14–29 days without movement
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {a.atRiskDeals.map((deal) => {
+              const days = daysSince(deal.stageChangedAt);
+              return (
+                <Link
+                  key={deal.id}
+                  href="/dashboard/deals"
+                  className="flex items-center gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm hover:bg-amber-50 transition-colors"
+                >
+                  <span className="font-medium truncate max-w-[160px]">
+                    {deal.title}
+                  </span>
+                  <span className="shrink-0 text-xs font-medium text-amber-700">
+                    {days}d
+                  </span>
+                  <span className="shrink-0 text-xs text-muted-foreground capitalize">
+                    {deal.stage.replace(/_/g, " ")}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 md:grid-cols-3">
         <ActionSection
