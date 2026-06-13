@@ -151,7 +151,19 @@ export default async function ContactDetailPage({
         </div>
         <div>
           <p className="text-xs text-muted-foreground mb-1">Company</p>
-          <p>{contact.company ?? "—"}</p>
+          {contact.company ? (
+            <div className="flex items-center gap-2">
+              <p>{contact.company}</p>
+              <Link
+                href={`/dashboard/contacts?search=${encodeURIComponent(contact.company)}`}
+                className="text-xs text-blue-600 hover:underline shrink-0"
+              >
+                others →
+              </Link>
+            </div>
+          ) : (
+            <p>—</p>
+          )}
         </div>
         <div>
           <p className="text-xs text-muted-foreground mb-1">Last contacted</p>
