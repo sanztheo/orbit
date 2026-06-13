@@ -13,6 +13,7 @@ import {
   Link2 as Linkedin,
   Plus,
   Loader2,
+  Trash2,
   X,
   Mic,
   MicOff,
@@ -226,6 +227,16 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function deleteActivity(id: string) {
+    const token = await getToken();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+    const res = await fetch(`${apiUrl}/api/activities/${id}`, {
+      method: "DELETE",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) setActivities((prev) => prev.filter((a) => a.id !== id));
   }
 
   return (
@@ -480,7 +491,7 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
       ) : (
         <ol className="flex flex-col gap-2">
           {activities.map((a) => (
-            <li key={a.id} className="flex gap-3 text-sm">
+            <li key={a.id} className="group flex gap-3 text-sm">
               <span className="shrink-0 flex items-center text-muted-foreground">
                 {TYPE_ICONS[a.type]}
               </span>
@@ -502,6 +513,13 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
               <span className="shrink-0 text-xs text-muted-foreground">
                 {fmt(a.occurredAt)}
               </span>
+              <button
+                onClick={() => deleteActivity(a.id)}
+                title="Delete activity"
+                className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
             </li>
           ))}
         </ol>
