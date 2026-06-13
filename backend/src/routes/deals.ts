@@ -32,6 +32,9 @@ const createSchema = z.object({
   expectedCloseAt: toDate.optional(),
   notes: z.string().optional(),
   nextAction: z.string().optional(),
+  fundName: z.string().optional(),
+  checkSize: z.number().int().min(0).optional(),
+  portfolioUrl: z.string().url().nullish(),
 });
 
 const updateSchema = createSchema.partial();
@@ -56,6 +59,9 @@ export const dealsRouter = new Hono<WorkspaceEnv>()
         stageChangedAt: deals.stageChangedAt,
         notes: deals.notes,
         nextAction: deals.nextAction,
+        fundName: deals.fundName,
+        checkSize: deals.checkSize,
+        portfolioUrl: deals.portfolioUrl,
         createdAt: deals.createdAt,
         updatedAt: deals.updatedAt,
       })

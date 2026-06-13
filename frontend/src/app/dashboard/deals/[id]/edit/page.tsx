@@ -41,6 +41,9 @@ interface Deal {
   notes: string | null;
   nextAction: string | null;
   contactId: string | null;
+  fundName: string | null;
+  checkSize: number | null;
+  portfolioUrl: string | null;
 }
 
 export default function EditDealPage() {
@@ -53,6 +56,7 @@ export default function EditDealPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [deal, setDeal] = useState<Deal | null>(null);
   const [contactId, setContactId] = useState<string>("");
+  const [pipelineType, setPipelineType] = useState<string>("sales");
 
   useEffect(() => {
     async function load() {
@@ -64,6 +68,7 @@ export default function EditDealPage() {
       ]);
       setDeal(dealRes.data);
       setContactId(dealRes.data.contactId ?? "");
+      setPipelineType(dealRes.data.pipelineType ?? "sales");
       setContacts(contactsRes.data);
       setFetching(false);
     }
@@ -91,6 +96,9 @@ export default function EditDealPage() {
       notes: (fd.get("notes") as string) || null,
       nextAction: (fd.get("nextAction") as string) || null,
       contactId: contactId || null,
+      fundName: (fd.get("fundName") as string) || null,
+      checkSize: fd.get("checkSize") ? Number(fd.get("checkSize")) : null,
+      portfolioUrl: (fd.get("portfolioUrl") as string) || null,
     };
 
     setLoading(true);
@@ -141,7 +149,8 @@ export default function EditDealPage() {
           <select
             id="pipelineType"
             name="pipelineType"
-            defaultValue={deal.pipelineType}
+            value={pipelineType}
+            onChange={(e) => setPipelineType(e.target.value)}
             className={sel}
           >
             {PIPELINE_TYPES.map((p) => (
@@ -232,6 +241,43 @@ export default function EditDealPage() {
             placeholder="Schedule demo call with CTO"
           />
         </div>
+        {pipelineType === "fundraising" && (
+          <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-4 flex flex-col gap-3">
+            <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
+              Investor fields
+            </p>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="fundName">Fund name</Label>
+              <Input
+                id="fundName"
+                name="fundName"
+                defaultValue={deal.fundName ?? ""}
+                placeholder="Sequoia Capital"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="checkSize">Target check size ($)</Label>
+              <Input
+                id="checkSize"
+                name="checkSize"
+                type="number"
+                min="0"
+                defaultValue={deal.checkSize ?? ""}
+                placeholder="500000"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="portfolioUrl">Portfolio / website</Label>
+              <Input
+                id="portfolioUrl"
+                name="portfolioUrl"
+                type="url"
+                defaultValue={deal.portfolioUrl ?? ""}
+                placeholder="https://sequoiacap.com"
+              />
+            </div>
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="notes">Notes</Label>
           <textarea

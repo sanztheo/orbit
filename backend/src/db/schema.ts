@@ -135,6 +135,10 @@ export const deals = pgTable(
     expectedCloseAt: timestamp("expected_close_at"),
     notes: text("notes"),
     nextAction: text("next_action"),
+    // Investor pipeline fields
+    fundName: text("fund_name"),
+    checkSize: integer("check_size"),
+    portfolioUrl: text("portfolio_url"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
