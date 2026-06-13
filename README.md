@@ -40,6 +40,25 @@ Founders solo et petites équipes (1-3 personnes) qui lancent un SaaS.
 
 ---
 
+## Architecture
+
+```
+frontend/   — Next.js 16 (App Router) · UI, auth Clerk, port 3000
+backend/    — Hono.js (Node.js) · REST API, Drizzle ORM, port 3001
+```
+
+Deux projets indépendants. Le frontend appelle le backend via `fetch` avec un JWT Clerk. Le backend vérifie le token côté serveur et isole les données par `userId`.
+
+```bash
+# backend
+cd backend && npm install && npm run dev
+
+# frontend (autre terminal)
+cd frontend && npm install && npm run dev
+```
+
+---
+
 ## Suivre l'expérience
 
 - **PRODUCT.md** — vision, stack, positionnement
