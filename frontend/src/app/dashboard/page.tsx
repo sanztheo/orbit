@@ -238,6 +238,34 @@ export default function DashboardPage() {
     }
   }
 
+  async function clearFollowUp(contactId: string) {
+    const token = await getToken();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+    const res = await fetch(`${apiUrl}/api/contacts/${contactId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ nextFollowUpAt: null }),
+    });
+    if (res.ok) {
+      setActions((prev) =>
+        prev
+          ? {
+              ...prev,
+              upcomingFollowUps: prev.upcomingFollowUps.filter(
+                (c) => c.id !== contactId,
+              ),
+              missedFollowUps: prev.missedFollowUps.filter(
+                (c) => c.id !== contactId,
+              ),
+            }
+          : prev,
+      );
+    }
+  }
+
   async function closeDeal(
     dealId: string,
     outcome: "closed_won" | "closed_lost",
@@ -607,6 +635,13 @@ export default function DashboardPage() {
                         ? "tomorrow"
                         : `in ${daysUntil}d`}
                   </span>
+                  <button
+                    onClick={() => clearFollowUp(c.id)}
+                    title="Mark done — clear follow-up date"
+                    className="shrink-0 flex items-center rounded-md border border-emerald-300 dark:border-emerald-700 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                  >
+                    Done
+                  </button>
                 </div>
               );
             })}
@@ -663,6 +698,13 @@ export default function DashboardPage() {
                   >
                     <PenLine className="h-3.5 w-3.5 mr-1" />
                     Log
+                  </button>
+                  <button
+                    onClick={() => clearFollowUp(c.id)}
+                    title="Mark done — clear follow-up date"
+                    className="shrink-0 rounded-md border border-red-200 dark:border-red-700 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+                  >
+                    Done
                   </button>
                 </div>
               );
