@@ -20,6 +20,7 @@ import { DealCloseButtons } from "./close-buttons";
 import { DealActivityLog } from "./deal-activity-log";
 import { DeleteDealButton } from "./delete-button";
 import { DealInlineNotes } from "./inline-notes";
+import { DealFollowUpDraft } from "./deal-follow-up-draft";
 
 const STAGE_LABELS: Record<string, string> = {
   prospect: "Prospect",
@@ -369,6 +370,16 @@ export default async function DealDetailPage({
 
       {/* Close actions */}
       {!isClosed && <DealCloseButtons dealId={deal.id} />}
+
+      {/* AI follow-up draft */}
+      {contact && (
+        <div className="rounded-xl border border-border p-5">
+          <DealFollowUpDraft
+            contactId={contact.id}
+            contactName={contact.name}
+          />
+        </div>
+      )}
 
       {/* Deal activity log */}
       <DealActivityLog
