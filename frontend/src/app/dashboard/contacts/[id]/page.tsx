@@ -8,6 +8,7 @@ import { MeetingBrief } from "./meeting-brief";
 import { AddToBacklog } from "./add-to-backlog";
 import { CadencePicker } from "./cadence-picker";
 import { ActivityLog } from "./activity-log";
+import { ColdStart } from "./cold-start";
 
 interface Contact {
   id: string;
@@ -248,6 +249,9 @@ export default async function ContactDetailPage({
         contactId={contact.id}
         initialActivities={initialActivities}
       />
+
+      {/* Cold start — first-touch outreach */}
+      {initialActivities.length === 0 && <ColdStart contactId={contact.id} />}
 
       {/* Pre-meeting brief */}
       <MeetingBrief contactId={contact.id} />

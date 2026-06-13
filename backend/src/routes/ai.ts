@@ -623,4 +623,84 @@ Draft a concise investor update email.`,
       .where(eq(workspaces.id, workspaceId));
 
     return c.json({ draft });
-  });
+  })
+  .post(
+    "/cold-start",
+    aiRateLimit,
+    zValidator("json", z.object({ contactId: z.string().min(1) })),
+    async (c) => {
+      const workspaceId = c.get("workspaceId");
+      const { contactId } = c.req.valid("json");
+
+      const [contact] = await db
+        .select()
+        .from(contacts)
+        .where(
+          and(
+            eq(contacts.id, contactId),
+            eq(contacts.workspaceId, workspaceId),
+          ),
+        )
+        .limit(1);
+
+      if (!contact)
+        return c.json(
+          { error: "not_found", message: "Contact not found" },
+          404,
+        );
+
+      const relatedDeals = await db
+        .select({ title: deals.title, stage: deals.stage, value: deals.value })
+        .from(deals)
+        .where(
+          and(
+            eq(deals.contactId, contactId),
+            eq(deals.workspaceId, workspaceId),
+          ),
+        )
+        .limit(3);
+
+      const dealLine =
+        relatedDeals.length > 0
+          ? relatedDeals
+              .map(
+                (d) =>
+                  `${d.title} (${d.stage}${d.value ? `, $${d.value}` : ""})`,
+              )
+              .join("; ")
+          : "None";
+
+      const message = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 500,
+        system: `You are an AI that helps founders craft their very first outreach to a new contact.
+You have no conversation history. Generate a cold-start package in this exact format (plain text):
+
+ANGLE: [1 sentence — what hypothesis or angle to lead with based on their role/company]
+HOOK: [1-2 sentences — what they likely care about that you can speak to]
+DRAFT: [A short, direct first message under 60 words. No "I hope this finds you well". Sound human and specific.]
+
+Be specific to the person's role and company. No generic templates. Under 150 words total.`,
+        messages: [
+          {
+            role: "user",
+            content: `Contact: ${contact.name}
+Type: ${contact.type}${contact.company ? ` at ${contact.company}` : ""}${contact.notes ? `\nNotes: ${contact.notes}` : ""}${contact.linkedinUrl ? `\nLinkedIn: ${contact.linkedinUrl}` : ""}
+Related deals: ${dealLine}
+
+Generate the first-touch package.`,
+          },
+        ],
+      });
+
+      const brief =
+        message.content[0].type === "text" ? message.content[0].text : "";
+
+      await db
+        .update(workspaces)
+        .set({ aiActionsUsed: sql`${workspaces.aiActionsUsed} + 1` })
+        .where(eq(workspaces.id, workspaceId));
+
+      return c.json({ brief });
+    },
+  );
