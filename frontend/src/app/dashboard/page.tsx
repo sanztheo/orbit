@@ -28,7 +28,6 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { ImportButton } from "./contacts/import-button";
 import { MorningBrief } from "./morning-brief";
 
 interface Stats {
@@ -400,11 +399,12 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex flex-col items-center gap-3">
-          <ImportButton
-            label="↑ Import contacts from CSV"
-            variant="default"
-            size="lg"
-          />
+          <Link
+            href="/dashboard/contacts/import"
+            className={buttonVariants({ variant: "default", size: "lg" })}
+          >
+            ↑ Import contacts from CSV
+          </Link>
           <span className="text-xs text-muted-foreground">or</span>
           <Link
             href="/dashboard/contacts/new"
