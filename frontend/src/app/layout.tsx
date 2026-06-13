@@ -17,6 +17,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Orbit",
   description: "Solo-founder OS: CRM + backlog + investor pipeline",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Orbit",
+  },
 };
 
 export default function RootLayout({
