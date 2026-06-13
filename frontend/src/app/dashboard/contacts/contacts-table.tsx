@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Clock,
-  Star,
+  Activity,
   AlertTriangle,
   Calendar,
   Loader2,
@@ -35,6 +35,7 @@ export interface ContactRow {
   notes: string | null;
   lastContactedAt: string | null;
   nextFollowUpAt: string | null;
+  cadenceDays: number | null;
   priorityScore: number | null;
   createdAt: string;
 }
@@ -87,6 +88,62 @@ function formatFollowUpDate(nextFollowUpAt: string | null): string {
   if (daysLeft < 0) return `${Math.abs(daysLeft)}d overdue`;
   if (daysLeft === 0) return "due today";
   return `due in ${daysLeft}d`;
+}
+
+function computeHealthScore(contact: ContactRow): number {
+  const days = daysSince(contact.lastContactedAt);
+
+  // Base from recency
+  let score: number;
+  if (days === null) {
+    score = 12;
+  } else if (days === 0) {
+    score = 100;
+  } else if (days <= 7) {
+    score = 95;
+  } else if (days <= 14) {
+    score = 85;
+  } else if (days <= 30) {
+    score = 70;
+  } else if (days <= 60) {
+    score = 50;
+  } else if (days <= 90) {
+    score = 35;
+  } else if (days <= 180) {
+    score = 20;
+  } else {
+    score = 8;
+  }
+
+  // Follow-up modifier
+  if (contact.nextFollowUpAt) {
+    if (isFollowUpDue(contact.nextFollowUpAt)) {
+      score = Math.max(0, score - 15);
+    } else {
+      score = Math.min(100, score + 5);
+    }
+  }
+
+  // Cadence adherence: penalise if overdue relative to cadence
+  if (
+    contact.cadenceDays &&
+    days !== null &&
+    days > contact.cadenceDays * 1.5
+  ) {
+    score = Math.max(0, score - 10);
+  }
+
+  return Math.max(0, Math.min(100, score));
+}
+
+function healthScoreColor(score: number): string {
+  if (score >= 80)
+    return "text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800";
+  if (score >= 60)
+    return "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800";
+  if (score >= 40)
+    return "text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800";
+  return "text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800";
 }
 
 interface Props {
@@ -223,8 +280,8 @@ export function ContactsTable({ contacts }: Props) {
             </TableHead>
             <TableHead>
               <span className="flex items-center gap-1.5">
-                <Star className="h-3.5 w-3.5" />
-                Priority
+                <Activity className="h-3.5 w-3.5" />
+                Health
               </span>
             </TableHead>
             <TableHead className="w-8" />
@@ -314,7 +371,16 @@ export function ContactsTable({ contacts }: Props) {
                   )}
                 </TableCell>
                 <TableCell>
-                  {contact.priorityScore !== null ? contact.priorityScore : "—"}
+                  {(() => {
+                    const score = computeHealthScore(contact);
+                    return (
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${healthScoreColor(score)}`}
+                      >
+                        {score}
+                      </span>
+                    );
+                  })()}
                 </TableCell>
                 <TableCell className="w-8 pr-3">
                   <ContactLogButton
