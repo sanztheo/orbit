@@ -14,7 +14,6 @@ import { buttonVariants } from "@/components/ui/button";
 import { ContactFilters } from "./contact-filters";
 import { ExportButton } from "./export-button";
 import { ExportAllButton } from "./export-all-button";
-import { ImportButton } from "./import-button";
 import { ContactLogButton } from "./contact-log-button";
 import {
   UserPlus,
@@ -24,6 +23,7 @@ import {
   AlertTriangle,
   Calendar,
   Sparkles,
+  Upload,
 } from "lucide-react";
 
 type ContactType = "lead" | "customer" | "investor" | "advisor" | "partner";
@@ -155,7 +155,13 @@ export default async function ContactsPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <ImportButton />
+          <Link
+            href="/dashboard/contacts/import"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <Upload className="h-4 w-4 mr-1.5" />
+            Import CSV
+          </Link>
           <ExportButton />
           <ExportAllButton />
           <Link
@@ -210,7 +216,12 @@ export default async function ContactsPage({
               >
                 Add contact
               </Link>
-              <ImportButton label="Import CSV" />
+              <Link
+                href="/dashboard/contacts/import"
+                className={buttonVariants({ variant: "outline" })}
+              >
+                Import CSV
+              </Link>
             </div>
           )}
         </div>
