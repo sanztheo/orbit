@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
 import { ThemeToggle } from "./theme-toggle";
 import { GlobalSearch } from "./global-search";
+import { AiQuotaIndicator } from "./ai-quota-indicator";
 import {
   LayoutDashboard,
   Users,
@@ -61,7 +62,8 @@ export default async function DashboardLayout({
             );
           })}
         </nav>
-        <div className="mt-auto px-2 pt-4">
+        <div className="mt-auto flex flex-col gap-2 px-2 pt-4">
+          <AiQuotaIndicator />
           <ThemeToggle />
         </div>
       </aside>
