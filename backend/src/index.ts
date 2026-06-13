@@ -3,9 +3,11 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { requireAuth } from "./middleware/auth.js";
+import { requireWorkspace } from "./middleware/workspace.js";
 import { contactsRouter } from "./routes/contacts.js";
 import { dealsRouter } from "./routes/deals.js";
 import { tasksRouter } from "./routes/tasks.js";
+import { aiRouter } from "./routes/ai.js";
 
 const app = new Hono();
 
@@ -21,9 +23,11 @@ app.use(
 app.get("/health", (c) => c.json({ status: "ok" }));
 
 app.use("/api/*", requireAuth);
+app.use("/api/*", requireWorkspace);
 app.route("/api/contacts", contactsRouter);
 app.route("/api/deals", dealsRouter);
 app.route("/api/tasks", tasksRouter);
+app.route("/api/ai", aiRouter);
 
 const port = Number(process.env.PORT ?? 3001);
 serve({ fetch: app.fetch, port }, () => {

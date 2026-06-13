@@ -120,7 +120,12 @@ export default async function ContactsPage() {
             {contacts.map((contact) => (
               <TableRow key={contact.id}>
                 <TableCell className="font-medium">
-                  <div>{contact.name}</div>
+                  <Link
+                    href={`/dashboard/contacts/${contact.id}`}
+                    className="hover:underline"
+                  >
+                    {contact.name}
+                  </Link>
                   {contact.email && (
                     <div className="text-xs text-muted-foreground">
                       {contact.email}
