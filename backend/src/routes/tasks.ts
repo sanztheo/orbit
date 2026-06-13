@@ -99,8 +99,24 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
   .get("/:id", async (c) => {
     const workspaceId = c.get("workspaceId");
     const [row] = await db
-      .select()
+      .select({
+        id: tasks.id,
+        workspaceId: tasks.workspaceId,
+        title: tasks.title,
+        description: tasks.description,
+        status: tasks.status,
+        priority: tasks.priority,
+        contactId: tasks.contactId,
+        contactName: contacts.name,
+        dealId: tasks.dealId,
+        dueAt: tasks.dueAt,
+        completedAt: tasks.completedAt,
+        createdAt: tasks.createdAt,
+        updatedAt: tasks.updatedAt,
+        priorityScore: sql<number>`COALESCE((SELECT SUM(${deals.value}) FROM ${deals} WHERE ${deals.contactId} = ${tasks.contactId} AND ${deals.workspaceId} = ${tasks.workspaceId}), 0)`,
+      })
       .from(tasks)
+      .leftJoin(contacts, eq(tasks.contactId, contacts.id))
       .where(
         and(
           eq(tasks.id, c.req.param("id")),

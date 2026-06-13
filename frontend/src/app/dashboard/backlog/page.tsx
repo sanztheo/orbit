@@ -220,6 +220,12 @@ export default function BacklogPage() {
                         </div>
                       )}
                       <div className="mt-2 flex flex-wrap gap-1">
+                        <Link
+                          href={`/dashboard/tasks/${item.id}`}
+                          className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted"
+                        >
+                          Edit
+                        </Link>
                         {STATUS_NEXT[item.status] && (
                           <button
                             onClick={() => advance(item)}
