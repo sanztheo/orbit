@@ -36,6 +36,8 @@ interface Deal {
   contactCompany: string | null;
   nextAction: string | null;
   fundName: string | null;
+  checkSize: number | null;
+  portfolioUrl: string | null;
 }
 
 const STAGE_ORDER: DealStage[] = [
@@ -460,7 +462,21 @@ export default function DealsPage() {
                       {deal.fundName && (
                         <p className="mt-0.5 text-xs font-medium text-blue-700 truncate">
                           🏦 {deal.fundName}
+                          {deal.checkSize
+                            ? ` · $${deal.checkSize.toLocaleString()}`
+                            : ""}
                         </p>
+                      )}
+                      {deal.portfolioUrl && (
+                        <a
+                          href={deal.portfolioUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="mt-0.5 block text-xs text-blue-500 hover:underline truncate"
+                        >
+                          Portfolio →
+                        </a>
                       )}
                       {deal.value != null && (
                         <p className="mt-1 text-xs text-muted-foreground">
