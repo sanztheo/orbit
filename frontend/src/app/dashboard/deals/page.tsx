@@ -117,6 +117,8 @@ export default function DealsPage() {
     null,
   );
   const [nextActionDraft, setNextActionDraft] = useState("");
+  const [editingValue, setEditingValue] = useState<string | null>(null);
+  const [valueDraft, setValueDraft] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   async function fetchDeals() {
@@ -217,6 +219,21 @@ export default function DealsPage() {
         { nextAction: trimmed },
         token,
       );
+    }
+  }
+
+  async function saveValue(dealId: string, rawValue: string) {
+    setEditingValue(null);
+    const parsed = rawValue.trim()
+      ? parseInt(rawValue.replace(/\D/g, ""), 10)
+      : null;
+    const val = isNaN(parsed ?? NaN) ? null : parsed;
+    setAllDeals((prev) =>
+      prev.map((d) => (d.id === dealId ? { ...d, value: val } : d)),
+    );
+    const token = await getToken();
+    if (token) {
+      await apiClient.patch(`/api/deals/${dealId}`, { value: val }, token);
     }
   }
 
@@ -560,10 +577,37 @@ export default function DealsPage() {
                             })}
                           </p>
                         )}
-                      {deal.value != null && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          ${deal.value.toLocaleString()}
-                        </p>
+                      {editingValue === deal.id ? (
+                        <input
+                          autoFocus
+                          type="number"
+                          value={valueDraft}
+                          onChange={(e) => setValueDraft(e.target.value)}
+                          onBlur={() => saveValue(deal.id, valueDraft)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter")
+                              saveValue(deal.id, valueDraft);
+                            if (e.key === "Escape") setEditingValue(null);
+                          }}
+                          placeholder="Value…"
+                          className="mt-1 w-full rounded border border-primary/40 bg-card px-1.5 py-0.5 text-xs focus:outline-none"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setValueDraft(
+                              deal.value != null ? String(deal.value) : "",
+                            );
+                            setEditingValue(deal.id);
+                          }}
+                          className="mt-1 w-full text-left text-xs text-muted-foreground hover:text-foreground truncate"
+                        >
+                          {deal.value != null
+                            ? `$${deal.value.toLocaleString()}`
+                            : "+ value"}
+                        </button>
                       )}
                       <p
                         className={cn(
