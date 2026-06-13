@@ -279,3 +279,23 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 [P2] [TODO] Mobile quick-capture: one-tap "log a touchpoint" from home screen (PWA shortcut) — relationships happen away from the desk; current mobile UX requires 4 taps to log a call; PWA shortcuts cut it to 1.
 
 [P3] [TODO] "Missing data" record health score: show per-contact completeness score (email? linkedin? last_contacted? company?) as a bar in contact list — founders can't trust CRM data they can't audit; visible completeness reduces data decay.
+
+---
+
+## Research-Driven — New Pain Points (2026-06-13 round 4)
+
+[P1] [TODO] Voice note to activity: record a 30-second voice memo from contact page, transcribe via Whisper/Claude, auto-log as activity — data entry is the core CRM hatred; 6+ hrs/week lost to manual logging; voice capture eliminates it without typing.
+
+[P1] [TODO] "Who do I know at [company]?" shortcut: one-click query from deal card to find contacts who work at the target company or fund — warm intros convert 5× better than cold; CRMs never surface existing connections for a target deal.
+
+[P1] [DONE] Notion CSV import improvements: add lastContactedAt + twitterHandle column support for Notion/Folk/HubSpot exports — Notion-as-CRM has 3-month adoption then abandon cycle; frictionless import captures these lapsed users at the moment of failure.
+
+[P1] [TODO] Automation triggers (webhook out): fire a webhook when deal stage changes, contact added, or cadence overdue — Folk has no native automation; founders wire their own Zap to get basics; native webhook eliminates the Zap tax.
+
+[P2] [TODO] Context card before cold outreach: for contacts with no prior activity, auto-pull their LinkedIn headline + recent company news as a brief — founders spend 15-20 min manually researching before each cold email; Orbit can draft the context in seconds.
+
+[P2] [TODO] Per-deal next-action field: a single "Next step" text field + due date on each deal card in the Kanban — "what do I do next on this deal?" is the most common stall; forcing a next-action at every stage change reduces pipeline rot.
+
+[P3] [TODO] Zapier / Make integration: list Orbit as a Zapier app with triggers (new contact, stage changed) and actions (create contact, log activity) — founders who already use Zapier will connect Orbit to their existing stack automatically.
+
+[P3] [TODO] Team invite (1–3 seats): add a co-founder/EA seat with read/write access to the same workspace — solo founders graduate to "1 employee" and need to share CRM context without paying enterprise prices.

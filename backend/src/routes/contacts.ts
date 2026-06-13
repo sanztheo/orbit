@@ -231,6 +231,19 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
         ? (rawType as "lead" | "customer" | "investor" | "advisor" | "partner")
         : "lead";
 
+      const rawLastContacted = col(row, [
+        "last contacted",
+        "last contact",
+        "last contact date",
+        "last touched",
+        "last interaction",
+        "last activity",
+      ]);
+      const lastContactedAt =
+        rawLastContacted && !isNaN(Date.parse(rawLastContacted))
+          ? new Date(rawLastContacted)
+          : undefined;
+
       await db.insert(contacts).values({
         id: generateId(),
         workspaceId,
@@ -246,7 +259,21 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
         ]),
         type,
         notes: col(row, ["notes", "note", "description", "memo"]),
-        linkedinUrl: col(row, ["linkedin", "linkedin url", "linkedin profile"]),
+        linkedinUrl: col(row, [
+          "linkedin",
+          "linkedin url",
+          "linkedin profile",
+          "linkedin profile url",
+        ]),
+        twitterHandle: col(row, [
+          "twitter",
+          "twitter handle",
+          "x",
+          "x handle",
+          "twitter url",
+          "x url",
+        ]),
+        lastContactedAt,
       });
       if (email) existingEmails.add(email.toLowerCase());
       imported++;
