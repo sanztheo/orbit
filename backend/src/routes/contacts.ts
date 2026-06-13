@@ -158,13 +158,45 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
   })
   .get("/export", async (c) => {
     const workspaceId = c.get("workspaceId");
+    const search = c.req.query("search");
+    const type = c.req.query("type") as
+      | "lead"
+      | "customer"
+      | "investor"
+      | "advisor"
+      | "partner"
+      | undefined;
+    const stale = c.req.query("stale") === "1";
+    const tag = c.req.query("tag");
+    const oneEightyDaysAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
+
     const rows = await db
       .select()
       .from(contacts)
-      .where(eq(contacts.workspaceId, workspaceId));
+      .where(
+        and(
+          eq(contacts.workspaceId, workspaceId),
+          search
+            ? or(
+                ilike(contacts.name, `%${search}%`),
+                ilike(contacts.email, `%${search}%`),
+                ilike(contacts.company, `%${search}%`),
+              )
+            : undefined,
+          type ? eq(contacts.type, type) : undefined,
+          stale
+            ? or(
+                isNull(contacts.lastContactedAt),
+                lt(contacts.lastContactedAt, oneEightyDaysAgo),
+              )
+            : undefined,
+          tag ? sql`${tag} = ANY(${contacts.tags})` : undefined,
+        ),
+      )
+      .orderBy(asc(contacts.name));
 
     const header =
-      "name,email,company,type,notes,linkedinUrl,twitterHandle,cadenceDays,lastContactedAt,nextFollowUpAt,priorityScore,createdAt";
+      "name,email,company,type,tags,notes,linkedinUrl,twitterHandle,cadenceDays,lastContactedAt,nextFollowUpAt,priorityScore,createdAt";
     const escape = (v: string | null | undefined) =>
       v == null ? "" : `"${v.replace(/"/g, '""')}"`;
     const lines = rows.map((r) =>
@@ -173,6 +205,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
         escape(r.email),
         escape(r.company),
         escape(r.type),
+        escape(r.tags.join(";")),
         escape(r.notes),
         escape(r.linkedinUrl),
         escape(r.twitterHandle),
