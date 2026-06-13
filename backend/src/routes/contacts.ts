@@ -59,6 +59,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
     const sort = c.req.query("sort") ?? "name";
     const company = c.req.query("company");
     const excludeId = c.req.query("excludeId");
+    const tag = c.req.query("tag");
     const oneEightyDaysAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
 
     const searchFilter = search
@@ -82,6 +83,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
           lt(contacts.lastContactedAt, oneEightyDaysAgo),
         )
       : undefined;
+    const tagFilter = tag ? sql`${tag} = ANY(${contacts.tags})` : undefined;
 
     const orderBy = (() => {
       switch (sort) {
@@ -111,6 +113,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
           staleFilter,
           companyFilter,
           excludeFilter,
+          tagFilter,
         ),
       )
       .orderBy(...orderBy);

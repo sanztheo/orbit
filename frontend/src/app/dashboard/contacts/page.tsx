@@ -23,11 +23,12 @@ export default async function ContactsPage({
     type?: string;
     stale?: string;
     sort?: string;
+    tag?: string;
   }>;
 }) {
   const { getToken } = await auth();
   const token = await getToken();
-  const { search, type, stale, sort } = await searchParams;
+  const { search, type, stale, sort, tag } = await searchParams;
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const qs = new URLSearchParams();
@@ -35,6 +36,7 @@ export default async function ContactsPage({
   if (type) qs.set("type", type);
   if (stale === "1") qs.set("stale", "1");
   if (sort) qs.set("sort", sort);
+  if (tag) qs.set("tag", tag);
 
   const [res, staleRes] = await Promise.all([
     fetch(`${apiUrl}/api/contacts?${qs}`, {

@@ -11,7 +11,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, Tag, X } from "lucide-react";
 
 const TYPES = ["lead", "customer", "investor", "advisor", "partner"] as const;
 
@@ -27,6 +27,7 @@ export function ContactFilters() {
   const router = useRouter();
   const params = useSearchParams();
   const staleActive = params.get("stale") === "1";
+  const activeTag = params.get("tag") ?? "";
 
   const update = useCallback(
     (key: string, value: string) => {
@@ -106,6 +107,34 @@ export function ContactFilters() {
       >
         ⚠ Stale 180d+
       </button>
+
+      {activeTag ? (
+        <button
+          onClick={() => update("tag", "")}
+          className="inline-flex items-center gap-1 rounded-full border border-muted-foreground/30 bg-muted px-2.5 py-1 text-sm font-medium text-foreground hover:bg-muted/70 transition-colors"
+        >
+          <Tag className="h-3 w-3" />
+          {activeTag}
+          <X className="h-3 w-3 ml-0.5 text-muted-foreground" />
+        </button>
+      ) : (
+        <div className="relative">
+          <Tag className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Filter by tag…"
+            className="pl-7 h-9 w-36 text-sm"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const val = (e.target as HTMLInputElement).value
+                  .trim()
+                  .toLowerCase();
+                if (val) update("tag", val);
+              }
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
