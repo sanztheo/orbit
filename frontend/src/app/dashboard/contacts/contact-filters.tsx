@@ -101,7 +101,7 @@ export function ContactFilters() {
           "rounded-lg border px-2.5 py-1.5 text-sm font-medium transition-colors",
           staleActive
             ? "border-amber-500 bg-amber-100 dark:bg-amber-950/20 text-amber-900 dark:text-amber-300"
-            : "border-border hover:border-amber-400 hover:text-amber-700",
+            : "border-border hover:border-amber-400 hover:text-amber-700 dark:hover:text-amber-400",
         )}
       >
         ⚠ Stale 180d+

@@ -186,15 +186,15 @@ export default async function ContactsPage({
       </Suspense>
 
       {staleCount > 0 && stale !== "1" && (
-        <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm">
-          <span className="text-amber-900">
+        <div className="flex items-center justify-between rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 px-4 py-2.5 text-sm">
+          <span className="text-amber-900 dark:text-amber-200">
             <span className="font-semibold">{staleCount}</span> contact
             {staleCount !== 1 ? "s" : ""} not touched in 180+ days — verify or
             reach out.
           </span>
           <Link
             href="/dashboard/contacts?stale=1"
-            className="ml-4 shrink-0 text-xs font-medium text-amber-700 hover:underline"
+            className="ml-4 shrink-0 text-xs font-medium text-amber-700 dark:text-amber-400 hover:underline"
           >
             View stale →
           </Link>

@@ -79,9 +79,9 @@ const PRICING = [
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Nav */}
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-white/90 px-6 py-3 backdrop-blur">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-background/90 px-6 py-3 backdrop-blur">
         <span className="text-base font-semibold tracking-tight">Orbit</span>
         <div className="flex items-center gap-2">
           <Link

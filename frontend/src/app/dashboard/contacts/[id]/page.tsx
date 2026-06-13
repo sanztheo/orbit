@@ -159,7 +159,7 @@ export default async function ContactDetailPage({
 
       {/* Staleness alert */}
       {isStale && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex items-start gap-2">
+        <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-300 flex items-start gap-2">
           <span className="shrink-0 mt-0.5">⚠️</span>
           <div>
             <span className="font-medium">Data may be stale</span>
@@ -170,7 +170,7 @@ export default async function ContactDetailPage({
             .{" "}
             <Link
               href={`/dashboard/contacts/${contact.id}/edit`}
-              className="underline underline-offset-2 hover:text-amber-900"
+              className="underline underline-offset-2 hover:text-amber-900 dark:hover:text-amber-200"
             >
               Verify or update info →
             </Link>
