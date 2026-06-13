@@ -142,6 +142,29 @@ export default function NewContactPage() {
           </div>
         </div>
 
+        {/* Completeness nudge */}
+        {name.trim() && (
+          <div className="flex items-center gap-2">
+            <div className="flex gap-0.5">
+              {[!!email, !!company, !!notes].map((done, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 w-8 rounded-full transition-colors ${done ? "bg-emerald-500" : "bg-muted-foreground/20"}`}
+                />
+              ))}
+            </div>
+            {(!email || !company || !notes) && (
+              <span className="text-xs text-muted-foreground">
+                {[!email && "email", !company && "company", !notes && "notes"]
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .join(", ")}{" "}
+                improves AI context
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Optional fields toggle */}
         {!showMore && (
           <button
