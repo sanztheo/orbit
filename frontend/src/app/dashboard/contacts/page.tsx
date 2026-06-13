@@ -26,8 +26,23 @@ interface Contact {
   type: ContactType;
   notes: string | null;
   lastContactedAt: string | null;
+  nextFollowUpAt: string | null;
   priorityScore: number | null;
   createdAt: string;
+}
+
+function isFollowUpDue(nextFollowUpAt: string | null): boolean {
+  if (!nextFollowUpAt) return false;
+  return new Date(nextFollowUpAt) <= new Date();
+}
+
+function formatFollowUpDate(nextFollowUpAt: string | null): string {
+  if (!nextFollowUpAt) return "";
+  const d = new Date(nextFollowUpAt);
+  const daysLeft = Math.ceil((d.getTime() - Date.now()) / 86_400_000);
+  if (daysLeft < 0) return `${Math.abs(daysLeft)}d overdue`;
+  if (daysLeft === 0) return "due today";
+  return `due in ${daysLeft}d`;
 }
 
 interface ContactsResponse {
@@ -215,6 +230,17 @@ export default async function ContactsPage({
                         ⚠️ stale
                       </span>
                     )}
+                    {contact.nextFollowUpAt && (
+                      <span
+                        className={`text-xs font-medium ${
+                          isFollowUpDue(contact.nextFollowUpAt)
+                            ? "text-red-600"
+                            : "text-blue-600"
+                        }`}
+                      >
+                        📅 {formatFollowUpDate(contact.nextFollowUpAt)}
+                      </span>
+                    )}
                   </div>
                 </Link>
               );
@@ -272,6 +298,17 @@ export default async function ContactsPage({
                       <div className="text-xs text-muted-foreground">
                         {formatDate(contact.lastContactedAt)}
                       </div>
+                      {contact.nextFollowUpAt && (
+                        <div
+                          className={`text-xs font-medium mt-0.5 ${
+                            isFollowUpDue(contact.nextFollowUpAt)
+                              ? "text-red-600"
+                              : "text-blue-600"
+                          }`}
+                        >
+                          📅 {formatFollowUpDate(contact.nextFollowUpAt)}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       {contact.priorityScore !== null
