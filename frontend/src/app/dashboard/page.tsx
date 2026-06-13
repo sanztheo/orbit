@@ -193,6 +193,15 @@ export default function DashboardPage() {
       occurredAt: string;
     }[]
   >([]);
+  const [overdueTasks, setOverdueTasks] = useState<
+    {
+      id: string;
+      title: string;
+      priority: string;
+      dueAt: string;
+      contactName: string | null;
+    }[]
+  >([]);
 
   async function markContacted(contactId: string) {
     setMarkingId(contactId);
@@ -304,12 +313,13 @@ export default function DashboardPage() {
         ? { Authorization: `Bearer ${token}` }
         : {};
       try {
-        const [statsRes, actionsRes, onboardingRes, activitiesRes] =
+        const [statsRes, actionsRes, onboardingRes, activitiesRes, overdueRes] =
           await Promise.all([
             fetch(`${apiUrl}/api/stats`, { headers }),
             fetch(`${apiUrl}/api/stats/action-items`, { headers }),
             fetch(`${apiUrl}/api/stats/onboarding`, { headers }),
             fetch(`${apiUrl}/api/activities`, { headers }),
+            fetch(`${apiUrl}/api/tasks?overdue=1`, { headers }),
           ]);
         if (statsRes.ok) setStats(await statsRes.json());
         else setOffline(true);
@@ -318,6 +328,10 @@ export default function DashboardPage() {
         if (activitiesRes.ok) {
           const json = await activitiesRes.json();
           setRecentActivities((json.data ?? []).slice(0, 8));
+        }
+        if (overdueRes.ok) {
+          const json = await overdueRes.json();
+          setOverdueTasks((json.data ?? []).slice(0, 5));
         }
       } catch {
         setOffline(true);
@@ -967,6 +981,52 @@ export default function DashboardPage() {
           )}
         </ActionSection>
       </div>
+
+      {overdueTasks.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold flex items-center gap-1.5">
+              <CheckSquare className="h-4 w-4 text-red-500 dark:text-red-400" />
+              Overdue Tasks
+            </h2>
+            <Link
+              href="/dashboard/tasks"
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              View all →
+            </Link>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {overdueTasks.map((t) => {
+              const daysOver = Math.floor(
+                (Date.now() - new Date(t.dueAt).getTime()) / 86_400_000,
+              );
+              return (
+                <div
+                  key={t.id}
+                  className="flex items-center gap-2 rounded-lg border border-border p-2.5"
+                >
+                  <Link
+                    href={`/dashboard/tasks/${t.id}`}
+                    className="flex-1 min-w-0 hover:opacity-80"
+                  >
+                    <p className="text-sm font-medium truncate">{t.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t.contactName && <>{t.contactName} · </>}
+                      <span className="text-red-600 dark:text-red-400 font-medium">
+                        {daysOver === 0 ? "due today" : `${daysOver}d overdue`}
+                      </span>
+                    </p>
+                  </Link>
+                  <span className="shrink-0 text-xs font-mono font-medium uppercase text-muted-foreground">
+                    {t.priority}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {recentActivities.length > 0 && (
         <div className="flex flex-col gap-2">

@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, lte, ne, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db, tasks, contacts, deals } from "../db/index.js";
@@ -29,6 +29,14 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
   .get("/", async (c) => {
     const workspaceId = c.get("workspaceId");
     const contactId = c.req.query("contactId");
+    const overdue = c.req.query("overdue") === "1";
+    const filters = [eq(tasks.workspaceId, workspaceId)];
+    if (contactId) filters.push(eq(tasks.contactId, contactId));
+    if (overdue) {
+      filters.push(lte(tasks.dueAt, new Date()));
+      filters.push(ne(tasks.status, "done"));
+      filters.push(ne(tasks.status, "cancelled"));
+    }
     const rows = await db
       .select({
         id: tasks.id,
@@ -49,14 +57,8 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
       })
       .from(tasks)
       .leftJoin(contacts, eq(tasks.contactId, contacts.id))
-      .where(
-        contactId
-          ? and(
-              eq(tasks.workspaceId, workspaceId),
-              eq(tasks.contactId, contactId),
-            )
-          : eq(tasks.workspaceId, workspaceId),
-      );
+      .where(and(...filters))
+      .orderBy(tasks.dueAt);
     return c.json({ data: rows, total: rows.length });
   })
   .post("/", zValidator("json", createSchema), async (c) => {
