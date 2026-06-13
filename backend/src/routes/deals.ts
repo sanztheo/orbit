@@ -14,6 +14,7 @@ const toDate = z
 const createSchema = z.object({
   title: z.string().min(1),
   contactId: z.string().optional(),
+  pipelineType: z.enum(["sales", "fundraising", "partnership"]).optional(),
   value: z.number().int().min(0).optional(),
   stage: z
     .enum([

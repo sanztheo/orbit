@@ -42,6 +42,12 @@ export const taskPriorityEnum = pgEnum("task_priority", [
 
 export const memberRoleEnum = pgEnum("member_role", ["owner", "member"]);
 
+export const pipelineTypeEnum = pgEnum("pipeline_type", [
+  "sales",
+  "fundraising",
+  "partnership",
+]);
+
 export const planEnum = pgEnum("plan", ["solo", "founder", "studio"]);
 
 // Workspaces — one per user on signup, supports up to plan seat limit
@@ -120,6 +126,7 @@ export const deals = pgTable(
     }),
     title: text("title").notNull(),
     value: integer("value"),
+    pipelineType: pipelineTypeEnum("pipeline_type").notNull().default("sales"),
     stage: dealStageEnum("stage").notNull().default("prospect"),
     stageChangedAt: timestamp("stage_changed_at").notNull().defaultNow(),
     probability: integer("probability").default(0),
