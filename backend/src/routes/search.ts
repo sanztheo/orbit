@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { and, eq, ilike, or } from "drizzle-orm";
-import { db, contacts, deals, tasks } from "../db/index.js";
+import { and, desc, eq, ilike, or } from "drizzle-orm";
+import { db, contacts, deals, tasks, activities } from "../db/index.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
 
 export const searchRouter = new Hono<WorkspaceEnv>().get("/", async (c) => {
@@ -10,7 +10,7 @@ export const searchRouter = new Hono<WorkspaceEnv>().get("/", async (c) => {
 
   const pattern = `%${q}%`;
 
-  const [contactRows, dealRows, taskRows] = await Promise.all([
+  const [contactRows, dealRows, taskRows, activityRows] = await Promise.all([
     db
       .select({
         id: contacts.id,
@@ -61,7 +61,36 @@ export const searchRouter = new Hono<WorkspaceEnv>().get("/", async (c) => {
         ),
       )
       .limit(3),
+
+    db
+      .select({
+        id: activities.id,
+        contactId: activities.contactId,
+        contactName: contacts.name,
+        type: activities.type,
+        subject: activities.subject,
+        body: activities.body,
+        occurredAt: activities.occurredAt,
+      })
+      .from(activities)
+      .leftJoin(contacts, eq(activities.contactId, contacts.id))
+      .where(
+        and(
+          eq(activities.workspaceId, workspaceId),
+          or(
+            ilike(activities.subject, pattern),
+            ilike(activities.body, pattern),
+          ),
+        ),
+      )
+      .orderBy(desc(activities.occurredAt))
+      .limit(3),
   ]);
 
-  return c.json({ contacts: contactRows, deals: dealRows, tasks: taskRows });
+  return c.json({
+    contacts: contactRows,
+    deals: dealRows,
+    tasks: taskRows,
+    activities: activityRows,
+  });
 });

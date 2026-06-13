@@ -28,10 +28,21 @@ interface SearchTask {
   priority: string;
 }
 
+interface SearchActivity {
+  id: string;
+  contactId: string | null;
+  contactName: string | null;
+  type: string;
+  subject: string | null;
+  body: string | null;
+  occurredAt: string;
+}
+
 interface SearchResults {
   contacts: SearchContact[];
   deals: SearchDeal[];
   tasks: SearchTask[];
+  activities: SearchActivity[];
 }
 
 export function GlobalSearch() {
@@ -112,6 +123,13 @@ export function GlobalSearch() {
       label: t.title,
       sub: `${t.priority.toUpperCase()} · ${t.status.replace(/_/g, " ")}`,
     })),
+    ...(results?.activities ?? []).map((a) => ({
+      href: a.contactId
+        ? `/dashboard/contacts/${a.contactId}`
+        : "/dashboard/activities",
+      label: a.subject ?? `${a.type} activity`,
+      sub: [a.contactName, a.type].filter(Boolean).join(" · "),
+    })),
   ];
 
   function navigate(href: string) {
@@ -149,7 +167,7 @@ export function GlobalSearch() {
             value={q}
             onChange={(e) => handleInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Search contacts, deals, tasks…"
+            placeholder="Search contacts, deals, tasks, activities…"
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           {loading && <span className="text-xs text-muted-foreground">…</span>}
@@ -221,6 +239,36 @@ export function GlobalSearch() {
                     <span className="font-medium">{t.title}</span>
                     <span className="text-xs text-muted-foreground capitalize">
                       {t.priority.toUpperCase()} · {t.status.replace(/_/g, " ")}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+            {results && (results.activities ?? []).length > 0 && (
+              <li className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Activities
+              </li>
+            )}
+            {(results?.activities ?? []).map((a, i) => {
+              const idx =
+                (results?.contacts.length ?? 0) +
+                (results?.deals.length ?? 0) +
+                (results?.tasks.length ?? 0) +
+                i;
+              const href = a.contactId
+                ? `/dashboard/contacts/${a.contactId}`
+                : "/dashboard/activities";
+              return (
+                <li key={a.id}>
+                  <button
+                    onClick={() => navigate(href)}
+                    className={`w-full text-left px-4 py-2 text-sm flex flex-col transition-colors ${activeIdx === idx ? "bg-muted" : "hover:bg-muted/50"}`}
+                  >
+                    <span className="font-medium">
+                      {a.subject ?? `${a.type} activity`}
+                    </span>
+                    <span className="text-xs text-muted-foreground capitalize">
+                      {[a.contactName, a.type].filter(Boolean).join(" · ")}
                     </span>
                   </button>
                 </li>
