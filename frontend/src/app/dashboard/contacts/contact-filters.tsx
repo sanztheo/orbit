@@ -3,8 +3,24 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Search } from "lucide-react";
 
 const TYPES = ["lead", "customer", "investor", "advisor", "partner"] as const;
+
+const SORTS = [
+  { value: "name", label: "Name A–Z" },
+  { value: "stale", label: "Least recently contacted" },
+  { value: "recently_contacted", label: "Recently contacted" },
+  { value: "newest", label: "Newest first" },
+] as const;
 
 export function ContactFilters() {
   const router = useRouter();
@@ -30,41 +46,60 @@ export function ContactFilters() {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <input
-        type="search"
-        placeholder="Search name, email, company, notes…"
-        defaultValue={params.get("search") ?? ""}
-        onChange={(e) => update("search", e.target.value)}
-        className="w-64 rounded-lg border border-border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-      />
-      <select
-        defaultValue={params.get("type") ?? ""}
-        onChange={(e) => update("type", e.target.value)}
-        className="rounded-lg border border-border px-2 py-1.5 text-sm"
+      <div className="relative">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Search name, email, company…"
+          defaultValue={params.get("search") ?? ""}
+          onChange={(e) => update("search", e.target.value)}
+          className="pl-8 h-9 w-64 text-sm"
+        />
+      </div>
+
+      <Select
+        defaultValue={params.get("type") ?? "all"}
+        onValueChange={(v) => {
+          if (v) update("type", v === "all" ? "" : v);
+        }}
       >
-        <option value="">All types</option>
-        {TYPES.map((t) => (
-          <option key={t} value={t}>
-            {t.charAt(0).toUpperCase() + t.slice(1)}
-          </option>
-        ))}
-      </select>
-      <select
+        <SelectTrigger className="h-9 w-36 text-sm">
+          <SelectValue placeholder="All types" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All types</SelectItem>
+          {TYPES.map((t) => (
+            <SelectItem key={t} value={t}>
+              {t.charAt(0).toUpperCase() + t.slice(1)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select
         defaultValue={params.get("sort") ?? "name"}
-        onChange={(e) => update("sort", e.target.value)}
-        className="rounded-lg border border-border px-2 py-1.5 text-sm"
+        onValueChange={(v) => {
+          if (v) update("sort", v);
+        }}
       >
-        <option value="name">Name A–Z</option>
-        <option value="stale">Least recently contacted</option>
-        <option value="recently_contacted">Recently contacted</option>
-        <option value="newest">Newest first</option>
-      </select>
+        <SelectTrigger className="h-9 w-48 text-sm">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {SORTS.map((s) => (
+            <SelectItem key={s.value} value={s.value}>
+              {s.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
       <button
         onClick={toggleStale}
         className={cn(
           "rounded-lg border px-2.5 py-1.5 text-sm font-medium transition-colors",
           staleActive
-            ? "border-amber-500 bg-amber-100 text-amber-900"
+            ? "border-amber-500 bg-amber-100 dark:bg-amber-950/20 text-amber-900 dark:text-amber-300"
             : "border-border hover:border-amber-400 hover:text-amber-700",
         )}
       >
