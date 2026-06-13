@@ -24,7 +24,7 @@ import {
   workspaces,
 } from "../db/index.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
-import { aiRateLimit } from "../middleware/rate-limit.js";
+import { aiRateLimit, aiQuota } from "../middleware/rate-limit.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -36,6 +36,7 @@ export const aiRouter = new Hono<WorkspaceEnv>()
   .post(
     "/follow-up",
     aiRateLimit,
+    aiQuota,
     zValidator("json", followUpSchema),
     async (c) => {
       const workspaceId = c.get("workspaceId");
@@ -153,6 +154,7 @@ Draft a follow-up email to ${contact.name}.`;
   .post(
     "/meeting-brief",
     aiRateLimit,
+    aiQuota,
     zValidator("json", z.object({ contactId: z.string().min(1) })),
     async (c) => {
       const workspaceId = c.get("workspaceId");
@@ -283,6 +285,7 @@ Generate the pre-meeting brief.`,
   .post(
     "/close-the-loop",
     aiRateLimit,
+    aiQuota,
     zValidator("json", z.object({ taskId: z.string().min(1) })),
     async (c) => {
       const workspaceId = c.get("workspaceId");
@@ -358,7 +361,7 @@ Draft the "we shipped it" email.`,
       });
     },
   )
-  .post("/daily-brief", aiRateLimit, async (c) => {
+  .post("/daily-brief", aiRateLimit, aiQuota, async (c) => {
     const workspaceId = c.get("workspaceId");
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -506,7 +509,7 @@ Generate today's brief.`,
 
     return c.json({ brief });
   })
-  .post("/investor-update", aiRateLimit, async (c) => {
+  .post("/investor-update", aiRateLimit, aiQuota, async (c) => {
     const workspaceId = c.get("workspaceId");
     const thisMonthStart = new Date(
       new Date().getFullYear(),
@@ -627,6 +630,7 @@ Draft a concise investor update email.`,
   .post(
     "/cold-start",
     aiRateLimit,
+    aiQuota,
     zValidator("json", z.object({ contactId: z.string().min(1) })),
     async (c) => {
       const workspaceId = c.get("workspaceId");
