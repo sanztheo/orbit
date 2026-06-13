@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -15,9 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WaitlistKit — Viral waitlists for indie hackers",
-  description:
-    "Create a viral waitlist page in 5 minutes. Referral queue, email notifications, and analytics.",
+  title: "Orbit",
+  description: "Solo-founder OS: CRM + backlog + investor pipeline",
 };
 
 export default function RootLayout({
@@ -33,7 +32,7 @@ export default function RootLayout({
       >
         <body className="min-h-full flex flex-col">
           {children}
-          <Toaster />
+          <Toaster richColors />
         </body>
       </html>
     </ClerkProvider>

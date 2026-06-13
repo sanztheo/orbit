@@ -7,15 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "@auth/drizzle-adapter": "^1.11.2",
+    "@anthropic-ai/sdk": "^0.104.1",
     "@base-ui/react": "^1.5.0",
     "@clerk/nextjs": "^7.5.2",
     "@types/pg": "^8.20.0",
@@ -38,15 +37,15 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@vitest/ui": "^2.0.0",
-    "vitest": "^2.0.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/ui": "^4.1.8",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   }
 }

@@ -1,49 +1,37 @@
-# PROGRESS — WaitlistKit
+# Orbit — Progress Log
 
-## 2026-06-13
+## Session: 2026-06-13 — Foundation
 
-### Session 1
+### Completed
 
-**Completed:**
-- [x] Chose product: WaitlistKit (viral waitlist SaaS)
-- [x] Created PRODUCT.md with vision, stack, business model
-- [x] Initialized Next.js 14 project (TypeScript, Tailwind, App Router)
-- [x] Created BACKLOG.md with 35+ tasks
+- Pivoted project from WaitlistKit to Orbit (solo-founder OS)
+- Wrote PRODUCT.md: full product definition, ICP, pain analysis, competitor matrix, pricing tiers, stack decisions
+- Wrote BACKLOG.md: 60+ prioritized tasks across 12 domains (P0–P3), each with a why-it-matters rationale
+- Wrote RESEARCH.md: market research foundation (HubSpot free tier gutting, Attio going upmarket, Folk ceiling)
+- Replaced old waitlist schema with Orbit domain schema in `src/db/schema.ts`:
+  - `contacts` table with `contact_type` enum (lead / customer / investor / advisor / partner), indexed on userId + email
+  - `deals` table with `deal_stage` enum (prospect → closed_won/lost), FK to contacts with cascade delete
+  - `tasks` table with `task_status` + `task_priority` enums, FK to both contacts and deals
+  - `activities` table for timeline feed (email, call, note events), FK to contacts + deals
+  - Drizzle inferred types exported for all 4 tables
+- Wired Clerk auth in `src/app/layout.tsx` (ClerkProvider wrapping, Orbit metadata title/description)
+- Added Sonner toaster to root layout
+- Cleaned up old WaitlistKit API routes, dashboard pages, public waitlist pages, and lib utilities
+- Added `src/components/ui/tabs.tsx` and `src/components/ui/textarea.tsx` (shadcn/ui)
+- Added `src/proxy.ts` (dev proxy helper)
 
-**In Progress:**
-- [ ] Installing dependencies (Drizzle, Clerk, shadcn, Resend)
-- [ ] Setting up database schema
+### Current State
 
-**Next:**
-- DB schema + migration
-- Clerk auth setup
-- Dashboard layout
+Blank Next.js shell with:
+- Clerk auth configured (ClerkProvider in layout, sign-in/sign-up pages wired)
+- Drizzle schema for 4 core tables (contacts, deals, tasks, activities) — no migrations run yet
+- No dashboard, no API routes, no UI beyond sign-in/sign-up
+- `page.tsx` is still the default Next.js placeholder
 
-### Build Session — Autonomous
+### Next — Top 3 Priorities (from BACKLOG.md P0s)
 
-**Completed this session:**
-- [x] DB schema (waitlists + subscribers tables) with Drizzle ORM
-- [x] PostgreSQL local DB created and schema pushed
-- [x] Clerk auth integration (middleware, layout, sign-in/sign-up pages)
-- [x] API routes: POST /api/waitlists, GET /api/waitlists, PATCH/DELETE /api/waitlists/[id]
-- [x] API route: GET /api/waitlists/[id]/subscribers (with ownership check)
-- [x] API route: POST /api/join (referral tracking, duplicate check, position assignment)
-- [x] API route: GET /api/waitlists/[id]/export (CSV download)
-- [x] Rate limiting on /api/join (in-memory, 10 req/min per IP)
-- [x] Public join page /w/[slug] with referral link support
-- [x] Dashboard layout with sidebar nav
-- [x] Dashboard overview page (stats cards)
-- [x] Waitlists list page with table
-- [x] Create waitlist form page
-- [x] Waitlist detail page with subscribers table
-- [x] Landing page with hero, features, pricing
-- [x] Demo page /w/demo
-- [x] Shared Zod validation schemas in src/lib/validations.ts
-- [x] Reusable DB query helpers in src/lib/db-queries.ts
-- [x] Unit tests for rate-limit and id generation
-- [x] Vitest configured
+1. **Database migrations** — run Drizzle `generate` + `migrate` for the 4 schema tables; add workspace isolation (workspace_id on every table, row-level filtering on every query). BACKLOG: "Write Drizzle ORM migrations for all P0 tables with correct FK constraints and indexes."
 
-**Blocked:**
-- Clerk auth requires real API keys in .env.local (NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY)
-- Resend email requires real RESEND_API_KEY
-- Confirmation email on join not yet implemented (next priority)
+2. **Clerk webhook → workspace provisioning** — implement `POST /api/webhooks/clerk` to create a workspace record on `user.created` event; add `workspaces` and `workspace_members` tables to schema. BACKLOG: "Implement Clerk webhook handler to create workspace + owner record on user.created event."
+
+3. **Contact CRUD API** — `POST /api/contacts`, `GET /api/contacts/:id`, `PATCH /api/contacts/:id` with Zod validation; this is the core of the product. BACKLOG: "Build contact CRUD API with Zod validation."
