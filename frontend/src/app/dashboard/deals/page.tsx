@@ -36,6 +36,8 @@ interface Deal {
   contactId: string | null;
   contactName: string | null;
   contactCompany: string | null;
+  contactLastContactedAt: string | null;
+  contactNextFollowUpAt: string | null;
   nextAction: string | null;
   fundName: string | null;
   checkSize: number | null;
@@ -514,6 +516,33 @@ export default function DealsPage() {
                           Portfolio →
                         </a>
                       )}
+                      {activePipeline === "fundraising" &&
+                        deal.contactLastContactedAt && (
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            Last touch:{" "}
+                            <span
+                              className={
+                                daysSince(deal.contactLastContactedAt) > 30
+                                  ? "text-red-600 dark:text-red-400 font-medium"
+                                  : ""
+                              }
+                            >
+                              {daysSince(deal.contactLastContactedAt)}d ago
+                            </span>
+                          </p>
+                        )}
+                      {activePipeline === "fundraising" &&
+                        deal.contactNextFollowUpAt && (
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            Follow-up:{" "}
+                            {new Date(
+                              deal.contactNextFollowUpAt,
+                            ).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </p>
+                        )}
                       {deal.value != null && (
                         <p className="mt-1 text-xs text-muted-foreground">
                           ${deal.value.toLocaleString()}

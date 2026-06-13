@@ -90,7 +90,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P1] [TODO] Add deal-to-contact association (one deal, multiple contacts, with role per contact: primary / cc / blocker) — Real deals involve multiple people; linking all contacts to a deal enables AI to pull full conversation history when drafting updates.
 
-[P1] [TODO] Build investor pipeline specialized view with: check size field, fund name, portfolio link, last contacted date, follow-up due date — Affinity and Visible charge $49-800+/month for investor-specific features. Orbit includes this in the base plan.
+[P1] [DONE] Build investor pipeline specialized view with: check size field, fund name, portfolio link, last contacted date, follow-up due date — Affinity and Visible charge $49-800+/month for investor-specific features. Orbit includes this in the base plan.
 
 ---
 
