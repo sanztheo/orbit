@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { apiClient } from "@/lib/api-client";
@@ -22,11 +22,29 @@ const PIPELINE_TYPES = [
   { value: "partnership", label: "Partnership" },
 ];
 
+interface Contact {
+  id: string;
+  name: string;
+  company: string | null;
+}
+
 export default function NewDealPage() {
   const router = useRouter();
   const { getToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contactId, setContactId] = useState<string>("");
+
+  useEffect(() => {
+    getToken().then((token) => {
+      if (!token) return;
+      apiClient
+        .get<{ data: Contact[] }>("/api/contacts", token)
+        .then((res) => setContacts(res.data))
+        .catch(() => {});
+    });
+  }, [getToken]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,6 +60,7 @@ export default function NewDealPage() {
       stage: (fd.get("stage") as string) || "prospect",
       ...(valueRaw ? { value: Number(valueRaw) } : {}),
       notes: (fd.get("notes") as string) || undefined,
+      ...(contactId ? { contactId } : {}),
     };
 
     setLoading(true);
@@ -110,6 +129,25 @@ export default function NewDealPage() {
             placeholder="25000"
           />
         </div>
+        {contacts.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="contactId">Contact (optional)</Label>
+            <select
+              id="contactId"
+              value={contactId}
+              onChange={(e) => setContactId(e.target.value)}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">— None —</option>
+              {contacts.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                  {c.company ? ` (${c.company})` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="notes">Notes</Label>
           <textarea
