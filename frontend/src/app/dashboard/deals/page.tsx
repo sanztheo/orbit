@@ -119,6 +119,10 @@ export default function DealsPage() {
   const [nextActionDraft, setNextActionDraft] = useState("");
   const [editingValue, setEditingValue] = useState<string | null>(null);
   const [valueDraft, setValueDraft] = useState("");
+  const [editingProbability, setEditingProbability] = useState<string | null>(
+    null,
+  );
+  const [probabilityDraft, setProbabilityDraft] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   async function fetchDeals() {
@@ -234,6 +238,23 @@ export default function DealsPage() {
     const token = await getToken();
     if (token) {
       await apiClient.patch(`/api/deals/${dealId}`, { value: val }, token);
+    }
+  }
+
+  async function saveProbability(dealId: string, raw: string) {
+    setEditingProbability(null);
+    const parsed = parseInt(raw.trim(), 10);
+    const val = isNaN(parsed) ? null : Math.min(100, Math.max(0, parsed));
+    setAllDeals((prev) =>
+      prev.map((d) => (d.id === dealId ? { ...d, probability: val } : d)),
+    );
+    const token = await getToken();
+    if (token) {
+      await apiClient.patch(
+        `/api/deals/${dealId}`,
+        { probability: val ?? 0 },
+        token,
+      );
     }
   }
 
@@ -607,6 +628,44 @@ export default function DealsPage() {
                           {deal.value != null
                             ? `$${deal.value.toLocaleString()}`
                             : "+ value"}
+                        </button>
+                      )}
+                      {editingProbability === deal.id ? (
+                        <input
+                          autoFocus
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={probabilityDraft}
+                          onChange={(e) => setProbabilityDraft(e.target.value)}
+                          onBlur={() =>
+                            saveProbability(deal.id, probabilityDraft)
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter")
+                              saveProbability(deal.id, probabilityDraft);
+                            if (e.key === "Escape") setEditingProbability(null);
+                          }}
+                          placeholder="0–100"
+                          className="mt-1 w-full rounded border border-primary/40 bg-card px-1.5 py-0.5 text-xs focus:outline-none"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setProbabilityDraft(
+                              deal.probability != null
+                                ? String(deal.probability)
+                                : "",
+                            );
+                            setEditingProbability(deal.id);
+                          }}
+                          className="mt-1 w-full text-left text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          {deal.probability != null
+                            ? `${deal.probability}% prob`
+                            : "+ probability"}
                         </button>
                       )}
                       <p
