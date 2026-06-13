@@ -260,13 +260,25 @@ export function ContactsTable({ contacts }: Props) {
                     <a
                       href={`mailto:${contact.email}`}
                       onClick={(e) => e.stopPropagation()}
-                      className="block text-xs text-muted-foreground hover:text-blue-600 hover:underline"
+                      className="block text-xs text-muted-foreground hover:text-blue-600 dark:hover:text-blue-400 hover:underline"
                     >
                       {contact.email}
                     </a>
                   )}
                 </TableCell>
-                <TableCell>{contact.company ?? "—"}</TableCell>
+                <TableCell>
+                  {contact.company ? (
+                    <Link
+                      href={`/dashboard/contacts?search=${encodeURIComponent(contact.company)}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-sm hover:underline text-muted-foreground hover:text-foreground"
+                    >
+                      {contact.company}
+                    </Link>
+                  ) : (
+                    "—"
+                  )}
+                </TableCell>
                 <TableCell>
                   <Badge variant={TYPE_VARIANT[contact.type]}>
                     {contact.type}
