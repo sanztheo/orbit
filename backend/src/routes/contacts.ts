@@ -86,6 +86,107 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
     c.header("Content-Disposition", 'attachment; filename="contacts.csv"');
     return c.body([header, ...lines].join("\n"));
   })
+  .post("/import", async (c) => {
+    const workspaceId = c.get("workspaceId");
+    let text: string;
+    try {
+      const form = await c.req.formData();
+      const file = form.get("file");
+      if (!file || typeof file === "string")
+        return c.json(
+          { error: "bad_request", message: "No file uploaded" },
+          400,
+        );
+      text = await file.text();
+    } catch {
+      return c.json(
+        { error: "bad_request", message: "Invalid form data" },
+        400,
+      );
+    }
+
+    const lines = text.split(/\r?\n/).filter((l) => l.trim());
+    if (lines.length < 2)
+      return c.json(
+        {
+          error: "bad_request",
+          message: "CSV must have a header row and at least one data row",
+        },
+        400,
+      );
+
+    // Parse header — normalise to lowercase, strip quotes/spaces
+    const normalise = (s: string) =>
+      s
+        .replace(/^["']|["']$/g, "")
+        .trim()
+        .toLowerCase();
+    const headers = lines[0].split(",").map(normalise);
+
+    const col = (row: string[], candidates: string[]): string | null => {
+      for (const c of candidates) {
+        const idx = headers.indexOf(c);
+        if (idx >= 0 && row[idx])
+          return row[idx].replace(/^["']|["']$/g, "").trim() || null;
+      }
+      return null;
+    };
+
+    const VALID_TYPES = new Set([
+      "lead",
+      "customer",
+      "investor",
+      "advisor",
+      "partner",
+    ]);
+    let imported = 0,
+      skipped = 0;
+    const errors: string[] = [];
+
+    // Fetch existing emails to dedup
+    const existing = await db
+      .select({ email: contacts.email })
+      .from(contacts)
+      .where(eq(contacts.workspaceId, workspaceId));
+    const existingEmails = new Set(
+      existing.map((r) => r.email?.toLowerCase()).filter(Boolean),
+    );
+
+    const BATCH_LIMIT = 500;
+    for (let i = 1; i < Math.min(lines.length, BATCH_LIMIT + 1); i++) {
+      const row = lines[i].split(",");
+      const name = col(row, ["name", "full name", "fullname", "contact name"]);
+      if (!name) {
+        errors.push(`Row ${i}: missing name`);
+        continue;
+      }
+
+      const email = col(row, ["email", "email address"]);
+      if (email && existingEmails.has(email.toLowerCase())) {
+        skipped++;
+        continue;
+      }
+
+      const rawType = col(row, ["type", "contact type", "role"]) ?? "lead";
+      const type = VALID_TYPES.has(rawType)
+        ? (rawType as "lead" | "customer" | "investor" | "advisor" | "partner")
+        : "lead";
+
+      await db.insert(contacts).values({
+        id: generateId(),
+        workspaceId,
+        name,
+        email: email ?? null,
+        company: col(row, ["company", "organization", "org"]),
+        type,
+        notes: col(row, ["notes", "note", "description"]),
+      });
+      if (email) existingEmails.add(email.toLowerCase());
+      imported++;
+    }
+
+    return c.json({ imported, skipped, errors: errors.slice(0, 10) });
+  })
   .post("/", zValidator("json", createSchema), async (c) => {
     const workspaceId = c.get("workspaceId");
     const body = c.req.valid("json");

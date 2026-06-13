@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { ContactFilters } from "./contact-filters";
 import { ExportButton } from "./export-button";
+import { ImportButton } from "./import-button";
 
 type ContactType = "lead" | "customer" | "investor" | "advisor" | "partner";
 
@@ -102,6 +103,7 @@ export default async function ContactsPage({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <ImportButton />
           <ExportButton />
           <Link
             href="/dashboard/contacts/new"
