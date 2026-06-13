@@ -18,64 +18,127 @@ interface Stats {
   overdueFollowUps: number;
 }
 
-async function fetchStats(token: string | null): Promise<Stats | null> {
+interface StallingDeal {
+  id: string;
+  title: string;
+  stage: string;
+  value: number | null;
+  stageChangedAt: string;
+}
+
+interface ColdContact {
+  id: string;
+  name: string;
+  company: string | null;
+  lastContactedAt: string | null;
+}
+
+interface OverdueContact {
+  id: string;
+  name: string;
+  company: string | null;
+  lastContactedAt: string | null;
+  cadenceDays: number;
+}
+
+interface ActionItems {
+  stallingDeals: StallingDeal[];
+  coldContacts: ColdContact[];
+  overdueFollowUps: OverdueContact[];
+}
+
+function daysSince(iso: string | null): number {
+  if (!iso) return 999;
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+}
+
+async function fetchAll(token: string | null): Promise<{
+  stats: Stats | null;
+  actions: ActionItems | null;
+}> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+  const headers: HeadersInit = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
   try {
-    const res = await fetch(`${apiUrl}/api/stats`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      cache: "no-store",
-    });
-    if (!res.ok) return null;
-    return res.json();
+    const [statsRes, actionsRes] = await Promise.all([
+      fetch(`${apiUrl}/api/stats`, { headers, cache: "no-store" }),
+      fetch(`${apiUrl}/api/stats/action-items`, { headers, cache: "no-store" }),
+    ]);
+    return {
+      stats: statsRes.ok ? await statsRes.json() : null,
+      actions: actionsRes.ok ? await actionsRes.json() : null,
+    };
   } catch {
-    return null;
+    return { stats: null, actions: null };
   }
 }
 
 function StatCard({
   title,
-  description,
   value,
   urgent,
   href,
 }: {
   title: string;
-  description: string;
-  value: number | string;
+  value: number;
   urgent?: boolean;
-  href?: string;
+  href: string;
 }) {
   return (
-    <Card className={urgent && Number(value) > 0 ? "border-red-200" : ""}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <CardDescription className="text-xs">{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <p
-          className={`text-3xl font-bold ${urgent && Number(value) > 0 ? "text-red-600" : ""}`}
-        >
-          {value}
-        </p>
-        {href && Number(value) > 0 && (
-          <Link
-            href={href}
-            className={`mt-2 inline-block text-xs ${buttonVariants({ variant: "link", size: "sm" })} px-0`}
+    <Link href={href} className="block">
+      <Card
+        className={`transition-colors hover:bg-muted/40 ${urgent && value > 0 ? "border-red-200" : ""}`}
+      >
+        <CardHeader className="pb-1 pt-4 px-4">
+          <CardDescription className="text-xs">{title}</CardDescription>
+        </CardHeader>
+        <CardContent className="pb-4 px-4">
+          <p
+            className={`text-3xl font-bold ${urgent && value > 0 ? "text-red-600" : ""}`}
           >
-            View →
-          </Link>
+            {value}
+          </p>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+function ActionSection({
+  title,
+  count,
+  emptyMsg,
+  children,
+}: {
+  title: string;
+  count: number;
+  emptyMsg: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <h2 className="text-sm font-semibold">{title}</h2>
+        {count > 0 && (
+          <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+            {count}
+          </span>
         )}
-      </CardContent>
-    </Card>
+      </div>
+      {count === 0 ? (
+        <p className="text-xs text-muted-foreground py-2">{emptyMsg}</p>
+      ) : (
+        <div className="flex flex-col gap-1.5">{children}</div>
+      )}
+    </div>
   );
 }
 
 export default async function DashboardPage() {
   const { getToken } = await auth();
   const token = await getToken();
-  const stats = await fetchStats(token);
+  const { stats, actions } = await fetchAll(token);
 
   const s = stats ?? {
     stallingDeals: 0,
@@ -85,61 +148,200 @@ export default async function DashboardPage() {
     wonThisMonth: 0,
     overdueFollowUps: 0,
   };
+  const a = actions ?? {
+    stallingDeals: [],
+    coldContacts: [],
+    overdueFollowUps: [],
+  };
 
   return (
-    <div className="flex flex-col gap-6 p-8">
+    <div className="flex flex-col gap-6 p-4 md:p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
+          Dashboard
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Your solo-founder OS at a glance.
+          Your business at a glance.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
           title="Stalling Deals"
-          description="Stuck in same stage 30+ days"
           value={s.stallingDeals}
           urgent
           href="/dashboard/deals"
         />
         <StatCard
           title="Cold Contacts"
-          description="Not touched in 30+ days"
           value={s.coldContacts}
           urgent
           href="/dashboard/contacts"
         />
         <StatCard
-          title="Open Tasks"
-          description="Todo + in progress"
-          value={s.openTasks}
-          href="/dashboard/tasks"
-        />
-        <StatCard
-          title="Total Contacts"
-          description="All relationship types"
-          value={s.totalContacts}
-          href="/dashboard/contacts"
-        />
-        <StatCard
-          title="Won This Month"
-          description="Deals closed won"
-          value={s.wonThisMonth}
-          href="/dashboard/deals"
-        />
-        <StatCard
           title="Overdue Follow-ups"
-          description="Past their target cadence"
           value={s.overdueFollowUps}
           urgent
           href="/dashboard/contacts"
         />
+        <StatCard
+          title="Open Tasks"
+          value={s.openTasks}
+          href="/dashboard/tasks"
+        />
+        <StatCard
+          title="Won This Month"
+          value={s.wonThisMonth}
+          href="/dashboard/deals"
+        />
+        <StatCard
+          title="Total Contacts"
+          value={s.totalContacts}
+          href="/dashboard/contacts"
+        />
       </div>
 
-      {stats === null && (
+      {/* Action lists */}
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Stalling deals */}
+        <ActionSection
+          title="Stalling Deals"
+          count={a.stallingDeals.length}
+          emptyMsg="No deals stalling — all moving forward."
+        >
+          {a.stallingDeals.map((deal) => {
+            const days = daysSince(deal.stageChangedAt);
+            return (
+              <Link
+                key={deal.id}
+                href="/dashboard/deals"
+                className="flex items-start justify-between rounded-lg border border-border p-2.5 hover:bg-muted/40 transition-colors"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{deal.title}</p>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {deal.stage.replace(/_/g, " ")}
+                    {deal.value ? ` · $${deal.value.toLocaleString()}` : ""}
+                  </p>
+                </div>
+                <span className="shrink-0 ml-2 text-xs font-medium text-red-600">
+                  {days}d
+                </span>
+              </Link>
+            );
+          })}
+          {s.stallingDeals > a.stallingDeals.length && (
+            <Link
+              href="/dashboard/deals"
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              +{s.stallingDeals - a.stallingDeals.length} more →
+            </Link>
+          )}
+        </ActionSection>
+
+        {/* Cold contacts */}
+        <ActionSection
+          title="Cold Contacts"
+          count={a.coldContacts.length}
+          emptyMsg="All contacts touched in the last 30 days."
+        >
+          {a.coldContacts.map((c) => {
+            const days = daysSince(c.lastContactedAt);
+            return (
+              <Link
+                key={c.id}
+                href={`/dashboard/contacts/${c.id}`}
+                className="flex items-start justify-between rounded-lg border border-border p-2.5 hover:bg-muted/40 transition-colors"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{c.name}</p>
+                  {c.company && (
+                    <p className="text-xs text-muted-foreground truncate">
+                      {c.company}
+                    </p>
+                  )}
+                </div>
+                <span className="shrink-0 ml-2 text-xs font-medium text-red-600">
+                  {days >= 999 ? "never" : `${days}d`}
+                </span>
+              </Link>
+            );
+          })}
+          {s.coldContacts > a.coldContacts.length && (
+            <Link
+              href="/dashboard/contacts"
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              +{s.coldContacts - a.coldContacts.length} more →
+            </Link>
+          )}
+        </ActionSection>
+
+        {/* Overdue follow-ups */}
+        <ActionSection
+          title="Overdue Follow-ups"
+          count={a.overdueFollowUps.length}
+          emptyMsg="All cadences on track."
+        >
+          {a.overdueFollowUps.map((c) => {
+            const days = daysSince(c.lastContactedAt);
+            const overdue = days - (c.cadenceDays ?? 0);
+            return (
+              <Link
+                key={c.id}
+                href={`/dashboard/contacts/${c.id}`}
+                className="flex items-start justify-between rounded-lg border border-border p-2.5 hover:bg-muted/40 transition-colors"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{c.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    every {c.cadenceDays}d cadence
+                  </p>
+                </div>
+                <span className="shrink-0 ml-2 text-xs font-medium text-red-600">
+                  +{overdue}d late
+                </span>
+              </Link>
+            );
+          })}
+          {s.overdueFollowUps > a.overdueFollowUps.length && (
+            <Link
+              href="/dashboard/contacts"
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              +{s.overdueFollowUps - a.overdueFollowUps.length} more →
+            </Link>
+          )}
+        </ActionSection>
+      </div>
+
+      {/* Quick actions */}
+      <div className="flex flex-wrap gap-2 border-t border-border pt-4">
+        <Link
+          href="/dashboard/contacts/new"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          + Contact
+        </Link>
+        <Link
+          href="/dashboard/deals/new"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          + Deal
+        </Link>
+        <Link
+          href="/dashboard/tasks/new"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          + Task
+        </Link>
+      </div>
+
+      {!stats && (
         <p className="text-xs text-muted-foreground">
-          Could not load stats — backend may be offline.
+          Backend offline — stats unavailable.
         </p>
       )}
     </div>
