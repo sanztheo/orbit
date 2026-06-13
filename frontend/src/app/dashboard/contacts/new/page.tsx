@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
@@ -33,26 +32,45 @@ export default function NewContactPage() {
   const [notes, setNotes] = useState("");
   const [showMore, setShowMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [duplicateId, setDuplicateId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setDuplicateId(null);
     setSubmitting(true);
     try {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
-      await apiClient.post(
-        "/api/contacts",
-        {
+      const res = await fetch(`${API_URL}/api/contacts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
           name: name.trim(),
           email: email.trim() || null,
           company: company.trim() || null,
           type,
           notes: notes.trim() || null,
-        },
-        token,
-      );
+        }),
+      });
+      if (res.status === 409) {
+        const body: { message: string; existingId: string } = await res.json();
+        setError(body.message);
+        setDuplicateId(body.existingId);
+        return;
+      }
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(
+          (body as { message?: string }).message ?? `HTTP ${res.status}`,
+        );
+      }
       router.push("/dashboard/contacts");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create contact");
@@ -170,7 +188,22 @@ export default function NewContactPage() {
           </div>
         )}
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <p className="text-sm text-destructive">
+            {error}
+            {duplicateId && (
+              <>
+                {" — "}
+                <Link
+                  href={`/dashboard/contacts/${duplicateId}`}
+                  className="underline underline-offset-2 hover:opacity-80"
+                >
+                  View existing →
+                </Link>
+              </>
+            )}
+          </p>
+        )}
 
         <div className="flex gap-2 pt-2">
           <Button

@@ -286,11 +286,11 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P1] [TODO] Voice note to activity: record a 30-second voice memo from contact page, transcribe via Whisper/Claude, auto-log as activity — data entry is the core CRM hatred; 6+ hrs/week lost to manual logging; voice capture eliminates it without typing.
 
-[P1] [TODO] "Who do I know at [company]?" shortcut: one-click query from deal card to find contacts who work at the target company or fund — warm intros convert 5× better than cold; CRMs never surface existing connections for a target deal.
+[P1] [DONE] "Who do I know at [company]?" shortcut: company name link on deal card filters contacts — warm intros convert 5× better than cold; CRMs never surface existing connections for a target deal.
 
 [P1] [DONE] Notion CSV import improvements: add lastContactedAt + twitterHandle column support for Notion/Folk/HubSpot exports — Notion-as-CRM has 3-month adoption then abandon cycle; frictionless import captures these lapsed users at the moment of failure.
 
-[P1] [TODO] Automation triggers (webhook out): fire a webhook when deal stage changes, contact added, or cadence overdue — Folk has no native automation; founders wire their own Zap to get basics; native webhook eliminates the Zap tax.
+[P1] [DONE] Automation triggers (webhook out): fire a webhook when deal stage changes, contact added, or cadence overdue — Folk has no native automation; founders wire their own Zap to get basics; native webhook eliminates the Zap tax.
 
 [P2] [DONE] Context card before cold outreach: AI cold-start component (ANGLE/HOOK/DRAFT) on contact detail when no activity exists — founders spend 15-20 min manually researching before each cold email; Orbit can draft the context in seconds.
 

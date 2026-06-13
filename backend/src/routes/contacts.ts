@@ -285,6 +285,28 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
   .post("/", zValidator("json", createSchema), async (c) => {
     const workspaceId = c.get("workspaceId");
     const body = c.req.valid("json");
+    if (body.email) {
+      const [existing] = await db
+        .select({ id: contacts.id, name: contacts.name })
+        .from(contacts)
+        .where(
+          and(
+            eq(contacts.workspaceId, workspaceId),
+            eq(contacts.email, body.email),
+          ),
+        )
+        .limit(1);
+      if (existing) {
+        return c.json(
+          {
+            error: "duplicate_email",
+            message: `A contact with this email already exists: ${existing.name}`,
+            existingId: existing.id,
+          },
+          409,
+        );
+      }
+    }
     const [row] = await db
       .insert(contacts)
       .values({ id: generateId(), workspaceId, ...body })
