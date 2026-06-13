@@ -28,10 +28,18 @@ const updateSchema = createSchema.partial().extend({
 export const tasksRouter = new Hono<WorkspaceEnv>()
   .get("/", async (c) => {
     const workspaceId = c.get("workspaceId");
+    const contactId = c.req.query("contactId");
     const rows = await db
       .select()
       .from(tasks)
-      .where(eq(tasks.workspaceId, workspaceId));
+      .where(
+        contactId
+          ? and(
+              eq(tasks.workspaceId, workspaceId),
+              eq(tasks.contactId, contactId),
+            )
+          : eq(tasks.workspaceId, workspaceId),
+      );
     return c.json({ data: rows, total: rows.length });
   })
   .post("/", zValidator("json", createSchema), async (c) => {

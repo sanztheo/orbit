@@ -96,7 +96,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ## Product Backlog / Kanban
 
-[P0] [TODO] Build backlog Kanban with columns: Inbox / This Week / In Progress / Done — Founders need a sprint-lite system, not full story points and velocity (over-engineering kills adoption). Four columns cover 90% of solo founder workflow.
+[P0] [DONE] Build backlog Kanban with columns: Inbox / This Week / In Progress / Done — Founders need a sprint-lite system, not full story points and velocity (over-engineering kills adoption). Four columns cover 90% of solo founder workflow.
 
 [P0] [TODO] Build feature request creation from contact record ("Add to backlog" button on contact page) — This is the CRM-to-backlog link that is structurally unsolved by every competitor. One click from a contact record creates a backlog item with attribution pre-filled.
 
@@ -122,7 +122,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ## AI Features
 
-[P0] [TODO] Build AI follow-up draft endpoint: takes contact_id + optional prompt → fetches last 10 email threads + call notes + contact metadata → sends to Claude API → returns draft — The #1 unrealized AI feature per research. Not generic GPT; grounded in actual relationship history. This is the core AI differentiator.
+[P0] [DONE] Build AI follow-up draft endpoint: takes contact_id + optional prompt → fetches last 10 email threads + call notes + contact metadata → sends to Claude API → returns draft — The #1 unrealized AI feature per research. Not generic GPT; grounded in actual relationship history. This is the core AI differentiator.
 
 [P0] [TODO] Implement AI action counter middleware: decrement workspace AI quota on every Claude API call, return 429 with upgrade prompt at limit — AI action limits are a monetization constraint. Enforce at API middleware level; do not trust client to track.
 
@@ -150,7 +150,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ## Analytics / Dashboard
 
-[P0] [TODO] Build founder dashboard: stalling deals (30+ days no move), overdue follow-ups (no activity in N days per contact), top feature requests, contacts not touched in 30 days — The "single screen that shows your entire business" that research says does not exist. This is the product promise on the landing page.
+[P0] [DONE] Build founder dashboard: stalling deals (30+ days no move), overdue follow-ups (no activity in N days per contact), top feature requests, contacts not touched in 30 days — The "single screen that shows your entire business" that research says does not exist. This is the product promise on the landing page.
 
 [P1] [TODO] Build deal pipeline velocity metrics: average days per stage, conversion rate stage-to-stage — Founders want to know "where do deals die?" without opening Salesforce. Simple stage analytics with no configuration.
 
@@ -178,11 +178,31 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P0] [TODO] Encrypt Gmail OAuth tokens at rest using AES-256 before storing in DB — OAuth tokens are high-value credentials. Plaintext token storage is a critical vulnerability; encrypt before first user.
 
-[P0] [TODO] Add rate limiting on AI endpoints (per workspace: 10 requests/minute) to prevent credit exhaustion attacks — AI action quotas can be drained via scripted requests without rate limiting. Protect before launch.
+[P0] [DONE] Add rate limiting on AI endpoints (per workspace: 10 requests/minute) to prevent credit exhaustion attacks — AI action quotas can be drained via scripted requests without rate limiting. Protect before launch.
 
 [P1] [TODO] Implement CSRF protection on all state-mutating API routes — Next.js App Router does not provide CSRF protection by default. Required before any authenticated form submission.
 
 [P1] [TODO] Add input sanitization for all free-text fields before storing (contact notes, deal descriptions, backlog item text) — XSS via stored HTML in notes fields is a common attack vector on CRM tools. Sanitize on write, not on read.
+
+---
+
+## Research-Driven — New Pain Points (2026-06-13)
+
+[P0] [TODO] Build per-contact follow-up cadence: set weekly/monthly/quarterly target per contact, surface a daily "going cold" list ranked by relationship value × days overdue — Founders lose deals because "Proposal Sent" sits 2 weeks with zero flag; cadence tracking makes the silence visible.
+
+[P0] [TODO] Build "close the loop" feature: when a backlog item ships, auto-surface every contact who requested it with a one-click draft email — "Reach back out when you build the feature, the gap is no longer a barrier" is the highest-ROI sales motion; Orbit is the only tool that can do this because it holds both CRM + backlog.
+
+[P1] [TODO] Add backlog priority score: rank items by sum of deal values from requesting contacts × request frequency — Founders can't answer "what do customers actually want most?" without this; it bridges CRM signal to product decision automatically.
+
+[P1] [TODO] AI voice learning: fine-tune follow-up drafts on the founder's own sent-email history to match writing style — Generic AI output is being detected as spam (30% spam rate); drafts grounded in the founder's real voice survive inbox filters.
+
+[P1] [TODO] Zero-field email activity capture: auto-log Gmail threads to contact timeline without any user action — Manual logging deteriorates during busy periods; "Sunday CRM cleanup" is the signal your tool has failed; auto-capture prevents it.
+
+[P1] [TODO] Tool-sprawl cost calculator on landing page: show "45–75 min/day lost to context switching between 6 tools" with a savings estimate — Concrete time-cost framing converts better than feature lists; 45-75 min/day = 5 hours/week = a full working day per month.
+
+[P2] [TODO] Add deal-won close-loop automation: when a deal moves to closed_won, prompt to log what feature/argument closed it and tag those backlog items — Tracks what actually wins deals, not just what customers request.
+
+[P2] [TODO] Weekly digest push notification: stalling deals count, contacts going cold this week, backlog items with 3+ requests — Founders who don't log in daily still need to know what's at risk; digest keeps the product valuable without daily active use.
 
 ---
 

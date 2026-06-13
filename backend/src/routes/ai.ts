@@ -5,6 +5,7 @@ import { eq, and, desc, sql } from "drizzle-orm";
 import Anthropic from "@anthropic-ai/sdk";
 import { db, contacts, activities, deals, workspaces } from "../db/index.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
+import { aiRateLimit } from "../middleware/rate-limit.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
@@ -14,6 +15,7 @@ const followUpSchema = z.object({
 
 export const aiRouter = new Hono<WorkspaceEnv>().post(
   "/follow-up",
+  aiRateLimit,
   zValidator("json", followUpSchema),
   async (c) => {
     const workspaceId = c.get("workspaceId");

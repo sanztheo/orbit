@@ -4,6 +4,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FollowUpDraft } from "./follow-up-draft";
+import { AddToBacklog } from "./add-to-backlog";
 
 interface Contact {
   id: string;
@@ -47,6 +48,17 @@ export default async function ContactDetailPage({
   if (!res.ok) notFound();
 
   const { data: contact }: { data: Contact } = await res.json();
+
+  const tasksRes = await fetch(`${apiUrl}/api/tasks?contactId=${id}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    cache: "no-store",
+  });
+  const linkedTasks: {
+    id: string;
+    title: string;
+    priority: string;
+    status: string;
+  }[] = tasksRes.ok ? (await tasksRes.json()).data : [];
 
   return (
     <div className="flex flex-col gap-6 p-6 max-w-2xl">
@@ -114,6 +126,9 @@ export default async function ContactDetailPage({
           </div>
         )}
       </div>
+
+      {/* Backlog requests */}
+      <AddToBacklog contactId={contact.id} initialTasks={linkedTasks} />
 
       {/* AI follow-up */}
       <FollowUpDraft contactId={contact.id} contactName={contact.name} />
