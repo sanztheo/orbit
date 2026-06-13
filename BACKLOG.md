@@ -28,7 +28,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P1] [DONE] Add Railway deploy config `backend/railway.toml` — Hono needs persistent Node.js process with pg pool; Vercel edge functions can't hold DB connections — Required for production.
 
-[P1] [TODO] Add Vercel deploy config `frontend/vercel.json` with NEXT_PUBLIC_API_URL pointing to Railway backend URL — Frontend must know production API URL at build time.
+[P1] [DONE] Add Vercel deploy config `frontend/vercel.json` with NEXT_PUBLIC_API_URL pointing to Railway backend URL — Frontend must know production API URL at build time.
 
 ---
 

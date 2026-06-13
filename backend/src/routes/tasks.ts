@@ -39,6 +39,7 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
         priority: tasks.priority,
         contactId: tasks.contactId,
         contactName: contacts.name,
+        contactCompany: contacts.company,
         dealId: tasks.dealId,
         dueAt: tasks.dueAt,
         completedAt: tasks.completedAt,
@@ -77,6 +78,7 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
         status: tasks.status,
         contactId: tasks.contactId,
         contactName: contacts.name,
+        contactCompany: contacts.company,
         dealValueSum: sql<number>`COALESCE((SELECT SUM(${deals.value}) FROM ${deals} WHERE ${deals.contactId} = ${tasks.contactId} AND ${deals.workspaceId} = ${tasks.workspaceId}), 0)`,
       })
       .from(tasks)
@@ -108,6 +110,7 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
         priority: tasks.priority,
         contactId: tasks.contactId,
         contactName: contacts.name,
+        contactCompany: contacts.company,
         dealId: tasks.dealId,
         dueAt: tasks.dueAt,
         completedAt: tasks.completedAt,

@@ -35,6 +35,7 @@ interface BacklogItem {
   priority: TaskPriority;
   contactId: string | null;
   contactName: string | null;
+  contactCompany: string | null;
   priorityScore: number;
   dueAt: string | null;
 }
@@ -289,6 +290,15 @@ export default function BacklogPage() {
                             <ExternalLink className="h-3 w-3" />
                             {item.contactName ?? "Contact"}
                           </Link>
+                          {item.contactCompany && (
+                            <Link
+                              href={`/dashboard/contacts?search=${encodeURIComponent(item.contactCompany)}`}
+                              className="text-xs text-muted-foreground hover:text-foreground truncate max-w-[120px]"
+                              title={`Others at ${item.contactCompany}`}
+                            >
+                              {item.contactCompany} →
+                            </Link>
+                          )}
                           {item.priorityScore > 0 && (
                             <span className="rounded bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
                               ${item.priorityScore.toLocaleString()}
