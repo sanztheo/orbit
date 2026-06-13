@@ -758,7 +758,15 @@ export default function DashboardPage() {
 
       {recentActivities.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold">Recent Activity</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Recent Activity</h2>
+            <Link
+              href="/dashboard/activities"
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              View all →
+            </Link>
+          </div>
           <div className="flex flex-col gap-1">
             {recentActivities.map((act) => {
               const ICONS: Record<string, React.ReactNode> = {
