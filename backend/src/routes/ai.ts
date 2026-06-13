@@ -1,7 +1,19 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { eq, and, desc, sql } from "drizzle-orm";
+import {
+  eq,
+  and,
+  desc,
+  sql,
+  ne,
+  lt,
+  isNull,
+  isNotNull,
+  or,
+  asc,
+  gte,
+} from "drizzle-orm";
 import Anthropic from "@anthropic-ai/sdk";
 import {
   db,
@@ -345,4 +357,152 @@ Draft the "we shipped it" email.`,
         contactEmail: contact.email,
       });
     },
-  );
+  )
+  .post("/daily-brief", aiRateLimit, async (c) => {
+    const workspaceId = c.get("workspaceId");
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [stallingDeals, coldContacts, overdueFollowUps, recentActivities] =
+      await Promise.all([
+        db
+          .select({
+            title: deals.title,
+            stage: deals.stage,
+            value: deals.value,
+            stageChangedAt: deals.stageChangedAt,
+          })
+          .from(deals)
+          .where(
+            and(
+              eq(deals.workspaceId, workspaceId),
+              ne(deals.stage, "closed_won"),
+              ne(deals.stage, "closed_lost"),
+              lt(deals.stageChangedAt, thirtyDaysAgo),
+            ),
+          )
+          .limit(5),
+
+        db
+          .select({
+            name: contacts.name,
+            company: contacts.company,
+            lastContactedAt: contacts.lastContactedAt,
+          })
+          .from(contacts)
+          .where(
+            and(
+              eq(contacts.workspaceId, workspaceId),
+              or(
+                isNull(contacts.lastContactedAt),
+                lt(contacts.lastContactedAt, thirtyDaysAgo),
+              ),
+            ),
+          )
+          .orderBy(asc(contacts.lastContactedAt))
+          .limit(5),
+
+        db
+          .select({
+            name: contacts.name,
+            cadenceDays: contacts.cadenceDays,
+            lastContactedAt: contacts.lastContactedAt,
+          })
+          .from(contacts)
+          .where(
+            and(
+              eq(contacts.workspaceId, workspaceId),
+              isNotNull(contacts.cadenceDays),
+              sql`(${contacts.lastContactedAt} IS NULL OR ${contacts.lastContactedAt} < NOW() - (${contacts.cadenceDays} * INTERVAL '1 day'))`,
+            ),
+          )
+          .limit(5),
+
+        db
+          .select({
+            type: activities.type,
+            subject: activities.subject,
+            occurredAt: activities.occurredAt,
+          })
+          .from(activities)
+          .leftJoin(contacts, eq(activities.contactId, contacts.id))
+          .where(
+            and(
+              eq(activities.workspaceId, workspaceId),
+              gte(activities.occurredAt, sevenDaysAgo),
+            ),
+          )
+          .orderBy(desc(activities.occurredAt))
+          .limit(10),
+      ]);
+
+    const stallingLine = stallingDeals.length
+      ? stallingDeals
+          .map((d) => {
+            const days = Math.floor(
+              (Date.now() - new Date(d.stageChangedAt).getTime()) / 86_400_000,
+            );
+            return `${d.title} (${d.stage}, ${days}d stalled${d.value ? `, $${d.value}` : ""})`;
+          })
+          .join("; ")
+      : "None";
+
+    const coldLine = coldContacts.length
+      ? coldContacts
+          .map(
+            (c) =>
+              `${c.name}${c.company ? ` at ${c.company}` : ""} (${c.lastContactedAt ? `${Math.floor((Date.now() - new Date(c.lastContactedAt).getTime()) / 86_400_000)}d ago` : "never contacted"})`,
+          )
+          .join("; ")
+      : "None";
+
+    const overdueLine = overdueFollowUps.length
+      ? overdueFollowUps
+          .map((c) => `${c.name} (every ${c.cadenceDays}d cadence)`)
+          .join("; ")
+      : "None";
+
+    const activityLine = recentActivities.length
+      ? recentActivities
+          .map((a) => `${a.type}${a.subject ? `: ${a.subject}` : ""}`)
+          .join("; ")
+      : "No recent activity.";
+
+    const message = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 600,
+      system: `You are an AI chief of staff for a solo founder. Generate a concise morning briefing.
+
+Output format — plain text, each section on its own line:
+FOCUS TODAY: [1-2 most important actions, name specific people/deals]
+DEALS AT RISK: [deals that need attention today or this week]
+REACH OUT TO: [specific contacts to ping today with brief reason why]
+QUICK WINS: [1-2 fast actions that would move things forward]
+
+Be specific. Name people and deals. Under 150 words. Urgent = concrete, not vague.`,
+      messages: [
+        {
+          role: "user",
+          content: `Stalling deals (30+ days no movement): ${stallingLine}
+
+Cold contacts (30+ days no touch): ${coldLine}
+
+Overdue cadences: ${overdueLine}
+
+Recent activity (last 7 days): ${activityLine}
+
+Generate today's brief.`,
+        },
+      ],
+    });
+
+    const brief =
+      message.content[0].type === "text" ? message.content[0].text : "";
+
+    await db
+      .update(workspaces)
+      .set({ aiActionsUsed: sql`${workspaces.aiActionsUsed} + 1` })
+      .where(eq(workspaces.id, workspaceId));
+
+    return c.json({ brief });
+  });

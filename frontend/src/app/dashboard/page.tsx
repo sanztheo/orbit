@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { ImportButton } from "./contacts/import-button";
+import { MorningBrief } from "./morning-brief";
 
 interface Stats {
   stallingDeals: number;
@@ -274,6 +275,8 @@ export default function DashboardPage() {
           loading={loading}
         />
       </div>
+
+      {!loading && s.totalContacts > 0 && <MorningBrief />}
 
       {!loading &&
         !checklistDismissed &&

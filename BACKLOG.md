@@ -265,3 +265,17 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 [P1] [DONE] Contact edit page — Edit button on contact detail linked to /new (wrong); need pre-filled edit form at /contacts/[id]/edit.
 
 [P2] [TODO] One-click full data export (JSON + CSV bundle): contacts + deals + backlog + activities in one zip — "at least we know what's in there" is why founders stay on spreadsheets; visible portability guarantee reduces lock-in anxiety and improves trial-to-paid conversion.
+
+---
+
+## Research-Driven — New Pain Points (2026-06-13 round 3)
+
+[P1] [TODO] AI morning brief: daily AI-generated priority feed — "who to call today, what deals are at risk, what commitments did you make" — founders manually scan 3-5 views each morning; one consolidated AI brief replaces the assembly cost.
+
+[P1] [TODO] Proactive deal nudge notifications: auto-surface "this deal has been silent for 14 days — send a follow-up?" as a banner or notification — silent pipeline rot is the #1 abandonment trigger; the CRM must tap founders on the shoulder, not wait to be checked.
+
+[P2] [TODO] Selective enrichment: when enriching a contact from LinkedIn/API, show diff between stored vs. fetched fields and let founder choose which to accept — enrichment that overwrites hand-curated notes destroys trust; Folk users cite this as a top complaint.
+
+[P2] [TODO] Mobile quick-capture: one-tap "log a touchpoint" from home screen (PWA shortcut) — relationships happen away from the desk; current mobile UX requires 4 taps to log a call; PWA shortcuts cut it to 1.
+
+[P3] [TODO] "Missing data" record health score: show per-contact completeness score (email? linkedin? last_contacted? company?) as a bar in contact list — founders can't trust CRM data they can't audit; visible completeness reduces data decay.
