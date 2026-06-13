@@ -461,6 +461,15 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
     });
     return c.json({ data: row }, 201);
   })
+  .get("/tags", async (c) => {
+    const workspaceId = c.get("workspaceId");
+    const rows = await db
+      .select({ tag: sql<string>`unnest(${contacts.tags})` })
+      .from(contacts)
+      .where(eq(contacts.workspaceId, workspaceId));
+    const unique = [...new Set(rows.map((r) => r.tag))].sort();
+    return c.json({ data: unique });
+  })
   .get("/:id", async (c) => {
     const workspaceId = c.get("workspaceId");
     const [row] = await db
