@@ -57,7 +57,7 @@ export default function TasksPage() {
 
   useEffect(() => {
     fetchTasks();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   async function advance(task: Task) {
     const next = STATUS_NEXT[task.status];

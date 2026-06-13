@@ -35,3 +35,44 @@ Blank Next.js shell with:
 2. **Clerk webhook → workspace provisioning** — implement `POST /api/webhooks/clerk` to create a workspace record on `user.created` event; add `workspaces` and `workspace_members` tables to schema. BACKLOG: "Implement Clerk webhook handler to create workspace + owner record on user.created event."
 
 3. **Contact CRUD API** — `POST /api/contacts`, `GET /api/contacts/:id`, `PATCH /api/contacts/:id` with Zod validation; this is the core of the product. BACKLOG: "Build contact CRUD API with Zod validation."
+
+---
+
+## Session: 2026-06-13 — Backend/Frontend Split + Core Product
+
+### Architecture change
+
+Migrated from Next.js monolith → two completely separate apps:
+- `backend/` — Hono.js REST API on :3001 (Node.js, TypeScript, Drizzle ORM, Clerk JWT verification)
+- `frontend/` — Next.js 16 App Router on :3000 (Clerk, shadcn/ui, typed api-client)
+
+### Completed
+
+**Backend (backend/):**
+- Hono.js with Clerk JWT auth middleware + workspace middleware (lazy provisioning — no webhook needed)
+- CRUD routes: contacts, deals, tasks — all scoped to workspaceId
+- Schema v2: workspaces + workspace_memberships tables; workspaceId FK on all tables; stageChangedAt on deals for stall detection; email_sync_log table for dedup; schema pushed to Railway PostgreSQL
+
+**Frontend (frontend/):**
+- Clerk middleware protecting /dashboard/* (redirect → /sign-in)
+- Dashboard layout with persistent sidebar nav
+- Contacts: list page (server component, JWT fetch) + new contact form
+- Deals: Kanban pipeline (7 stage columns, move buttons, stale deal warning in red at 30+ days)
+- Deals: new deal form
+- Tasks: 3-column board (todo/in_progress/done), priority badges, one-click advance
+- Tasks: new task form
+
+### Current State
+
+Product is functional end-to-end for contacts + deals + tasks. Users can:
+1. Sign in (Clerk)
+2. Add contacts, create deals, manage tasks
+3. Move deals through pipeline stages
+4. See stale deals highlighted in red
+
+### Next — Top Priorities
+
+1. Landing page (marketing — currently placeholder)
+2. Backlog page (feature requests board)
+3. AI follow-up draft endpoint (THE differentiator)
+4. Dashboard home with real stats (stalling deals count, contacts not touched in 30d)

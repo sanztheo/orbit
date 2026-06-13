@@ -67,7 +67,7 @@ export default function DealsPage() {
 
   useEffect(() => {
     fetchDeals();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   async function moveStage(deal: Deal, direction: 1 | -1) {
     const idx = STAGE_ORDER.indexOf(deal.stage);
