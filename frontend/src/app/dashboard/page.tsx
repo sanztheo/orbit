@@ -19,6 +19,7 @@ interface Stats {
   totalContacts: number;
   wonThisMonth: number;
   overdueFollowUps: number;
+  totalDeals: number;
 }
 
 interface StallingDeal {
@@ -124,6 +125,10 @@ export default function DashboardPage() {
   const [actions, setActions] = useState<ActionItems | null>(null);
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
+  const [checklistDismissed, setChecklistDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("orbit_checklist_dismissed") === "1";
+  });
 
   useEffect(() => {
     async function load() {
@@ -156,6 +161,7 @@ export default function DashboardPage() {
     totalContacts: 0,
     wonThisMonth: 0,
     overdueFollowUps: 0,
+    totalDeals: 0,
   };
   const a = actions ?? {
     stallingDeals: [],
@@ -268,6 +274,98 @@ export default function DashboardPage() {
           loading={loading}
         />
       </div>
+
+      {!loading &&
+        !checklistDismissed &&
+        (() => {
+          const steps = [
+            {
+              label: "Import your contacts",
+              done: s.totalContacts > 0,
+              href: "/dashboard/contacts",
+              action: "Go to Contacts →",
+            },
+            {
+              label: "Create your first deal",
+              done: s.totalDeals > 0,
+              href: "/dashboard/deals/new",
+              action: "New Deal →",
+            },
+            {
+              label: "Add a backlog item",
+              done: s.openTasks > 0,
+              href: "/dashboard/tasks/new",
+              action: "New Task →",
+            },
+            {
+              label: "Connect Gmail (coming soon)",
+              done: false,
+              locked: true,
+            },
+          ];
+          const doneCount = steps.filter((s) => s.done).length;
+          const activeDoneCount = steps.filter(
+            (s) => !s.locked && s.done,
+          ).length;
+          const activeTotal = steps.filter((s) => !s.locked).length;
+          if (activeDoneCount === activeTotal) return null;
+          return (
+            <div className="rounded-xl border border-border bg-muted/20 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-sm font-semibold">Getting started</p>
+                  <p className="text-xs text-muted-foreground">
+                    {doneCount}/{steps.length} steps complete
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    localStorage.setItem("orbit_checklist_dismissed", "1");
+                    setChecklistDismissed(true);
+                  }}
+                  className="text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Dismiss
+                </button>
+              </div>
+              <div className="flex flex-col gap-2">
+                {steps.map((step) => (
+                  <div
+                    key={step.label}
+                    className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${step.done ? "bg-emerald-50" : step.locked ? "bg-muted/40 opacity-60" : "bg-white border border-border"}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={
+                          step.done
+                            ? "text-emerald-600"
+                            : "text-muted-foreground"
+                        }
+                      >
+                        {step.done ? "✓" : step.locked ? "🔒" : "○"}
+                      </span>
+                      <span
+                        className={
+                          step.done ? "text-emerald-800 line-through" : ""
+                        }
+                      >
+                        {step.label}
+                      </span>
+                    </div>
+                    {!step.done && !step.locked && step.href && (
+                      <Link
+                        href={step.href}
+                        className="text-xs text-blue-600 hover:underline shrink-0"
+                      >
+                        {step.action}
+                      </Link>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
       <div className="grid gap-6 md:grid-cols-3">
         <ActionSection

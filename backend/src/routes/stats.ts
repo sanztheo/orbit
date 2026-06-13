@@ -101,6 +101,7 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       totalContacts,
       wonThisMonth,
       overdueFollowUps,
+      totalDeals,
     ] = await Promise.all([
       // Deals stuck in active stage for 30+ days
       db
@@ -172,6 +173,12 @@ export const statsRouter = new Hono<WorkspaceEnv>()
             sql`(${contacts.lastContactedAt} IS NULL OR ${contacts.lastContactedAt} < NOW() - (${contacts.cadenceDays} * INTERVAL '1 day'))`,
           ),
         ),
+
+      // Total deals
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(deals)
+        .where(eq(deals.workspaceId, workspaceId)),
     ]);
 
     return c.json({
@@ -181,5 +188,6 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       totalContacts: totalContacts[0]?.count ?? 0,
       wonThisMonth: wonThisMonth[0]?.count ?? 0,
       overdueFollowUps: overdueFollowUps[0]?.count ?? 0,
+      totalDeals: totalDeals[0]?.count ?? 0,
     });
   });
