@@ -93,7 +93,7 @@ export default async function ContactDetailPage({
           <Badge variant="outline">{contact.type}</Badge>
         </div>
         <Link
-          href={`/dashboard/contacts/new`}
+          href={`/dashboard/contacts/${contact.id}/edit`}
           className={buttonVariants({ variant: "outline", size: "sm" })}
         >
           Edit

@@ -1,0 +1,82 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]: Orbit
+    - main [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - generic [ref=e8]:
+            - link "← Contacts" [ref=e9] [cursor=pointer]:
+              - /url: /dashboard/contacts
+            - generic [ref=e10]: /
+            - heading "Sarah Chen" [level=1] [ref=e11]
+            - generic [ref=e12]: customer
+          - link "Edit" [ref=e13] [cursor=pointer]:
+            - /url: /dashboard/contacts/79o29wvxymve/edit
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - paragraph [ref=e16]: Email
+            - paragraph [ref=e17]: sarah@techstartup.io
+          - generic [ref=e18]:
+            - paragraph [ref=e19]: Company
+            - paragraph [ref=e20]: —
+          - generic [ref=e21]:
+            - paragraph [ref=e22]: Last contacted
+            - paragraph [ref=e23]: —
+          - generic [ref=e24]:
+            - paragraph [ref=e25]: Next follow-up
+            - paragraph [ref=e26]: —
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - paragraph [ref=e30]: Follow-up cadence
+            - paragraph [ref=e31]: None
+          - combobox [ref=e32] [cursor=pointer]:
+            - option "None" [selected]
+            - option "Weekly"
+            - option "Bi-weekly"
+            - option "Monthly"
+            - option "Quarterly"
+        - generic [ref=e33]:
+          - generic [ref=e34]:
+            - heading "Activity log" [level=2] [ref=e35]
+            - button "+ Log activity" [ref=e36]
+          - paragraph [ref=e37]: No activity logged yet — click "Log activity" to record a call, email, or note.
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - generic [ref=e40]:
+              - heading "Backlog requests" [level=2] [ref=e41]
+              - paragraph [ref=e42]: Feature requests this contact triggered
+            - button "+ Add item" [ref=e43]
+          - list [ref=e44]:
+            - listitem [ref=e45]:
+              - generic [ref=e46]: CSV import for contacts
+              - generic [ref=e47]: p2
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - heading "AI follow-up draft" [level=2] [ref=e51]
+            - paragraph [ref=e52]: Claude reads conversation history → drafts a contextual email to Sarah Chen
+          - button "✦ Draft follow-up" [ref=e53]
+    - navigation [ref=e54]:
+      - link "⊞ Dashboard" [ref=e55] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e56]: ⊞
+        - generic [ref=e57]: Dashboard
+      - link "◎ Contacts" [ref=e58] [cursor=pointer]:
+        - /url: /dashboard/contacts
+        - generic [ref=e59]: ◎
+        - generic [ref=e60]: Contacts
+      - link "◈ Deals" [ref=e61] [cursor=pointer]:
+        - /url: /dashboard/deals
+        - generic [ref=e62]: ◈
+        - generic [ref=e63]: Deals
+      - link "☑ Tasks" [ref=e64] [cursor=pointer]:
+        - /url: /dashboard/tasks
+        - generic [ref=e65]: ☑
+        - generic [ref=e66]: Tasks
+      - link "▤ Backlog" [ref=e67] [cursor=pointer]:
+        - /url: /dashboard/backlog
+        - generic [ref=e68]: ▤
+        - generic [ref=e69]: Backlog
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e75] [cursor=pointer]:
+    - img [ref=e76]
+  - alert [ref=e79]

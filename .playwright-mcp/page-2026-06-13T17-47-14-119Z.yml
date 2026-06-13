@@ -1,0 +1,55 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]: Orbit
+    - main [ref=e5]:
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - heading "Contacts" [level=1] [ref=e59]
+            - paragraph [ref=e60]: 1 contact
+          - generic [ref=e61]:
+            - button "Export CSV" [ref=e62]
+            - link "+ Add" [ref=e63] [cursor=pointer]:
+              - /url: /dashboard/contacts/new
+        - generic [ref=e64]:
+          - searchbox "Search name, email, company…" [ref=e65]
+          - combobox [ref=e66]:
+            - option "All types" [selected]
+            - option "Lead"
+            - option "Customer"
+            - option "Investor"
+            - option "Advisor"
+            - option "Partner"
+        - link "Sarah Chen sarah@techstartup.io customer Never" [ref=e68] [cursor=pointer]:
+          - /url: /dashboard/contacts/79o29wvxymve
+          - generic [ref=e69]:
+            - paragraph [ref=e70]: Sarah Chen
+            - paragraph [ref=e71]: sarah@techstartup.io
+          - generic [ref=e72]:
+            - generic [ref=e73]: customer
+            - generic [ref=e74]: Never
+    - navigation [ref=e28]:
+      - link "⊞ Dashboard" [ref=e29] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e30]: ⊞
+        - generic [ref=e31]: Dashboard
+      - link "◎ Contacts" [ref=e32] [cursor=pointer]:
+        - /url: /dashboard/contacts
+        - generic [ref=e33]: ◎
+        - generic [ref=e34]: Contacts
+      - link "◈ Deals" [ref=e35] [cursor=pointer]:
+        - /url: /dashboard/deals
+        - generic [ref=e36]: ◈
+        - generic [ref=e37]: Deals
+      - link "☑ Tasks" [ref=e38] [cursor=pointer]:
+        - /url: /dashboard/tasks
+        - generic [ref=e39]: ☑
+        - generic [ref=e40]: Tasks
+      - link "▤ Backlog" [ref=e41] [cursor=pointer]:
+        - /url: /dashboard/backlog
+        - generic [ref=e42]: ▤
+        - generic [ref=e43]: Backlog
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e49] [cursor=pointer]:
+    - img [ref=e50]
+  - alert [ref=e53]

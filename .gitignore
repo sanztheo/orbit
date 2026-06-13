@@ -28,3 +28,5 @@ backend/drizzle/
 
 # test coverage
 coverage
+.playwright-mcp/
+frontend/test-results/

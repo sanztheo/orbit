@@ -1,0 +1,30 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]: Orbit
+    - main [ref=e5]:
+      - generic [ref=e6]: Loading backlog…
+    - navigation [ref=e7]:
+      - link "⊞ Dashboard" [ref=e8] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e9]: ⊞
+        - generic [ref=e10]: Dashboard
+      - link "◎ Contacts" [ref=e11] [cursor=pointer]:
+        - /url: /dashboard/contacts
+        - generic [ref=e12]: ◎
+        - generic [ref=e13]: Contacts
+      - link "◈ Deals" [ref=e14] [cursor=pointer]:
+        - /url: /dashboard/deals
+        - generic [ref=e15]: ◈
+        - generic [ref=e16]: Deals
+      - link "☑ Tasks" [ref=e17] [cursor=pointer]:
+        - /url: /dashboard/tasks
+        - generic [ref=e18]: ☑
+        - generic [ref=e19]: Tasks
+      - link "▤ Backlog" [ref=e20] [cursor=pointer]:
+        - /url: /dashboard/backlog
+        - generic [ref=e21]: ▤
+        - generic [ref=e22]: Backlog
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e28] [cursor=pointer]:
+    - img [ref=e29]
+  - alert [ref=e32]

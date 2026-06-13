@@ -1,0 +1,241 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import { apiClient } from "@/lib/api-client";
+import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+
+type ContactType = "lead" | "customer" | "investor" | "advisor" | "partner";
+
+const CONTACT_TYPES: { value: ContactType; label: string }[] = [
+  { value: "lead", label: "Lead" },
+  { value: "customer", label: "Customer" },
+  { value: "investor", label: "Investor" },
+  { value: "advisor", label: "Advisor" },
+  { value: "partner", label: "Partner" },
+];
+
+const INPUT =
+  "h-11 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+
+export default function EditContactPage() {
+  const router = useRouter();
+  const { id } = useParams<{ id: string }>();
+  const { getToken } = useAuth();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [type, setType] = useState<ContactType>("lead");
+  const [company, setCompany] = useState("");
+  const [notes, setNotes] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const token = await getToken();
+      if (!token) return;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+      const res = await fetch(`${apiUrl}/api/contacts/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        setLoadError("Contact not found");
+        return;
+      }
+      const { data } = await res.json();
+      setName(data.name ?? "");
+      setEmail(data.email ?? "");
+      setType(data.type ?? "lead");
+      setCompany(data.company ?? "");
+      setNotes(data.notes ?? "");
+      setLinkedinUrl(data.linkedinUrl ?? "");
+      setLoaded(true);
+    }
+    load();
+  }, [id, getToken]);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      const token = await getToken();
+      if (!token) throw new Error("Not authenticated");
+      await apiClient.patch(
+        `/api/contacts/${id}`,
+        {
+          name: name.trim(),
+          email: email.trim() || null,
+          company: company.trim() || null,
+          type,
+          notes: notes.trim() || null,
+          linkedinUrl: linkedinUrl.trim() || null,
+        },
+        token,
+      );
+      router.push(`/dashboard/contacts/${id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (loadError) {
+    return (
+      <div className="p-6">
+        <p className="text-sm text-destructive">{loadError}</p>
+        <Link
+          href="/dashboard/contacts"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Back to contacts
+        </Link>
+      </div>
+    );
+  }
+
+  if (!loaded) {
+    return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
+  }
+
+  return (
+    <div className="flex flex-col gap-6 p-4 md:p-6 max-w-lg">
+      <div className="flex items-center gap-3">
+        <Link
+          href={`/dashboard/contacts/${id}`}
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          ← Back
+        </Link>
+        <h1 className="text-xl font-semibold tracking-tight">Edit contact</h1>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="name" className="text-sm font-medium">
+            Name <span className="text-destructive">*</span>
+          </label>
+          <input
+            id="name"
+            type="text"
+            required
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Jane Doe"
+            className={INPUT}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="email" className="text-sm font-medium">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="jane@example.com"
+            className={INPUT}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium">Type</label>
+          <div className="flex flex-wrap gap-2">
+            {CONTACT_TYPES.map((t) => (
+              <button
+                key={t.value}
+                type="button"
+                onClick={() => setType(t.value)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-sm font-medium transition-colors",
+                  type === t.value
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border hover:border-foreground/40",
+                )}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4 border-t border-border pt-4">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="company" className="text-sm font-medium">
+              Company
+            </label>
+            <input
+              id="company"
+              type="text"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="Acme Inc."
+              className={INPUT}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="linkedin" className="text-sm font-medium">
+              LinkedIn URL
+            </label>
+            <input
+              id="linkedin"
+              type="url"
+              value={linkedinUrl}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              placeholder="https://linkedin.com/in/jane"
+              className={INPUT}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="notes" className="text-sm font-medium">
+              Notes
+            </label>
+            <textarea
+              id="notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Context, how you met, what they care about…"
+              rows={4}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 resize-none"
+            />
+          </div>
+        </div>
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <div className="flex gap-2 pt-2">
+          <Button
+            type="submit"
+            disabled={submitting || !name.trim()}
+            className="h-11 flex-1 md:flex-none"
+          >
+            {submitting ? "Saving…" : "Save changes"}
+          </Button>
+          <Link
+            href={`/dashboard/contacts/${id}`}
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-11 flex-1 md:flex-none",
+            )}
+          >
+            Cancel
+          </Link>
+        </div>
+      </form>
+    </div>
+  );
+}

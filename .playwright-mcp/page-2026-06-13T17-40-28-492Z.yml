@@ -1,0 +1,77 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e55]: Orbit
+    - main [ref=e11]:
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - heading "Deal Pipeline" [level=1] [ref=e74]
+          - link "+ New deal" [ref=e75] [cursor=pointer]:
+            - /url: /dashboard/deals/new
+        - generic [ref=e76]:
+          - button "Sales1" [ref=e77]
+          - button "Fundraising0" [ref=e78]
+          - button "Partnerships0" [ref=e79]
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - generic [ref=e83]: Prospect
+              - generic [ref=e84]: "0"
+            - generic [ref=e119]: Empty
+          - generic [ref=e89]:
+            - generic [ref=e90]:
+              - generic [ref=e91]: Contacted
+              - generic [ref=e92]: "1"
+            - generic [ref=e120]:
+              - paragraph [ref=e121]: Acme Corp — Q3 Deal
+              - paragraph [ref=e122]: $15 000
+              - paragraph [ref=e123]: Moved today
+          - generic [ref=e94]:
+            - generic [ref=e95]:
+              - generic [ref=e96]: Meeting
+              - generic [ref=e97]: "0"
+            - generic [ref=e98]: Empty
+          - generic [ref=e99]:
+            - generic [ref=e100]:
+              - generic [ref=e101]: Proposal
+              - generic [ref=e102]: "0"
+            - generic [ref=e103]: Empty
+          - generic [ref=e104]:
+            - generic [ref=e105]:
+              - generic [ref=e106]: Negotiation
+              - generic [ref=e107]: "0"
+            - generic [ref=e108]: Empty
+          - generic [ref=e109]:
+            - generic [ref=e110]:
+              - generic [ref=e111]: Won ✓
+              - generic [ref=e112]: "0"
+            - generic [ref=e113]: Empty
+          - generic [ref=e114]:
+            - generic [ref=e115]:
+              - generic [ref=e116]: Lost ✗
+              - generic [ref=e117]: "0"
+            - generic [ref=e118]: Empty
+    - navigation [ref=e56]:
+      - link "⊞ Dashboard" [ref=e57] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e58]: ⊞
+        - generic [ref=e59]: Dashboard
+      - link "◎ Contacts" [ref=e60] [cursor=pointer]:
+        - /url: /dashboard/contacts
+        - generic [ref=e61]: ◎
+        - generic [ref=e62]: Contacts
+      - link "◈ Deals" [ref=e63] [cursor=pointer]:
+        - /url: /dashboard/deals
+        - generic [ref=e64]: ◈
+        - generic [ref=e65]: Deals
+      - link "☑ Tasks" [ref=e66] [cursor=pointer]:
+        - /url: /dashboard/tasks
+        - generic [ref=e67]: ☑
+        - generic [ref=e68]: Tasks
+      - link "▤ Backlog" [ref=e69] [cursor=pointer]:
+        - /url: /dashboard/backlog
+        - generic [ref=e70]: ▤
+        - generic [ref=e71]: Backlog
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e18] [cursor=pointer]:
+    - img [ref=e19]
+  - alert [ref=e22]

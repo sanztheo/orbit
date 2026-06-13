@@ -247,3 +247,21 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 [P1] [TODO] Send onboarding email sequence (Resend): day 0 welcome, day 3 "did you connect Gmail?", day 7 "here's your first follow-up suggestion" — Email-driven activation recaptures founders who signed up and didn't fully onboard. Day 3 and day 7 touchpoints are the highest-leverage re-engagement moments.
 
 [P2] [TODO] Build demo workspace pre-populated with 10 sample contacts, 2 pipelines, and 5 backlog items for try-before-import — Founders evaluating tools need to see a populated product, not empty tables. Demo workspace eliminates the "blank page" barrier.
+
+---
+
+## Research-Driven — New Pain Points (2026-06-13 round 2)
+
+[P1] [TODO] Multi-channel DM paste: add "Paste conversation" button on contact activity log — accepts raw LinkedIn DM, WhatsApp, X thread paste and logs it as an activity — 53% of founder sales happen over DMs, not email; the CRM never sees those conversations.
+
+[P1] [TODO] Pre-meeting context brief: one-card auto-summary before a call (last touchpoint, open commitments, deal status, relevant backlog asks) triggered from contact detail — founders blank on context mid-call; this is the first thing they'd google instead of using CRM.
+
+[P1] [TODO] Contact data staleness alert: flag contacts with no email update + no activity in 180d with a "verify or archive" nudge — contact data decays 25–35%/year; stale data turns CRM from asset to liability without visible signal.
+
+[P2] [TODO] Full-text search over contact notes (not just name/email/company) — founders search by what someone said, not who they are; "who mentioned pricing was a blocker" requires notes-level search.
+
+[P2] [TODO] "Who do I know who…" semantic contact search: free-text query matches across roles, notes, companies, tags — Folk markets this as a differentiator; current search is structured-field only.
+
+[P1] [DONE] Contact edit page — Edit button on contact detail linked to /new (wrong); need pre-filled edit form at /contacts/[id]/edit.
+
+[P2] [TODO] One-click full data export (JSON + CSV bundle): contacts + deals + backlog + activities in one zip — "at least we know what's in there" is why founders stay on spreadsheets; visible portability guarantee reduces lock-in anxiety and improves trial-to-paid conversion.

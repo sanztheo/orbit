@@ -1,0 +1,70 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]: Orbit
+    - main [ref=e5]:
+      - generic [ref=e80]:
+        - generic [ref=e81]:
+          - link "← Back" [ref=e82] [cursor=pointer]:
+            - /url: /dashboard/contacts/79o29wvxymve
+          - heading "Edit contact" [level=1] [ref=e83]
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]: Name *
+            - textbox "Name *" [active] [ref=e87]:
+              - /placeholder: Jane Doe
+              - text: Sarah Chen
+          - generic [ref=e88]:
+            - generic [ref=e89]: Email
+            - textbox "Email" [ref=e90]:
+              - /placeholder: jane@example.com
+              - text: sarah@techstartup.io
+          - generic [ref=e91]:
+            - generic [ref=e92]: Type
+            - generic [ref=e93]:
+              - button "Lead" [ref=e94]
+              - button "Customer" [ref=e95]
+              - button "Investor" [ref=e96]
+              - button "Advisor" [ref=e97]
+              - button "Partner" [ref=e98]
+          - generic [ref=e99]:
+            - generic [ref=e100]:
+              - generic [ref=e101]: Company
+              - textbox "Company" [ref=e102]:
+                - /placeholder: Acme Inc.
+            - generic [ref=e103]:
+              - generic [ref=e104]: LinkedIn URL
+              - textbox "LinkedIn URL" [ref=e105]:
+                - /placeholder: https://linkedin.com/in/jane
+            - generic [ref=e106]:
+              - generic [ref=e107]: Notes
+              - textbox "Notes" [ref=e108]:
+                - /placeholder: Context, how you met, what they care about…
+          - generic [ref=e109]:
+            - button "Save changes" [ref=e110]
+            - link "Cancel" [ref=e111] [cursor=pointer]:
+              - /url: /dashboard/contacts/79o29wvxymve
+    - navigation [ref=e54]:
+      - link "⊞ Dashboard" [ref=e55] [cursor=pointer]:
+        - /url: /dashboard
+        - generic [ref=e56]: ⊞
+        - generic [ref=e57]: Dashboard
+      - link "◎ Contacts" [ref=e58] [cursor=pointer]:
+        - /url: /dashboard/contacts
+        - generic [ref=e59]: ◎
+        - generic [ref=e60]: Contacts
+      - link "◈ Deals" [ref=e61] [cursor=pointer]:
+        - /url: /dashboard/deals
+        - generic [ref=e62]: ◈
+        - generic [ref=e63]: Deals
+      - link "☑ Tasks" [ref=e64] [cursor=pointer]:
+        - /url: /dashboard/tasks
+        - generic [ref=e65]: ☑
+        - generic [ref=e66]: Tasks
+      - link "▤ Backlog" [ref=e67] [cursor=pointer]:
+        - /url: /dashboard/backlog
+        - generic [ref=e68]: ▤
+        - generic [ref=e69]: Backlog
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e75] [cursor=pointer]:
+    - img [ref=e76]
+  - alert [ref=e79]
