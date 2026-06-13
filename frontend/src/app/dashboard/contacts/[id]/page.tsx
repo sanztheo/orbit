@@ -21,6 +21,8 @@ import {
   Calendar,
   Link2,
   ExternalLink,
+  Users,
+  ChevronRight,
 } from "lucide-react";
 
 interface Contact {
@@ -102,6 +104,22 @@ export default async function ContactDetailPage({
     value: number | null;
     pipelineType: string;
   }[] = dealsRes.ok ? (await dealsRes.json()).data : [];
+
+  let companyContacts: { id: string; name: string; type: string }[] = [];
+  if (contact.company) {
+    const ccRes = await fetch(
+      `${apiUrl}/api/contacts?company=${encodeURIComponent(contact.company)}&excludeId=${id}`,
+      {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        cache: "no-store",
+      },
+    );
+    if (ccRes.ok) {
+      const ccJson: { data: { id: string; name: string; type: string }[] } =
+        await ccRes.json();
+      companyContacts = ccJson.data.slice(0, 5);
+    }
+  }
 
   const now = new Date();
   const staleDays = contact.lastContactedAt
@@ -328,6 +346,31 @@ export default async function ContactDetailPage({
                   </span>
                 )}
               </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Others at same company */}
+      {companyContacts.length > 0 && contact.company && (
+        <div className="rounded-xl border border-border p-4 flex flex-col gap-2">
+          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5" />
+            Others at {contact.company}
+          </p>
+          <div className="flex flex-col gap-1">
+            {companyContacts.map((c) => (
+              <Link
+                key={c.id}
+                href={`/dashboard/contacts/${c.id}`}
+                className="flex items-center justify-between rounded-lg px-2 py-1.5 hover:bg-muted/50 transition-colors text-sm"
+              >
+                <span className="font-medium">{c.name}</span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground capitalize">
+                  {c.type}
+                  <ChevronRight className="h-3 w-3" />
+                </span>
+              </Link>
             ))}
           </div>
         </div>
