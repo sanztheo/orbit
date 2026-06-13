@@ -13,6 +13,7 @@ import {
   DollarSign,
   Link2,
   Mail,
+  PenLine,
   Phone,
   StickyNote,
   Trophy,
@@ -393,7 +394,7 @@ export default function DashboardPage() {
           title="Cold Contacts"
           value={s.coldContacts}
           urgent
-          href="/dashboard/contacts"
+          href="/dashboard/contacts?stale=1&sort=stale"
           loading={loading}
           icon={<Users className="h-4 w-4 text-muted-foreground" />}
         />
@@ -401,7 +402,7 @@ export default function DashboardPage() {
           title="Overdue Follow-ups"
           value={s.overdueFollowUps}
           urgent
-          href="/dashboard/contacts"
+          href="/dashboard/contacts?stale=1&sort=stale"
           loading={loading}
           icon={<Bell className="h-4 w-4 text-muted-foreground" />}
         />
@@ -734,6 +735,20 @@ export default function DashboardPage() {
                   {days >= 999 ? "never" : `${days}d`}
                 </span>
                 <button
+                  onClick={() =>
+                    window.dispatchEvent(
+                      new CustomEvent("orbit:quick-log", {
+                        detail: { id: c.id, name: c.name },
+                      }),
+                    )
+                  }
+                  title="Log activity"
+                  className="shrink-0 flex items-center rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors"
+                >
+                  <PenLine className="h-3.5 w-3.5 mr-1" />
+                  Log
+                </button>
+                <button
                   onClick={() => markContacted(c.id)}
                   disabled={isMarking}
                   title="Mark as contacted"
@@ -787,6 +802,20 @@ export default function DashboardPage() {
                     </span>
                   </p>
                 </Link>
+                <button
+                  onClick={() =>
+                    window.dispatchEvent(
+                      new CustomEvent("orbit:quick-log", {
+                        detail: { id: c.id, name: c.name },
+                      }),
+                    )
+                  }
+                  title="Log activity"
+                  className="shrink-0 flex items-center rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors"
+                >
+                  <PenLine className="h-3.5 w-3.5 mr-1" />
+                  Log
+                </button>
                 <button
                   onClick={() => markContacted(c.id)}
                   disabled={isMarking}

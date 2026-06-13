@@ -77,6 +77,20 @@ export function QuickLog() {
   useEffect(() => {
     function handler(e: Event) {
       if ((e as CustomEvent).type === "orbit:quick-log") {
+        const detail = (e as CustomEvent<{ id?: string; name?: string }>)
+          .detail;
+        if (detail?.id && detail?.name) {
+          setSelected({
+            id: detail.id,
+            name: detail.name,
+            company: null,
+            email: null,
+          });
+          setQuery(detail.name);
+        } else {
+          setSelected(null);
+          setQuery("");
+        }
         setOpen(true);
       }
     }
