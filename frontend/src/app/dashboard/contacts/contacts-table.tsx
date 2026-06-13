@@ -21,6 +21,7 @@ import {
   Calendar,
   Loader2,
   CheckSquare,
+  Trash2,
 } from "lucide-react";
 import { ContactLogButton } from "./contact-log-button";
 
@@ -155,6 +156,7 @@ export function ContactsTable({ contacts }: Props) {
   const router = useRouter();
   const { getToken } = useAuth();
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const allIds = contacts.map((c) => c.id);
@@ -195,6 +197,22 @@ export function ContactsTable({ contacts }: Props) {
       ),
     );
     setSelected(new Set());
+    startTransition(() => router.refresh());
+  }
+
+  async function deleteSelected() {
+    const token = await getToken();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+    await Promise.all(
+      [...selected].map((id) =>
+        fetch(`${apiUrl}/api/contacts/${id}`, {
+          method: "DELETE",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }),
+      ),
+    );
+    setSelected(new Set());
+    setConfirmDelete(false);
     startTransition(() => router.refresh());
   }
 
@@ -435,22 +453,63 @@ export function ContactsTable({ contacts }: Props) {
           <span className="text-sm font-medium text-muted-foreground">
             {selected.size} selected
           </span>
-          <Button size="sm" onClick={markContacted} disabled={isPending}>
-            {isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <CheckSquare className="h-4 w-4 mr-2" />
-            )}
-            Mark contacted today
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setSelected(new Set())}
-            disabled={isPending}
-          >
-            Clear
-          </Button>
+          {confirmDelete ? (
+            <>
+              <span className="text-sm text-destructive font-medium">
+                Delete {selected.size} contact{selected.size !== 1 ? "s" : ""}?
+              </span>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={deleteSelected}
+                disabled={isPending}
+              >
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Trash2 className="h-4 w-4 mr-2" />
+                )}
+                Confirm delete
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setConfirmDelete(false)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button size="sm" onClick={markContacted} disabled={isPending}>
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <CheckSquare className="h-4 w-4 mr-2" />
+                )}
+                Mark contacted today
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setConfirmDelete(true)}
+                disabled={isPending}
+                className="text-destructive hover:text-destructive border-destructive/30 hover:border-destructive/60"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setSelected(new Set())}
+                disabled={isPending}
+              >
+                Clear
+              </Button>
+            </>
+          )}
         </div>
       )}
     </div>
