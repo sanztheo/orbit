@@ -86,7 +86,7 @@ export function SprawlCalculator() {
               {TOOLS.map((t) => (
                 <div
                   key={t.name}
-                  className="flex items-center justify-between rounded-lg border border-border bg-white px-3 py-2 text-sm"
+                  className="flex items-center justify-between rounded-lg border border-border bg-card px-3 py-2 text-sm"
                 >
                   <span>{t.name}</span>
                   <span className="text-muted-foreground">
@@ -99,30 +99,36 @@ export function SprawlCalculator() {
 
           {/* Cost breakdown */}
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-center">
-              <p className="text-xs text-red-700 mb-1 font-medium">
+            <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/20 p-4 text-center">
+              <p className="text-xs text-red-700 dark:text-red-400 mb-1 font-medium">
                 Time lost ({hoursMonth.toFixed(1)} hrs/mo)
               </p>
-              <p className="text-2xl font-bold text-red-700">
+              <p className="text-2xl font-bold text-red-700 dark:text-red-400">
                 ${timeCost.toLocaleString()}
               </p>
-              <p className="text-xs text-red-600 mt-0.5">at ${rate}/hr</p>
+              <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
+                at ${rate}/hr
+              </p>
             </div>
-            <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-center">
-              <p className="text-xs text-orange-700 mb-1 font-medium">
+            <div className="rounded-xl border border-orange-200 dark:border-orange-800 bg-orange-50 dark:bg-orange-950/20 p-4 text-center">
+              <p className="text-xs text-orange-700 dark:text-orange-400 mb-1 font-medium">
                 Tool subscriptions
               </p>
-              <p className="text-2xl font-bold text-orange-700">
+              <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">
                 ${toolSubs}/mo
               </p>
-              <p className="text-xs text-orange-600 mt-0.5">6 tools combined</p>
+              <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5">
+                6 tools combined
+              </p>
             </div>
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-center">
-              <p className="text-xs text-emerald-700 mb-1 font-medium">
+            <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 p-4 text-center">
+              <p className="text-xs text-emerald-700 dark:text-emerald-400 mb-1 font-medium">
                 Orbit replaces all of this
               </p>
-              <p className="text-2xl font-bold text-emerald-700">$49/mo</p>
-              <p className="text-xs text-emerald-600 mt-0.5">
+              <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
+                $49/mo
+              </p>
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
                 save ${savings.toLocaleString()}/mo
               </p>
             </div>
