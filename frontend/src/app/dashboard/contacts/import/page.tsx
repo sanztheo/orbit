@@ -146,6 +146,39 @@ export default function ImportContactsPage() {
     NAME_CANDIDATES.has(h.toLowerCase().trim()),
   );
 
+  function detectFormat(headers: string[]): { label: string; color: string } {
+    const h = new Set(headers.map((x) => x.toLowerCase().trim()));
+    if (h.has("people"))
+      return {
+        label: "Folk",
+        color:
+          "text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800",
+      };
+    if (h.has("connected on"))
+      return {
+        label: "LinkedIn",
+        color:
+          "text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800",
+      };
+    if (h.has("given name") || h.has("family name"))
+      return {
+        label: "Google Contacts",
+        color:
+          "text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800",
+      };
+    if (h.has("first name") && h.has("last name"))
+      return {
+        label: "HubSpot",
+        color:
+          "text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800",
+      };
+    return {
+      label: "Generic CSV",
+      color: "text-muted-foreground bg-muted border-border",
+    };
+  }
+  const detectedFormat = preview ? detectFormat(preview.headers) : null;
+
   return (
     <div className="mx-auto w-full max-w-2xl p-6 flex flex-col gap-6">
       <div className="flex items-center gap-3">
@@ -214,6 +247,13 @@ export default function ImportContactsPage() {
               <span className="text-xs text-muted-foreground">
                 {preview.totalRows} rows
               </span>
+              {detectedFormat && (
+                <span
+                  className={`text-xs font-medium px-2 py-0.5 rounded-full border ${detectedFormat.color}`}
+                >
+                  {detectedFormat.label}
+                </span>
+              )}
             </div>
             <button
               onClick={() => {
