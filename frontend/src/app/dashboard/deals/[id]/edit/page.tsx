@@ -117,7 +117,7 @@ export default function EditDealPage() {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
       await apiClient.patch(`/api/deals/${id}`, body, token);
-      router.push("/dashboard/deals");
+      router.push(`/dashboard/deals/${id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update deal");
     } finally {
@@ -146,7 +146,7 @@ export default function EditDealPage() {
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => router.push("/dashboard/deals")}
+          onClick={() => router.push(`/dashboard/deals/${id}`)}
           className="gap-1.5"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -334,7 +334,7 @@ export default function EditDealPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/dashboard/deals")}
+            onClick={() => router.push(`/dashboard/deals/${id}`)}
           >
             Cancel
           </Button>
