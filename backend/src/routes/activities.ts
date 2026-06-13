@@ -23,20 +23,30 @@ export const activitiesRouter = new Hono<WorkspaceEnv>()
   .get("/", async (c) => {
     const workspaceId = c.get("workspaceId");
     const contactId = c.req.query("contactId");
+    const dealId = c.req.query("dealId");
+
+    const filters = [eq(activities.workspaceId, workspaceId)];
+    if (contactId) filters.push(eq(activities.contactId, contactId));
+    if (dealId) filters.push(eq(activities.dealId, dealId));
 
     const rows = await db
-      .select()
+      .select({
+        id: activities.id,
+        workspaceId: activities.workspaceId,
+        contactId: activities.contactId,
+        contactName: contacts.name,
+        dealId: activities.dealId,
+        type: activities.type,
+        subject: activities.subject,
+        body: activities.body,
+        occurredAt: activities.occurredAt,
+        createdAt: activities.createdAt,
+      })
       .from(activities)
-      .where(
-        contactId
-          ? and(
-              eq(activities.workspaceId, workspaceId),
-              eq(activities.contactId, contactId),
-            )
-          : eq(activities.workspaceId, workspaceId),
-      )
+      .leftJoin(contacts, eq(activities.contactId, contacts.id))
+      .where(and(...filters))
       .orderBy(desc(activities.occurredAt))
-      .limit(50);
+      .limit(100);
 
     return c.json({ data: rows, total: rows.length });
   })

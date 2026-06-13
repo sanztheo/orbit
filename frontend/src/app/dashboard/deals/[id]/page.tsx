@@ -17,6 +17,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { DealCloseButtons } from "./close-buttons";
+import { DealActivityLog } from "./deal-activity-log";
 
 const STAGE_LABELS: Record<string, string> = {
   prospect: "Prospect",
@@ -115,6 +116,19 @@ export default async function DealDetailPage({
       contact = cJson.data;
     }
   }
+
+  const actsRes = await fetch(`${apiUrl}/api/activities?dealId=${id}`, {
+    headers,
+    cache: "no-store",
+  });
+  const initialActivities: {
+    id: string;
+    contactName: string | null;
+    type: "email" | "call" | "meeting" | "note" | "linkedin";
+    subject: string | null;
+    body: string | null;
+    occurredAt: string;
+  }[] = actsRes.ok ? (await actsRes.json()).data : [];
 
   const stageAge = daysSince(deal.stageChangedAt);
   const isStale = stageAge !== null && stageAge >= 30;
@@ -299,7 +313,13 @@ export default async function DealDetailPage({
       {/* Close actions */}
       {!isClosed && <DealCloseButtons dealId={deal.id} />}
 
-      {/* Contact activities link */}
+      {/* Deal activity log */}
+      <DealActivityLog
+        dealId={deal.id}
+        contactId={deal.contactId}
+        initialActivities={initialActivities}
+      />
+
       {contact && (
         <Link
           href={`/dashboard/contacts/${contact.id}`}
