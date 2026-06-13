@@ -30,6 +30,12 @@ export function KeyboardShortcuts() {
         return;
       }
 
+      if (e.key === "l" || e.key === "L") {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent("orbit:quick-log"));
+        return;
+      }
+
       if (e.key === "/") {
         e.preventDefault();
         // Focus the search box if present, else go to contacts
