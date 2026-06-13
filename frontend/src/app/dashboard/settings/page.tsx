@@ -176,6 +176,10 @@ export default function SettingsPage() {
                 <span className="text-blue-700">contact.created</span> — id,
                 name, email, company, type
               </p>
+              <p>
+                <span className="text-blue-700">contact.updated</span> — id,
+                name, email, company, type
+              </p>
             </div>
           </div>
         )}
