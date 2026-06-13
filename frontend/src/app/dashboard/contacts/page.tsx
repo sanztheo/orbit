@@ -74,26 +74,41 @@ function formatDate(value: string | null): string {
 export default async function ContactsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; type?: string }>;
+  searchParams: Promise<{ search?: string; type?: string; stale?: string }>;
 }) {
   const { getToken } = await auth();
   const token = await getToken();
-  const { search, type } = await searchParams;
+  const { search, type, stale } = await searchParams;
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const qs = new URLSearchParams();
   if (search) qs.set("search", search);
   if (type) qs.set("type", type);
+  if (stale === "1") qs.set("stale", "1");
 
-  const res = await fetch(`${apiUrl}/api/contacts?${qs}`, {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    cache: "no-store",
-  });
+  const [res, staleRes] = await Promise.all([
+    fetch(`${apiUrl}/api/contacts?${qs}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      cache: "no-store",
+    }),
+    stale !== "1"
+      ? fetch(`${apiUrl}/api/contacts?stale=1`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          cache: "no-store",
+        })
+      : null,
+  ]);
 
   let contacts: Contact[] = [];
   if (res.ok) {
     const json: ContactsResponse = await res.json();
     contacts = json.data;
+  }
+
+  let staleCount = 0;
+  if (staleRes?.ok) {
+    const json: ContactsResponse = await staleRes.json();
+    staleCount = json.total;
   }
 
   return (
@@ -123,6 +138,22 @@ export default async function ContactsPage({
       <Suspense>
         <ContactFilters />
       </Suspense>
+
+      {staleCount > 0 && stale !== "1" && (
+        <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm">
+          <span className="text-amber-900">
+            <span className="font-semibold">{staleCount}</span> contact
+            {staleCount !== 1 ? "s" : ""} not touched in 180+ days — verify or
+            reach out.
+          </span>
+          <Link
+            href="/dashboard/contacts?stale=1"
+            className="ml-4 shrink-0 text-xs font-medium text-amber-700 hover:underline"
+          >
+            View stale →
+          </Link>
+        </div>
+      )}
 
       {contacts.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed py-20 text-center">

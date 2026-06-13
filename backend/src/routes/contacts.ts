@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, ilike, or } from "drizzle-orm";
+import { and, eq, ilike, isNull, lt, or } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db, contacts } from "../db/index.js";
@@ -42,6 +42,9 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       | "partner"
       | undefined;
 
+    const stale = c.req.query("stale") === "1";
+    const oneEightyDaysAgo = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
+
     const searchFilter = search
       ? or(
           ilike(contacts.name, `%${search}%`),
@@ -53,11 +56,23 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
 
     const typeFilter = type ? eq(contacts.type, type) : undefined;
 
+    const staleFilter = stale
+      ? or(
+          isNull(contacts.lastContactedAt),
+          lt(contacts.lastContactedAt, oneEightyDaysAgo),
+        )
+      : undefined;
+
     const rows = await db
       .select()
       .from(contacts)
       .where(
-        and(eq(contacts.workspaceId, workspaceId), searchFilter, typeFilter),
+        and(
+          eq(contacts.workspaceId, workspaceId),
+          searchFilter,
+          typeFilter,
+          staleFilter,
+        ),
       );
     return c.json({ data: rows, total: rows.length });
   })

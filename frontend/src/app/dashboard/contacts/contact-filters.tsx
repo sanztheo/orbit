@@ -2,12 +2,14 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+import { cn } from "@/lib/utils";
 
 const TYPES = ["lead", "customer", "investor", "advisor", "partner"] as const;
 
 export function ContactFilters() {
   const router = useRouter();
   const params = useSearchParams();
+  const staleActive = params.get("stale") === "1";
 
   const update = useCallback(
     (key: string, value: string) => {
@@ -19,8 +21,15 @@ export function ContactFilters() {
     [params, router],
   );
 
+  function toggleStale() {
+    const next = new URLSearchParams(params.toString());
+    if (staleActive) next.delete("stale");
+    else next.set("stale", "1");
+    router.push(`/dashboard/contacts?${next.toString()}`);
+  }
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <input
         type="search"
         placeholder="Search name, email, company, notes…"
@@ -40,6 +49,17 @@ export function ContactFilters() {
           </option>
         ))}
       </select>
+      <button
+        onClick={toggleStale}
+        className={cn(
+          "rounded-lg border px-2.5 py-1.5 text-sm font-medium transition-colors",
+          staleActive
+            ? "border-amber-500 bg-amber-100 text-amber-900"
+            : "border-border hover:border-amber-400 hover:text-amber-700",
+        )}
+      >
+        ⚠ Stale 180d+
+      </button>
     </div>
   );
 }

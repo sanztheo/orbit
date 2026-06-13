@@ -198,7 +198,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P1] [TODO] Zero-field email activity capture: auto-log Gmail threads to contact timeline without any user action — Manual logging deteriorates during busy periods; "Sunday CRM cleanup" is the signal your tool has failed; auto-capture prevents it.
 
-[P1] [TODO] Tool-sprawl cost calculator on landing page: show "45–75 min/day lost to context switching between 6 tools" with a savings estimate — Concrete time-cost framing converts better than feature lists; 45-75 min/day = 5 hours/week = a full working day per month.
+[P1] [DONE] Tool-sprawl cost calculator on landing page: show "45–75 min/day lost to context switching between 6 tools" with a savings estimate — Concrete time-cost framing converts better than feature lists; 45-75 min/day = 5 hours/week = a full working day per month.
 
 [P2] [TODO] Add deal-won close-loop automation: when a deal moves to closed_won, prompt to log what feature/argument closed it and tag those backlog items — Tracks what actually wins deals, not just what customers request.
 
@@ -214,7 +214,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P1] [TODO] Build keyboard shortcuts for common actions: N (new contact), D (new deal), B (new backlog item), / (search) — Power users discover keyboard shortcuts and become the loudest advocates. Table stakes for a "founder OS" positioning.
 
-[P2] [TODO] Implement dark mode with system preference detection — Standard expectation for developer-adjacent founders. No design argument needed; just ship it.
+[P2] [DONE] Implement dark mode with system preference detection — Standard expectation for developer-adjacent founders. No design argument needed; just ship it.
 
 ---
 
@@ -252,9 +252,9 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ## Research-Driven — New Pain Points (2026-06-13 round 2)
 
-[P1] [TODO] Multi-channel DM paste: add "Paste conversation" button on contact activity log — accepts raw LinkedIn DM, WhatsApp, X thread paste and logs it as an activity — 53% of founder sales happen over DMs, not email; the CRM never sees those conversations.
+[P1] [DONE] Multi-channel DM paste: add "Paste conversation" button on contact activity log — accepts raw LinkedIn DM, WhatsApp, X thread paste and logs it as an activity — 53% of founder sales happen over DMs, not email; the CRM never sees those conversations.
 
-[P1] [TODO] Pre-meeting context brief: one-card auto-summary before a call (last touchpoint, open commitments, deal status, relevant backlog asks) triggered from contact detail — founders blank on context mid-call; this is the first thing they'd google instead of using CRM.
+[P1] [DONE] Pre-meeting context brief: one-card auto-summary before a call (last touchpoint, open commitments, deal status, relevant backlog asks) triggered from contact detail — founders blank on context mid-call; this is the first thing they'd google instead of using CRM.
 
 [P1] [TODO] Contact data staleness alert: flag contacts with no email update + no activity in 180d with a "verify or archive" nudge — contact data decays 25–35%/year; stale data turns CRM from asset to liability without visible signal.
 
@@ -270,9 +270,9 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ## Research-Driven — New Pain Points (2026-06-13 round 3)
 
-[P1] [TODO] AI morning brief: daily AI-generated priority feed — "who to call today, what deals are at risk, what commitments did you make" — founders manually scan 3-5 views each morning; one consolidated AI brief replaces the assembly cost.
+[P1] [DONE] AI morning brief: daily AI-generated priority feed — "who to call today, what deals are at risk, what commitments did you make" — founders manually scan 3-5 views each morning; one consolidated AI brief replaces the assembly cost.
 
-[P1] [TODO] Proactive deal nudge notifications: auto-surface "this deal has been silent for 14 days — send a follow-up?" as a banner or notification — silent pipeline rot is the #1 abandonment trigger; the CRM must tap founders on the shoulder, not wait to be checked.
+[P1] [DONE] Proactive deal nudge notifications: at-risk deals (14–29d no movement) shown as amber banner above red action sections on dashboard — distinct tier from stalling (30d+, red) for earlier intervention.
 
 [P2] [TODO] Selective enrichment: when enriching a contact from LinkedIn/API, show diff between stored vs. fetched fields and let founder choose which to accept — enrichment that overwrites hand-curated notes destroys trust; Folk users cite this as a top complaint.
 
