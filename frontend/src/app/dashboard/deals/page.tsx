@@ -244,6 +244,14 @@ export default function DealsPage() {
   const byStage = Object.fromEntries(
     STAGE_ORDER.map((s) => [s, deals.filter((d) => d.stage === s)]),
   ) as Record<DealStage, Deal[]>;
+  const activeDeals = deals.filter(
+    (d) => d.stage !== "closed_won" && d.stage !== "closed_lost",
+  );
+  const pipelineTotal = activeDeals.reduce((s, d) => s + (d.value ?? 0), 0);
+  const pipelineWeighted = activeDeals.reduce(
+    (s, d) => s + Math.round((d.value ?? 0) * ((d.probability ?? 0) / 100)),
+    0,
+  );
 
   if (loading) {
     return (
@@ -264,6 +272,26 @@ export default function DealsPage() {
           + New deal
         </Link>
       </div>
+
+      {/* Pipeline value summary */}
+      {pipelineTotal > 0 && (
+        <div className="flex items-center gap-4 text-sm">
+          <span className="text-muted-foreground">
+            Pipeline:{" "}
+            <span className="font-semibold text-foreground">
+              ${pipelineTotal.toLocaleString()}
+            </span>
+          </span>
+          {pipelineWeighted > 0 && (
+            <span className="text-muted-foreground">
+              Weighted:{" "}
+              <span className="font-semibold text-emerald-700">
+                ${pipelineWeighted.toLocaleString()}
+              </span>
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Pipeline type tabs */}
       <div className="flex gap-1 rounded-lg border border-border bg-muted/30 p-1 w-fit">
