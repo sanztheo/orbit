@@ -18,6 +18,7 @@ interface BacklogItem {
   status: TaskStatus;
   priority: TaskPriority;
   contactId: string | null;
+  contactName: string | null;
   dueAt: string | null;
 }
 
@@ -198,9 +199,12 @@ export default function BacklogPage() {
                         </p>
                       )}
                       {item.contactId && (
-                        <p className="mt-1 text-xs text-blue-600">
-                          Linked to contact
-                        </p>
+                        <Link
+                          href={`/dashboard/contacts/${item.contactId}`}
+                          className="mt-1 block text-xs text-blue-600 hover:underline"
+                        >
+                          ↗ {item.contactName ?? "Contact"}
+                        </Link>
                       )}
                       <div className="mt-2 flex flex-wrap gap-1">
                         {STATUS_NEXT[item.status] && (

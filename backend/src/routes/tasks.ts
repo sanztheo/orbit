@@ -2,7 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
-import { db, tasks } from "../db/index.js";
+import { db, tasks, contacts } from "../db/index.js";
 import { generateId } from "../lib/ids.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
 
@@ -30,8 +30,23 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
     const workspaceId = c.get("workspaceId");
     const contactId = c.req.query("contactId");
     const rows = await db
-      .select()
+      .select({
+        id: tasks.id,
+        workspaceId: tasks.workspaceId,
+        title: tasks.title,
+        description: tasks.description,
+        status: tasks.status,
+        priority: tasks.priority,
+        contactId: tasks.contactId,
+        contactName: contacts.name,
+        dealId: tasks.dealId,
+        dueAt: tasks.dueAt,
+        completedAt: tasks.completedAt,
+        createdAt: tasks.createdAt,
+        updatedAt: tasks.updatedAt,
+      })
       .from(tasks)
+      .leftJoin(contacts, eq(tasks.contactId, contacts.id))
       .where(
         contactId
           ? and(

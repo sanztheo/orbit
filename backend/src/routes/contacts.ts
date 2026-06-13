@@ -8,14 +8,14 @@ import type { WorkspaceEnv } from "../middleware/workspace.js";
 
 const createSchema = z.object({
   name: z.string().min(1),
-  email: z.email().optional(),
-  company: z.string().optional(),
+  email: z.email().nullish(),
+  company: z.string().nullish(),
   type: z
     .enum(["lead", "customer", "investor", "advisor", "partner"])
     .optional(),
-  notes: z.string().optional(),
-  linkedinUrl: z.string().url().optional(),
-  twitterHandle: z.string().optional(),
+  notes: z.string().nullish(),
+  linkedinUrl: z.string().url().nullish(),
+  twitterHandle: z.string().nullish(),
 });
 
 const toDate = z
