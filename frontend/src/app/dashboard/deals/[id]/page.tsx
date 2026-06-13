@@ -23,6 +23,7 @@ import { DealFollowUpDraft } from "./deal-follow-up-draft";
 import { DealStageSelector } from "./deal-stage-selector";
 import { DealNextAction } from "./deal-next-action";
 import { DealAddTask } from "./deal-add-task";
+import { DealMetricEditor } from "./deal-metric-editor";
 
 const STAGE_LABELS: Record<string, string> = {
   prospect: "Prospect",
@@ -207,15 +208,23 @@ export default async function DealDetailPage({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-xl border border-border p-4 flex flex-col gap-1">
           <p className="text-xs text-muted-foreground">Value</p>
-          <p className="font-semibold text-lg">
-            {deal.value != null ? `$${deal.value.toLocaleString()}` : "—"}
-          </p>
+          <DealMetricEditor
+            dealId={deal.id}
+            field="value"
+            initialValue={deal.value}
+            prefix="$"
+          />
         </div>
         <div className="rounded-xl border border-border p-4 flex flex-col gap-1">
           <p className="text-xs text-muted-foreground">Probability</p>
-          <p className="font-semibold text-lg">
-            {deal.probability != null ? `${deal.probability}%` : "—"}
-          </p>
+          <DealMetricEditor
+            dealId={deal.id}
+            field="probability"
+            initialValue={deal.probability}
+            suffix="%"
+            min={0}
+            max={100}
+          />
         </div>
         <div className="rounded-xl border border-border p-4 flex flex-col gap-1">
           <p className="text-xs text-muted-foreground">Days in stage</p>
