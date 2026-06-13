@@ -6,6 +6,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiClient } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 
 type TaskStatus = "todo" | "in_progress" | "done" | "cancelled";
 type TaskPriority = "p0" | "p1" | "p2" | "p3";
@@ -38,11 +39,16 @@ const STATUS_NEXT: Partial<Record<TaskStatus, TaskStatus>> = {
   in_progress: "done",
 };
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+
 export default function BacklogPage() {
   const { getToken } = useAuth();
   const [items, setItems] = useState<BacklogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [movingId, setMovingId] = useState<string | null>(null);
+  const [loopDrafts, setLoopDrafts] = useState<Map<string, string>>(new Map());
+  const [generatingLoop, setGeneratingLoop] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   async function fetchItems() {
     const token = await getToken();
@@ -76,6 +82,33 @@ export default function BacklogPage() {
     } finally {
       setMovingId(null);
     }
+  }
+
+  async function closeTheLoop(item: BacklogItem) {
+    if (!item.contactId) return;
+    setGeneratingLoop(item.id);
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API_URL}/api/ai/close-the-loop`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ taskId: item.id }),
+      });
+      if (!res.ok) return;
+      const json: { draft: string } = await res.json();
+      setLoopDrafts((prev) => new Map(prev).set(item.id, json.draft));
+    } finally {
+      setGeneratingLoop(null);
+    }
+  }
+
+  async function copyDraft(id: string, text: string) {
+    await navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   }
 
   const byStatus = Object.fromEntries(
@@ -142,6 +175,8 @@ export default function BacklogPage() {
               ) : (
                 (byStatus[key] ?? []).map((item) => {
                   const pb = PRIORITY_BADGE[item.priority];
+                  const draft = loopDrafts.get(item.id);
+                  const isDone = item.status === "done";
                   return (
                     <div
                       key={item.id}
@@ -167,17 +202,52 @@ export default function BacklogPage() {
                           Linked to contact
                         </p>
                       )}
-                      {STATUS_NEXT[item.status] && (
-                        <button
-                          onClick={() => advance(item)}
-                          disabled={movingId === item.id}
-                          className="mt-2 rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"
-                        >
-                          → Move to{" "}
-                          {STATUS_NEXT[item.status] === "in_progress"
-                            ? "sprint"
-                            : "done"}
-                        </button>
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {STATUS_NEXT[item.status] && (
+                          <button
+                            onClick={() => advance(item)}
+                            disabled={movingId === item.id}
+                            className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"
+                          >
+                            → Move to{" "}
+                            {STATUS_NEXT[item.status] === "in_progress"
+                              ? "sprint"
+                              : "done"}
+                          </button>
+                        )}
+                        {isDone && item.contactId && !draft && (
+                          <button
+                            onClick={() => closeTheLoop(item)}
+                            disabled={generatingLoop === item.id}
+                            className={cn(
+                              "rounded px-2 py-0.5 text-xs font-medium text-purple-700 hover:bg-purple-50 disabled:opacity-40",
+                            )}
+                          >
+                            {generatingLoop === item.id
+                              ? "Drafting…"
+                              : "✦ Notify requester"}
+                          </button>
+                        )}
+                      </div>
+                      {draft && (
+                        <div className="mt-2 flex flex-col gap-1">
+                          <textarea
+                            value={draft}
+                            onChange={(e) =>
+                              setLoopDrafts((prev) =>
+                                new Map(prev).set(item.id, e.target.value),
+                              )
+                            }
+                            rows={5}
+                            className="w-full rounded border border-border bg-muted/30 p-2 text-xs font-mono leading-relaxed resize-none focus:outline-none"
+                          />
+                          <button
+                            onClick={() => copyDraft(item.id, draft)}
+                            className="self-end text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            {copiedId === item.id ? "Copied!" : "Copy"}
+                          </button>
+                        </div>
                       )}
                     </div>
                   );
