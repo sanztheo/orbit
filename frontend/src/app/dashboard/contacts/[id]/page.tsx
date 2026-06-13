@@ -11,6 +11,7 @@ import { ActivityLog } from "./activity-log";
 import { ColdStart } from "./cold-start";
 import { DeleteContactButton } from "./delete-button";
 import { FollowUpDatePicker } from "./follow-up-date-picker";
+import { InlineNotes } from "./inline-notes";
 import {
   ArrowLeft,
   Pencil,
@@ -268,12 +269,7 @@ export default async function ContactDetailPage({
             <p>@{contact.twitterHandle}</p>
           </div>
         )}
-        {contact.notes && (
-          <div className="col-span-2">
-            <p className="text-xs text-muted-foreground mb-1">Notes</p>
-            <p className="whitespace-pre-wrap">{contact.notes}</p>
-          </div>
-        )}
+        <InlineNotes contactId={contact.id} initialNotes={contact.notes} />
       </div>
 
       {/* Cadence */}
