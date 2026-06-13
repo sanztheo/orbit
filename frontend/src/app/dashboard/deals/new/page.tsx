@@ -96,8 +96,12 @@ export default function NewDealPage() {
     try {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
-      await apiClient.post("/api/deals", body, token);
-      router.push("/dashboard/deals");
+      const result = await apiClient.post<{ data: { id: string } }>(
+        "/api/deals",
+        body,
+        token,
+      );
+      router.push(`/dashboard/deals/${result.data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create deal");
     } finally {
