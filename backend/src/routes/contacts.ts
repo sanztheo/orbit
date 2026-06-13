@@ -285,27 +285,50 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
   .post("/", zValidator("json", createSchema), async (c) => {
     const workspaceId = c.get("workspaceId");
     const body = c.req.valid("json");
-    if (body.email) {
-      const [existing] = await db
-        .select({ id: contacts.id, name: contacts.name })
-        .from(contacts)
-        .where(
-          and(
-            eq(contacts.workspaceId, workspaceId),
-            eq(contacts.email, body.email),
-          ),
-        )
-        .limit(1);
-      if (existing) {
-        return c.json(
-          {
-            error: "duplicate_email",
-            message: `A contact with this email already exists: ${existing.name}`,
-            existingId: existing.id,
-          },
-          409,
-        );
-      }
+
+    // Dedup by email (exact) then by name (case-insensitive)
+    const [byEmail] = body.email
+      ? await db
+          .select({ id: contacts.id, name: contacts.name })
+          .from(contacts)
+          .where(
+            and(
+              eq(contacts.workspaceId, workspaceId),
+              eq(contacts.email, body.email),
+            ),
+          )
+          .limit(1)
+      : [undefined];
+    if (byEmail) {
+      return c.json(
+        {
+          error: "duplicate_email",
+          message: `A contact with this email already exists: ${byEmail.name}`,
+          existingId: byEmail.id,
+        },
+        409,
+      );
+    }
+
+    const [byName] = await db
+      .select({ id: contacts.id, name: contacts.name })
+      .from(contacts)
+      .where(
+        and(
+          eq(contacts.workspaceId, workspaceId),
+          ilike(contacts.name, body.name.trim()),
+        ),
+      )
+      .limit(1);
+    if (byName) {
+      return c.json(
+        {
+          error: "duplicate_name",
+          message: `A contact named "${byName.name}" already exists`,
+          existingId: byName.id,
+        },
+        409,
+      );
     }
     const [row] = await db
       .insert(contacts)
