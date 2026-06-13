@@ -10,6 +10,7 @@ import { AiQuotaIndicator } from "./ai-quota-indicator";
 import { QuickLog } from "./quick-log";
 import { LogButton } from "./log-button";
 import { ShortcutsHelp } from "./shortcuts-help";
+import { MobileFab } from "./mobile-fab";
 import {
   LayoutDashboard,
   Users,
@@ -86,6 +87,8 @@ export default async function DashboardLayout({
       <main className="flex flex-1 flex-col overflow-auto pt-12 pb-16 md:pt-0 md:pb-0">
         {children}
       </main>
+
+      <MobileFab />
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t border-border bg-background">
