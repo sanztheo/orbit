@@ -361,9 +361,40 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
   .patch("/:id", zValidator("json", updateSchema), async (c) => {
     const workspaceId = c.get("workspaceId");
     const body = c.req.valid("json");
+
+    // Auto-compute nextFollowUpAt from lastContactedAt + cadenceDays
+    // unless the caller explicitly sets nextFollowUpAt
+    let autoFollowUp: { nextFollowUpAt: Date } | undefined;
+    if (
+      "nextFollowUpAt" in body === false &&
+      ("lastContactedAt" in body || "cadenceDays" in body)
+    ) {
+      const [existing] = await db
+        .select({
+          lastContactedAt: contacts.lastContactedAt,
+          cadenceDays: contacts.cadenceDays,
+        })
+        .from(contacts)
+        .where(
+          and(
+            eq(contacts.id, c.req.param("id")),
+            eq(contacts.workspaceId, workspaceId),
+          ),
+        );
+      if (existing) {
+        const lastContacted = body.lastContactedAt ?? existing.lastContactedAt;
+        const cadence = body.cadenceDays ?? existing.cadenceDays;
+        if (lastContacted && cadence) {
+          const due = new Date(lastContacted);
+          due.setDate(due.getDate() + cadence);
+          autoFollowUp = { nextFollowUpAt: due };
+        }
+      }
+    }
+
     const [row] = await db
       .update(contacts)
-      .set({ ...body, updatedAt: new Date() })
+      .set({ ...body, ...autoFollowUp, updatedAt: new Date() })
       .where(
         and(
           eq(contacts.id, c.req.param("id")),
