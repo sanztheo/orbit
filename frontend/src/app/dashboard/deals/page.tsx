@@ -7,6 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { PipelineVelocity } from "./pipeline-velocity";
 
 type DealStage =
   | "prospect"
@@ -336,6 +337,8 @@ export default function DealsPage() {
           Drop onto a column to move
         </p>
       )}
+
+      <PipelineVelocity />
     </div>
   );
 }

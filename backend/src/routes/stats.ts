@@ -190,4 +190,30 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       overdueFollowUps: overdueFollowUps[0]?.count ?? 0,
       totalDeals: totalDeals[0]?.count ?? 0,
     });
+  })
+  .get("/pipeline-velocity", async (c) => {
+    const workspaceId = c.get("workspaceId");
+
+    const rows = await db
+      .select({
+        stage: deals.stage,
+        pipelineType: deals.pipelineType,
+        count: sql<number>`count(*)::int`,
+        avgDaysInStage: sql<number>`ROUND(AVG(EXTRACT(EPOCH FROM (NOW() - ${deals.stageChangedAt})) / 86400))::int`,
+        totalValue: sql<number>`COALESCE(SUM(${deals.value}), 0)::int`,
+      })
+      .from(deals)
+      .where(eq(deals.workspaceId, workspaceId))
+      .groupBy(deals.stage, deals.pipelineType);
+
+    const won = rows
+      .filter((r) => r.stage === "closed_won")
+      .reduce((s, r) => s + r.count, 0);
+    const lost = rows
+      .filter((r) => r.stage === "closed_lost")
+      .reduce((s, r) => s + r.count, 0);
+    const winRate =
+      won + lost > 0 ? Math.round((won / (won + lost)) * 100) : null;
+
+    return c.json({ stages: rows, winRate, totalWon: won, totalLost: lost });
   });
