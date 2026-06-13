@@ -7,7 +7,14 @@ import { buttonVariants } from "@/components/ui/button";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-export function ImportButton() {
+type BtnVariant = "outline" | "default" | "ghost";
+type BtnSize = "sm" | "default" | "lg";
+
+export function ImportButton({
+  label,
+  variant = "outline",
+  size = "sm",
+}: { label?: string; variant?: BtnVariant; size?: BtnSize } = {}) {
   const { getToken } = useAuth();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,12 +70,9 @@ export function ImportButton() {
       <button
         onClick={() => inputRef.current?.click()}
         disabled={loading}
-        className={
-          buttonVariants({ variant: "outline", size: "sm" }) +
-          " disabled:opacity-50"
-        }
+        className={buttonVariants({ variant, size }) + " disabled:opacity-50"}
       >
-        {loading ? "Importing…" : "Import CSV"}
+        {loading ? "Importing…" : (label ?? "Import CSV")}
       </button>
       {status && (
         <span className="text-xs text-muted-foreground">{status}</span>

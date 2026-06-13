@@ -10,6 +10,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
+import { ImportButton } from "./contacts/import-button";
 
 interface Stats {
   stallingDeals: number;
@@ -161,6 +162,59 @@ export default function DashboardPage() {
     coldContacts: [],
     overdueFollowUps: [],
   };
+
+  if (!loading && !offline && s.totalContacts === 0) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-8 p-8 text-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-foreground text-3xl text-background">
+            ◎
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Welcome to Orbit
+          </h1>
+          <p className="max-w-sm text-muted-foreground">
+            Start by importing your existing contacts. Orbit will calculate
+            relationship health and surface who needs attention automatically.
+          </p>
+        </div>
+
+        <div className="flex flex-col items-center gap-3">
+          <ImportButton
+            label="↑ Import contacts from CSV"
+            variant="default"
+            size="lg"
+          />
+          <span className="text-xs text-muted-foreground">or</span>
+          <Link
+            href="/dashboard/contacts/new"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Add first contact manually
+          </Link>
+        </div>
+
+        <div className="grid max-w-lg gap-3 text-left sm:grid-cols-3">
+          {[
+            {
+              icon: "📋",
+              text: "CSV from Folk, Notion, HubSpot, Google Contacts",
+            },
+            { icon: "⚡", text: "Relationship health scored automatically" },
+            { icon: "🔒", text: "Your data stays in your workspace" },
+          ].map((item) => (
+            <div
+              key={item.text}
+              className="flex items-start gap-2 rounded-xl border border-border p-3 text-sm"
+            >
+              <span className="shrink-0">{item.icon}</span>
+              <span className="text-muted-foreground">{item.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6">
