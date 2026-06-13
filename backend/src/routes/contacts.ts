@@ -28,6 +28,7 @@ const createSchema = z.object({
   notes: z.string().nullish(),
   linkedinUrl: z.string().url().nullish(),
   twitterHandle: z.string().nullish(),
+  tags: z.array(z.string().min(1).max(50)).max(20).optional(),
 });
 
 const toDate = z

@@ -37,6 +37,7 @@ export interface ContactRow {
   nextFollowUpAt: string | null;
   cadenceDays: number | null;
   priorityScore: number | null;
+  tags: string[];
   createdAt: string;
 }
 
@@ -221,6 +222,23 @@ export function ContactsTable({ contacts }: Props) {
                     {contact.company}
                   </p>
                 )}
+                {contact.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {contact.tags.slice(0, 3).map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-[10px] bg-muted rounded-full px-1.5 py-0.5 text-muted-foreground"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {contact.tags.length > 3 && (
+                      <span className="text-[10px] text-muted-foreground">
+                        +{contact.tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex flex-col items-end shrink-0 gap-1 ml-2">
                 <Badge variant={TYPE_VARIANT[contact.type]}>
@@ -321,6 +339,23 @@ export function ContactsTable({ contacts }: Props) {
                     >
                       {contact.email}
                     </a>
+                  )}
+                  {contact.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {contact.tags.slice(0, 4).map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[10px] bg-muted rounded-full px-1.5 py-0.5 text-muted-foreground"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {contact.tags.length > 4 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          +{contact.tags.length - 4}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </TableCell>
                 <TableCell>

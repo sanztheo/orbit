@@ -12,6 +12,7 @@ import { ColdStart } from "./cold-start";
 import { DeleteContactButton } from "./delete-button";
 import { FollowUpDatePicker } from "./follow-up-date-picker";
 import { InlineNotes } from "./inline-notes";
+import { ContactTags } from "./contact-tags";
 import {
   ArrowLeft,
   Pencil,
@@ -38,6 +39,7 @@ interface Contact {
   nextFollowUpAt: string | null;
   cadenceDays: number | null;
   priorityScore: number | null;
+  tags: string[];
   createdAt: string;
 }
 
@@ -297,6 +299,7 @@ export default async function ContactDetailPage({
           </div>
         )}
         <InlineNotes contactId={contact.id} initialNotes={contact.notes} />
+        <ContactTags contactId={contact.id} initialTags={contact.tags ?? []} />
       </div>
 
       {/* Cadence */}
