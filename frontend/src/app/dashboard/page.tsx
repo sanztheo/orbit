@@ -21,6 +21,7 @@ interface Stats {
   wonThisMonth: number;
   overdueFollowUps: number;
   totalDeals: number;
+  pipelineValue: number;
 }
 
 interface StallingDeal {
@@ -69,12 +70,14 @@ function daysSince(iso: string | null): number {
 function StatCard({
   title,
   value,
+  display,
   urgent,
   href,
   loading,
 }: {
   title: string;
   value: number;
+  display?: string;
   urgent?: boolean;
   href: string;
   loading?: boolean;
@@ -91,7 +94,7 @@ function StatCard({
           <p
             className={`text-3xl font-bold ${loading ? "text-muted-foreground/40" : ""} ${urgent && value > 0 && !loading ? "text-red-600" : ""}`}
           >
-            {loading ? "…" : value}
+            {loading ? "…" : (display ?? value)}
           </p>
         </CardContent>
       </Card>
@@ -172,6 +175,7 @@ export default function DashboardPage() {
     wonThisMonth: 0,
     overdueFollowUps: 0,
     totalDeals: 0,
+    pipelineValue: 0,
   };
   const a = actions ?? {
     stallingDeals: [],
@@ -275,6 +279,15 @@ export default function DashboardPage() {
         <StatCard
           title="Won This Month"
           value={s.wonThisMonth}
+          href="/dashboard/deals"
+          loading={loading}
+        />
+        <StatCard
+          title="Pipeline Value"
+          value={s.pipelineValue}
+          display={
+            s.pipelineValue > 0 ? `$${s.pipelineValue.toLocaleString()}` : "—"
+          }
           href="/dashboard/deals"
           loading={loading}
         />

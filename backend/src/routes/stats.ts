@@ -130,6 +130,7 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       wonThisMonth,
       overdueFollowUps,
       totalDeals,
+      pipelineValueResult,
     ] = await Promise.all([
       // Deals stuck in active stage for 30+ days
       db
@@ -207,6 +208,18 @@ export const statsRouter = new Hono<WorkspaceEnv>()
         .select({ count: sql<number>`count(*)::int` })
         .from(deals)
         .where(eq(deals.workspaceId, workspaceId)),
+
+      // Active pipeline value
+      db
+        .select({ total: sql<number>`COALESCE(SUM(${deals.value}), 0)::int` })
+        .from(deals)
+        .where(
+          and(
+            eq(deals.workspaceId, workspaceId),
+            ne(deals.stage, "closed_won"),
+            ne(deals.stage, "closed_lost"),
+          ),
+        ),
     ]);
 
     return c.json({
@@ -217,6 +230,7 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       wonThisMonth: wonThisMonth[0]?.count ?? 0,
       overdueFollowUps: overdueFollowUps[0]?.count ?? 0,
       totalDeals: totalDeals[0]?.count ?? 0,
+      pipelineValue: pipelineValueResult[0]?.total ?? 0,
     });
   })
   .get("/pipeline-velocity", async (c) => {
