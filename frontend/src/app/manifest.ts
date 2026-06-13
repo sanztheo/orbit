@@ -17,5 +17,19 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: "any",
       },
     ],
+    shortcuts: [
+      {
+        name: "New Contact",
+        short_name: "Contact",
+        url: "/dashboard/contacts/new",
+        description: "Add a new contact",
+      },
+      {
+        name: "New Deal",
+        short_name: "Deal",
+        url: "/dashboard/deals/new",
+        description: "Create a new deal",
+      },
+    ],
   };
 }
