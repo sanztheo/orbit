@@ -31,6 +31,7 @@ const createSchema = z.object({
   probability: z.number().int().min(0).max(100).optional(),
   expectedCloseAt: toDate.optional(),
   notes: z.string().optional(),
+  nextAction: z.string().optional(),
 });
 
 const updateSchema = createSchema.partial();
@@ -54,6 +55,7 @@ export const dealsRouter = new Hono<WorkspaceEnv>()
         expectedCloseAt: deals.expectedCloseAt,
         stageChangedAt: deals.stageChangedAt,
         notes: deals.notes,
+        nextAction: deals.nextAction,
         createdAt: deals.createdAt,
         updatedAt: deals.updatedAt,
       })

@@ -34,6 +34,7 @@ interface Deal {
   contactId: string | null;
   contactName: string | null;
   contactCompany: string | null;
+  nextAction: string | null;
 }
 
 const STAGE_ORDER: DealStage[] = [
@@ -103,6 +104,10 @@ export default function DealsPage() {
   const [wonDeal, setWonDeal] = useState<Deal | null>(null);
   const [winReason, setWinReason] = useState("");
   const [winSubmitting, setWinSubmitting] = useState(false);
+  const [editingNextAction, setEditingNextAction] = useState<string | null>(
+    null,
+  );
+  const [nextActionDraft, setNextActionDraft] = useState("");
 
   async function fetchDeals() {
     const token = await getToken();
@@ -181,6 +186,22 @@ export default function DealsPage() {
     } finally {
       setWinSubmitting(false);
       setWonDeal(null);
+    }
+  }
+
+  async function saveNextAction(dealId: string, value: string) {
+    setEditingNextAction(null);
+    const trimmed = value.trim() || null;
+    setAllDeals((prev) =>
+      prev.map((d) => (d.id === dealId ? { ...d, nextAction: trimmed } : d)),
+    );
+    const token = await getToken();
+    if (token) {
+      await apiClient.patch(
+        `/api/deals/${dealId}`,
+        { nextAction: trimmed },
+        token,
+      );
     }
   }
 
@@ -428,6 +449,37 @@ export default function DealsPage() {
                         <p className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
                           {deal.notes}
                         </p>
+                      )}
+                      {editingNextAction === deal.id ? (
+                        <input
+                          autoFocus
+                          value={nextActionDraft}
+                          onChange={(e) => setNextActionDraft(e.target.value)}
+                          onBlur={() =>
+                            saveNextAction(deal.id, nextActionDraft)
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter")
+                              saveNextAction(deal.id, nextActionDraft);
+                            if (e.key === "Escape") setEditingNextAction(null);
+                          }}
+                          placeholder="Next step…"
+                          className="mt-1 w-full rounded border border-primary/40 bg-white px-1.5 py-0.5 text-xs focus:outline-none"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setNextActionDraft(deal.nextAction ?? "");
+                            setEditingNextAction(deal.id);
+                          }}
+                          className="mt-1 w-full text-left text-xs text-muted-foreground hover:text-foreground truncate"
+                        >
+                          {deal.nextAction
+                            ? `→ ${deal.nextAction}`
+                            : "+ next step"}
+                        </button>
                       )}
                     </div>
                   );

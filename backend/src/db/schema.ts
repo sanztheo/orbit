@@ -134,6 +134,7 @@ export const deals = pgTable(
     probability: integer("probability").default(0),
     expectedCloseAt: timestamp("expected_close_at"),
     notes: text("notes"),
+    nextAction: text("next_action"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },
