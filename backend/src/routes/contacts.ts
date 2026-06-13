@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ilike, or } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db, contacts } from "../db/index.js";
@@ -32,10 +32,31 @@ const updateSchema = createSchema.partial().extend({
 export const contactsRouter = new Hono<WorkspaceEnv>()
   .get("/", async (c) => {
     const workspaceId = c.get("workspaceId");
+    const search = c.req.query("search");
+    const type = c.req.query("type") as
+      | "lead"
+      | "customer"
+      | "investor"
+      | "advisor"
+      | "partner"
+      | undefined;
+
+    const searchFilter = search
+      ? or(
+          ilike(contacts.name, `%${search}%`),
+          ilike(contacts.email, `%${search}%`),
+          ilike(contacts.company, `%${search}%`),
+        )
+      : undefined;
+
+    const typeFilter = type ? eq(contacts.type, type) : undefined;
+
     const rows = await db
       .select()
       .from(contacts)
-      .where(eq(contacts.workspaceId, workspaceId));
+      .where(
+        and(eq(contacts.workspaceId, workspaceId), searchFilter, typeFilter),
+      );
     return c.json({ data: rows, total: rows.length });
   })
   .post("/", zValidator("json", createSchema), async (c) => {
