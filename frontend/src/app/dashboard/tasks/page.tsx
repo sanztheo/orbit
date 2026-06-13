@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiClient } from "@/lib/api-client";
@@ -18,6 +19,8 @@ interface Task {
   priority: TaskPriority;
   dueAt: string | null;
   completedAt: string | null;
+  contactId: string | null;
+  contactName: string | null;
 }
 
 const COLUMNS: { key: TaskStatus; label: string }[] = [
@@ -146,6 +149,31 @@ export default function TasksPage() {
                   {task.description && (
                     <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
                       {task.description}
+                    </p>
+                  )}
+                  {task.contactId && (
+                    <Link
+                      href={`/dashboard/contacts/${task.contactId}`}
+                      className="mt-1 block text-xs text-blue-600 hover:underline truncate"
+                    >
+                      ↗ {task.contactName ?? "Contact"}
+                    </Link>
+                  )}
+                  {task.dueAt && (
+                    <p
+                      className={cn(
+                        "mt-1 text-xs",
+                        new Date(task.dueAt) < new Date()
+                          ? "text-red-600 font-medium"
+                          : "text-muted-foreground",
+                      )}
+                    >
+                      Due{" "}
+                      {new Date(task.dueAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                      {new Date(task.dueAt) < new Date() ? " ⚠" : ""}
                     </p>
                   )}
                   {STATUS_NEXT[task.status] && (
