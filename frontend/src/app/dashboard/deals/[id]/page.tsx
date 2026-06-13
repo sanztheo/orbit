@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { DealCloseButtons } from "./close-buttons";
 import { DealActivityLog } from "./deal-activity-log";
+import { DeleteDealButton } from "./delete-button";
 
 const STAGE_LABELS: Record<string, string> = {
   prospect: "Prospect",
@@ -159,13 +160,16 @@ export default async function DealDetailPage({
             </div>
           </div>
         </div>
-        <Link
-          href={`/dashboard/deals/${deal.id}/edit`}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          <Pencil className="h-4 w-4 mr-2" />
-          Edit
-        </Link>
+        <div className="flex items-center gap-2">
+          <DeleteDealButton dealId={deal.id} />
+          <Link
+            href={`/dashboard/deals/${deal.id}/edit`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            <Pencil className="h-4 w-4 mr-2" />
+            Edit
+          </Link>
+        </div>
       </div>
 
       {/* Key metrics row */}
