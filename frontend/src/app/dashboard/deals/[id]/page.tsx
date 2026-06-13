@@ -16,11 +16,11 @@ import {
   Link2,
   ChevronRight,
 } from "lucide-react";
-import { DealCloseButtons } from "./close-buttons";
 import { DealActivityLog } from "./deal-activity-log";
 import { DeleteDealButton } from "./delete-button";
 import { DealInlineNotes } from "./inline-notes";
 import { DealFollowUpDraft } from "./deal-follow-up-draft";
+import { DealStageSelector } from "./deal-stage-selector";
 
 const STAGE_LABELS: Record<string, string> = {
   prospect: "Prospect",
@@ -368,8 +368,15 @@ export default async function DealDetailPage({
         <DealInlineNotes dealId={deal.id} initialNotes={deal.notes} />
       </div>
 
-      {/* Close actions */}
-      {!isClosed && <DealCloseButtons dealId={deal.id} />}
+      {/* Stage progression */}
+      <div className="rounded-xl border border-border p-4">
+        <p className="text-xs text-muted-foreground mb-3">Move stage</p>
+        <DealStageSelector
+          dealId={deal.id}
+          currentStage={deal.stage}
+          pipelineType={deal.pipelineType}
+        />
+      </div>
 
       {/* AI follow-up draft */}
       {contact && (
