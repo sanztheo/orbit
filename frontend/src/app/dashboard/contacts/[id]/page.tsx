@@ -9,6 +9,7 @@ import { AddToBacklog } from "./add-to-backlog";
 import { CadencePicker } from "./cadence-picker";
 import { ActivityLog } from "./activity-log";
 import { ColdStart } from "./cold-start";
+import { DeleteContactButton } from "./delete-button";
 
 interface Contact {
   id: string;
@@ -104,12 +105,15 @@ export default async function ContactDetailPage({
           <h1 className="text-xl font-semibold">{contact.name}</h1>
           <Badge variant="outline">{contact.type}</Badge>
         </div>
-        <Link
-          href={`/dashboard/contacts/${contact.id}/edit`}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          Edit
-        </Link>
+        <div className="flex items-center gap-2">
+          <DeleteContactButton contactId={contact.id} />
+          <Link
+            href={`/dashboard/contacts/${contact.id}/edit`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Edit
+          </Link>
+        </div>
       </div>
 
       {/* Staleness alert */}
