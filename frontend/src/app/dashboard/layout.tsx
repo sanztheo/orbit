@@ -19,12 +19,14 @@ import {
   BookOpen,
   Settings2,
   Building2,
+  Calendar,
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Contacts", href: "/dashboard/contacts", icon: Users },
   { label: "Companies", href: "/dashboard/companies", icon: Building2 },
+  { label: "Follow-ups", href: "/dashboard/follow-ups", icon: Calendar },
   { label: "Deals", href: "/dashboard/deals", icon: Briefcase },
   { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
   { label: "Backlog", href: "/dashboard/backlog", icon: BookOpen },

@@ -6,6 +6,7 @@ import {
   desc,
   eq,
   ilike,
+  isNotNull,
   isNull,
   lt,
   ne,
@@ -61,6 +62,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
     const company = c.req.query("company");
     const excludeId = c.req.query("excludeId");
     const tag = c.req.query("tag");
+    const hasFollowUp = c.req.query("hasFollowUp") === "1";
     const limitParam = c.req.query("limit");
     const pageParam = c.req.query("page");
     const pageSize = limitParam
@@ -91,6 +93,9 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
         )
       : undefined;
     const tagFilter = tag ? sql`${tag} = ANY(${contacts.tags})` : undefined;
+    const followUpFilter = hasFollowUp
+      ? isNotNull(contacts.nextFollowUpAt)
+      : undefined;
 
     const orderBy = (() => {
       switch (sort) {
@@ -104,6 +109,8 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
           return [
             sql`COALESCE((SELECT SUM(${deals.value}) FROM ${deals} WHERE ${deals.contactId} = ${contacts.id} AND ${deals.workspaceId} = ${contacts.workspaceId}), 0) DESC`,
           ];
+        case "next_follow_up":
+          return [sql`${contacts.nextFollowUpAt} ASC NULLS LAST`];
         default:
           return [asc(contacts.name)];
       }
@@ -117,6 +124,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       companyFilter,
       excludeFilter,
       tagFilter,
+      followUpFilter,
     );
 
     let query = db
