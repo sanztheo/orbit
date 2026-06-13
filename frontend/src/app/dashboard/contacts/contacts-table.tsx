@@ -379,7 +379,7 @@ export function ContactsTable({ contacts }: Props) {
                 <TableCell>
                   {contact.company ? (
                     <Link
-                      href={`/dashboard/contacts?search=${encodeURIComponent(contact.company)}`}
+                      href={`/dashboard/companies/${encodeURIComponent(contact.company)}`}
                       onClick={(e) => e.stopPropagation()}
                       className="text-sm hover:underline text-muted-foreground hover:text-foreground"
                     >

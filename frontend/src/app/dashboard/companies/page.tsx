@@ -86,7 +86,7 @@ export default async function CompaniesPage() {
               return (
                 <Link
                   key={co.company}
-                  href={`/dashboard/contacts?search=${encodeURIComponent(co.company ?? "")}`}
+                  href={`/dashboard/companies/${encodeURIComponent(co.company ?? "")}`}
                   className="flex items-start justify-between rounded-lg border border-border p-3 hover:bg-muted/40 transition-colors"
                 >
                   <div className="min-w-0">
@@ -135,7 +135,7 @@ export default async function CompaniesPage() {
                   <TableRow key={co.company} className="group">
                     <TableCell className="font-medium">
                       <Link
-                        href={`/dashboard/contacts?search=${encodeURIComponent(co.company ?? "")}`}
+                        href={`/dashboard/companies/${encodeURIComponent(co.company ?? "")}`}
                         className="hover:underline"
                       >
                         {co.company}

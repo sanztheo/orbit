@@ -43,6 +43,7 @@ export const dealsRouter = new Hono<WorkspaceEnv>()
   .get("/", async (c) => {
     const workspaceId = c.get("workspaceId");
     const contactId = c.req.query("contactId");
+    const company = c.req.query("company");
     const search = c.req.query("search");
     const searchFilter = search
       ? or(
@@ -80,6 +81,7 @@ export const dealsRouter = new Hono<WorkspaceEnv>()
         and(
           eq(deals.workspaceId, workspaceId),
           contactId ? eq(deals.contactId, contactId) : undefined,
+          company ? ilike(contacts.company, company) : undefined,
           searchFilter,
         ),
       );
