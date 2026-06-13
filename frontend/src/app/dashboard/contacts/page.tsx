@@ -57,6 +57,10 @@ function healthColor(days: number | null): string {
   return "text-red-500";
 }
 
+function isStale(days: number | null): boolean {
+  return days === null || days >= 180;
+}
+
 function formatDate(value: string | null): string {
   if (!value) return "Never";
   return new Date(value).toLocaleDateString("en-US", {
@@ -170,6 +174,11 @@ export default async function ContactsPage({
                           ? "Today"
                           : `${days}d ago`}
                     </span>
+                    {isStale(days) && (
+                      <span className="text-xs text-amber-600 font-medium">
+                        ⚠️ stale
+                      </span>
+                    )}
                   </div>
                 </Link>
               );
@@ -219,6 +228,11 @@ export default async function ContactsPage({
                             ? "Today"
                             : `${days}d ago`}
                       </span>
+                      {isStale(days) && (
+                        <span className="ml-1.5 text-xs text-amber-600 font-medium">
+                          ⚠️ stale
+                        </span>
+                      )}
                       <div className="text-xs text-muted-foreground">
                         {formatDate(contact.lastContactedAt)}
                       </div>

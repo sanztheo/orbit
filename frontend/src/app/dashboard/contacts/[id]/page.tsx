@@ -101,6 +101,38 @@ export default async function ContactDetailPage({
         </Link>
       </div>
 
+      {/* Staleness alert */}
+      {(() => {
+        const days = contact.lastContactedAt
+          ? Math.floor(
+              (Date.now() - new Date(contact.lastContactedAt).getTime()) /
+                86_400_000,
+            )
+          : null;
+        if (days === null || days >= 180) {
+          return (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex items-start gap-2">
+              <span className="shrink-0 mt-0.5">⚠️</span>
+              <div>
+                <span className="font-medium">Data may be stale</span>
+                {" — "}
+                {days === null
+                  ? "never contacted"
+                  : `no activity in ${days} days`}
+                .{" "}
+                <Link
+                  href={`/dashboard/contacts/${contact.id}/edit`}
+                  className="underline underline-offset-2 hover:text-amber-900"
+                >
+                  Verify or update info →
+                </Link>
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
+
       {/* Info grid */}
       <div className="rounded-xl border border-border p-5 grid grid-cols-2 gap-4 text-sm">
         <div>
