@@ -141,6 +141,11 @@ export default function DealsPage() {
           : d,
       ),
     );
+    // Prompt for next action on active stage moves (not terminal stages)
+    if (newStage !== "closed_won" && newStage !== "closed_lost") {
+      setNextActionDraft(deal.nextAction ?? "");
+      setEditingNextAction(deal.id);
+    }
     try {
       await apiClient.patch(
         `/api/deals/${deal.id}`,

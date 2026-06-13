@@ -126,7 +126,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P0] [TODO] Implement AI action counter middleware: decrement workspace AI quota on every Claude API call, return 429 with upgrade prompt at limit — AI action limits are a monetization constraint. Enforce at API middleware level; do not trust client to track.
 
-[P1] [TODO] Build AI investor update generator: takes pipeline data + top backlog items + metrics fields → drafts a founder update email — Founders write investor updates manually every month. This is high-value, low-frequency AI use case that justifies the subscription renewal.
+[P1] [DONE] Build AI investor update generator: takes pipeline data + top backlog items + metrics fields → drafts a founder update email — Founders write investor updates manually every month. This is high-value, low-frequency AI use case that justifies the subscription renewal.
 
 [P1] [TODO] Build AI contact enrichment from email signature: parse Name, Title, Company, LinkedIn URL from inbound email signatures using Claude extraction — Reduces manual contact creation. First enrichment step that requires zero external API credits.
 
@@ -200,7 +200,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P1] [DONE] Tool-sprawl cost calculator on landing page: show "45–75 min/day lost to context switching between 6 tools" with a savings estimate — Concrete time-cost framing converts better than feature lists; 45-75 min/day = 5 hours/week = a full working day per month.
 
-[P2] [TODO] Add deal-won close-loop automation: when a deal moves to closed_won, prompt to log what feature/argument closed it and tag those backlog items — Tracks what actually wins deals, not just what customers request.
+[P2] [DONE] Add deal-won close-loop automation: when a deal moves to closed_won, prompt to log what feature/argument closed it and tag those backlog items — Tracks what actually wins deals, not just what customers request.
 
 [P2] [TODO] Weekly digest push notification: stalling deals count, contacts going cold this week, backlog items with 3+ requests — Founders who don't log in daily still need to know what's at risk; digest keeps the product valuable without daily active use.
 
@@ -246,7 +246,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P0] [TODO] Build import-first onboarding path: detect if user has CSV and show import UI before showing empty dashboard — Empty dashboard on first login is the conversion killer. Import-first means the product feels valuable from minute one.
 
-[P1] [TODO] Build in-app checklist widget (5 tasks: import contacts, connect email, create deal, add backlog item, invite teammate) — Activation checklists measurably improve 30-day retention. Simple persistent progress widget, not a modal wizard.
+[P1] [DONE] Build in-app checklist widget (5 steps: add contact, log activity, create deal, set cadence, add backlog item) — Activation checklists measurably improve 30-day retention. Simple persistent progress widget, dismissable, hides when all steps done.
 
 [P1] [TODO] Send onboarding email sequence (Resend): day 0 welcome, day 3 "did you connect Gmail?", day 7 "here's your first follow-up suggestion" — Email-driven activation recaptures founders who signed up and didn't fully onboard. Day 3 and day 7 touchpoints are the highest-leverage re-engagement moments.
 
@@ -298,11 +298,11 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P2] [TODO] Contact completeness nudge: when adding a new contact, show a completeness bar (email? linkedin? company? cadence?) with one-tap "fill in later" — Folk and HubSpot get abandoned because data quality decays silently; visible completeness creates habit of better data.
 
-[P2] [TODO] Stage-change forced next-action: when moving a deal to a new stage, show a single-line input "What's the next step?" before saving — the most common pipeline rot cause is a stage move with no committed next action; forcing it at move time prevents stall.
+[P2] [DONE] Stage-change forced next-action: when moving a deal to a new stage, auto-focus the next-action input on that card — the most common pipeline rot cause is a stage move with no committed next action; forcing it at move time prevents stall.
 
 ## Research-Driven — 2026-06-13 round 4 (previous)
 
-[P1] [TODO] Voice note to activity: record a 30-second voice memo from contact page, transcribe via Whisper/Claude, auto-log as activity — data entry is the core CRM hatred; 6+ hrs/week lost to manual logging; voice capture eliminates it without typing.
+[P1] [DONE] Voice note to activity: record a 30-second voice memo from contact page, transcribe via Web Speech API, auto-log as activity — data entry is the core CRM hatred; 6+ hrs/week lost to manual logging; voice capture eliminates it without typing.
 
 [P1] [DONE] "Who do I know at [company]?" shortcut: company name link on deal card filters contacts — warm intros convert 5× better than cold; CRMs never surface existing connections for a target deal.
 
@@ -312,7 +312,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P2] [DONE] Context card before cold outreach: AI cold-start component (ANGLE/HOOK/DRAFT) on contact detail when no activity exists — founders spend 15-20 min manually researching before each cold email; Orbit can draft the context in seconds.
 
-[P2] [TODO] Per-deal next-action field: a single "Next step" text field + due date on each deal card in the Kanban — "what do I do next on this deal?" is the most common stall; forcing a next-action at every stage change reduces pipeline rot.
+[P2] [DONE] Per-deal next-action field: a single "Next step" text field + due date on each deal card in the Kanban — "what do I do next on this deal?" is the most common stall; forcing a next-action at every stage change reduces pipeline rot.
 
 [P3] [TODO] Zapier / Make integration: list Orbit as a Zapier app with triggers (new contact, stage changed) and actions (create contact, log activity) — founders who already use Zapier will connect Orbit to their existing stack automatically.
 
