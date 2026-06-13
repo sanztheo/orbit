@@ -105,23 +105,11 @@ export default function SettingsPage() {
     setExporting(true);
     try {
       const token = await getToken();
-      const headers: Record<string, string> = token
-        ? { Authorization: `Bearer ${token}` }
-        : {};
-      const [contactsRes, dealsRes, tasksRes, activitiesRes] =
-        await Promise.all([
-          fetch(`${API_URL}/api/contacts`, { headers }),
-          fetch(`${API_URL}/api/deals`, { headers }),
-          fetch(`${API_URL}/api/tasks`, { headers }),
-          fetch(`${API_URL}/api/activities`, { headers }),
-        ]);
-      const bundle = {
-        exportedAt: new Date().toISOString(),
-        contacts: contactsRes.ok ? (await contactsRes.json()).data : [],
-        deals: dealsRes.ok ? (await dealsRes.json()).data : [],
-        tasks: tasksRes.ok ? (await tasksRes.json()).data : [],
-        activities: activitiesRes.ok ? (await activitiesRes.json()).data : [],
-      };
+      const res = await fetch(`${API_URL}/api/export/bundle`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) return;
+      const bundle = await res.json();
       const blob = new Blob([JSON.stringify(bundle, null, 2)], {
         type: "application/json",
       });
