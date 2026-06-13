@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, desc, eq, isNotNull, lte, ne, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, isNotNull, lte, ne, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db, tasks, contacts, deals } from "../db/index.js";
@@ -31,7 +31,9 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
     const contactId = c.req.query("contactId");
     const dealId = c.req.query("dealId");
     const overdue = c.req.query("overdue") === "1";
+    const search = c.req.query("search");
     const filters = [eq(tasks.workspaceId, workspaceId)];
+    if (search) filters.push(ilike(tasks.title, `%${search}%`));
     if (contactId) filters.push(eq(tasks.contactId, contactId));
     if (dealId) filters.push(eq(tasks.dealId, dealId));
     if (overdue) {

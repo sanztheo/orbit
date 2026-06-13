@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ilike, or } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db, deals, contacts } from "../db/index.js";
@@ -43,6 +43,13 @@ export const dealsRouter = new Hono<WorkspaceEnv>()
   .get("/", async (c) => {
     const workspaceId = c.get("workspaceId");
     const contactId = c.req.query("contactId");
+    const search = c.req.query("search");
+    const searchFilter = search
+      ? or(
+          ilike(deals.title, `%${search}%`),
+          ilike(contacts.name, `%${search}%`),
+        )
+      : undefined;
     const rows = await db
       .select({
         id: deals.id,
@@ -70,12 +77,11 @@ export const dealsRouter = new Hono<WorkspaceEnv>()
       .from(deals)
       .leftJoin(contacts, eq(deals.contactId, contacts.id))
       .where(
-        contactId
-          ? and(
-              eq(deals.workspaceId, workspaceId),
-              eq(deals.contactId, contactId),
-            )
-          : eq(deals.workspaceId, workspaceId),
+        and(
+          eq(deals.workspaceId, workspaceId),
+          contactId ? eq(deals.contactId, contactId) : undefined,
+          searchFilter,
+        ),
       );
     return c.json({ data: rows, total: rows.length });
   })
