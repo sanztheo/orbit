@@ -1,8 +1,8 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
-import { db, tasks, contacts } from "../db/index.js";
+import { db, tasks, contacts, deals } from "../db/index.js";
 import { generateId } from "../lib/ids.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
 
@@ -44,6 +44,7 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
         completedAt: tasks.completedAt,
         createdAt: tasks.createdAt,
         updatedAt: tasks.updatedAt,
+        priorityScore: sql<number>`COALESCE((SELECT SUM(${deals.value}) FROM ${deals} WHERE ${deals.contactId} = ${tasks.contactId} AND ${deals.workspaceId} = ${tasks.workspaceId}), 0)`,
       })
       .from(tasks)
       .leftJoin(contacts, eq(tasks.contactId, contacts.id))

@@ -19,6 +19,7 @@ interface BacklogItem {
   priority: TaskPriority;
   contactId: string | null;
   contactName: string | null;
+  priorityScore: number;
   dueAt: string | null;
 }
 
@@ -113,7 +114,12 @@ export default function BacklogPage() {
   }
 
   const byStatus = Object.fromEntries(
-    COLUMNS.map(({ key }) => [key, items.filter((t) => t.status === key)]),
+    COLUMNS.map(({ key }) => [
+      key,
+      items
+        .filter((t) => t.status === key)
+        .sort((a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0)),
+    ]),
   ) as Record<TaskStatus, BacklogItem[]>;
 
   if (loading) {
@@ -199,12 +205,19 @@ export default function BacklogPage() {
                         </p>
                       )}
                       {item.contactId && (
-                        <Link
-                          href={`/dashboard/contacts/${item.contactId}`}
-                          className="mt-1 block text-xs text-blue-600 hover:underline"
-                        >
-                          ↗ {item.contactName ?? "Contact"}
-                        </Link>
+                        <div className="mt-1 flex items-center gap-2">
+                          <Link
+                            href={`/dashboard/contacts/${item.contactId}`}
+                            className="text-xs text-blue-600 hover:underline"
+                          >
+                            ↗ {item.contactName ?? "Contact"}
+                          </Link>
+                          {item.priorityScore > 0 && (
+                            <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-xs font-medium text-emerald-700">
+                              💰 ${item.priorityScore.toLocaleString()}
+                            </span>
+                          )}
+                        </div>
                       )}
                       <div className="mt-2 flex flex-wrap gap-1">
                         {STATUS_NEXT[item.status] && (
