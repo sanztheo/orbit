@@ -292,7 +292,7 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P1] [TODO] Automation triggers (webhook out): fire a webhook when deal stage changes, contact added, or cadence overdue — Folk has no native automation; founders wire their own Zap to get basics; native webhook eliminates the Zap tax.
 
-[P2] [TODO] Context card before cold outreach: for contacts with no prior activity, auto-pull their LinkedIn headline + recent company news as a brief — founders spend 15-20 min manually researching before each cold email; Orbit can draft the context in seconds.
+[P2] [DONE] Context card before cold outreach: AI cold-start component (ANGLE/HOOK/DRAFT) on contact detail when no activity exists — founders spend 15-20 min manually researching before each cold email; Orbit can draft the context in seconds.
 
 [P2] [TODO] Per-deal next-action field: a single "Next step" text field + due date on each deal card in the Kanban — "what do I do next on this deal?" is the most common stall; forcing a next-action at every stage change reduces pipeline rot.
 

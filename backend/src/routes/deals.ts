@@ -45,6 +45,7 @@ export const dealsRouter = new Hono<WorkspaceEnv>()
         title: deals.title,
         contactId: deals.contactId,
         contactName: contacts.name,
+        contactCompany: contacts.company,
         pipelineType: deals.pipelineType,
         stage: deals.stage,
         value: deals.value,

@@ -33,6 +33,7 @@ interface Deal {
   notes: string | null;
   contactId: string | null;
   contactName: string | null;
+  contactCompany: string | null;
 }
 
 const STAGE_ORDER: DealStage[] = [
@@ -386,6 +387,15 @@ export default function DealsPage() {
                           className="mt-0.5 block text-xs text-blue-600 hover:underline truncate"
                         >
                           {deal.contactName}
+                        </Link>
+                      )}
+                      {deal.contactCompany && (
+                        <Link
+                          href={`/dashboard/contacts?search=${encodeURIComponent(deal.contactCompany)}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="mt-0.5 block text-xs text-muted-foreground hover:text-blue-600 truncate"
+                        >
+                          {deal.contactCompany} →
                         </Link>
                       )}
                       {deal.value != null && (
