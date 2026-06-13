@@ -59,6 +59,32 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       );
     return c.json({ data: rows, total: rows.length });
   })
+  .get("/export", async (c) => {
+    const workspaceId = c.get("workspaceId");
+    const rows = await db
+      .select()
+      .from(contacts)
+      .where(eq(contacts.workspaceId, workspaceId));
+
+    const header = "name,email,company,type,notes,lastContactedAt,createdAt";
+    const escape = (v: string | null) =>
+      v == null ? "" : `"${v.replace(/"/g, '""')}"`;
+    const lines = rows.map((r) =>
+      [
+        escape(r.name),
+        escape(r.email),
+        escape(r.company),
+        escape(r.type),
+        escape(r.notes),
+        r.lastContactedAt ? r.lastContactedAt.toISOString() : "",
+        r.createdAt.toISOString(),
+      ].join(","),
+    );
+
+    c.header("Content-Type", "text/csv");
+    c.header("Content-Disposition", 'attachment; filename="contacts.csv"');
+    return c.body([header, ...lines].join("\n"));
+  })
   .post("/", zValidator("json", createSchema), async (c) => {
     const workspaceId = c.get("workspaceId");
     const body = c.req.valid("json");

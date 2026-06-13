@@ -70,9 +70,40 @@ Product is functional end-to-end for contacts + deals + tasks. Users can:
 3. Move deals through pipeline stages
 4. See stale deals highlighted in red
 
+### Session: 2026-06-13 — Growth Features
+
+### Completed
+
+**Backend:**
+- `requireWorkspace` middleware wired on all /api/* routes
+- POST /api/ai/follow-up: Claude Haiku drafts contextual email from contact history (rate limited 10 req/min)
+- GET /api/stats: stalling deals, cold contacts, open tasks, total contacts, won this month
+- GET /api/contacts: ?search= (name/email/company ilike) + ?type= filter
+- GET /api/tasks: ?contactId= filter
+- pipeline_type enum + column on deals (sales/fundraising/partnership), schema pushed to Railway
+- GET /api/deals PATCH: accepts pipelineType field
+- Railway deploy config (railway.toml) + .env.example
+
+**Frontend:**
+- Landing page: hero, pain quotes, feature cards, competitor table, pricing tiers, footer CTA
+- Product backlog Kanban page (/dashboard/backlog)
+- Dashboard home: 5 live stat cards (stalling/cold/tasks/total/won), red highlight on urgent
+- Contact detail page: info grid, AddToBacklog component, FollowUpDraft AI button
+- Contact list: search input + type filter (URL-param driven), color-coded health score (green/amber/red)
+- Deal pipeline: 3-tab switcher (Sales/Fundraising/Partnerships) with stage label overrides per type
+- Vercel deploy config + .env.example
+
+**Research:**
+- 14 concrete pain points from 2024-2026 (folk/attio/HubSpot reviews, founder blogs)
+- 8 new BACKLOG items added (cadence tracking, close-the-loop, backlog priority score, voice learning, etc.)
+
+### Current State
+
+Full-stack product functional end-to-end. Users can sign in, manage contacts (with search + health score), run deal pipelines (3 types), manage tasks/backlog, and draft AI follow-ups. Dashboard shows live stats.
+
 ### Next — Top Priorities
 
-1. Landing page (marketing — currently placeholder)
-2. Backlog page (feature requests board)
-3. AI follow-up draft endpoint (THE differentiator)
-4. Dashboard home with real stats (stalling deals count, contacts not touched in 30d)
+1. CSV export for contacts (trust signal + GDPR)
+2. Per-contact follow-up cadence tracking
+3. Close-the-loop feature (notify contacts when requested feature ships)
+4. Onboarding flow (import-first, step-by-step)

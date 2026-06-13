@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { ContactFilters } from "./contact-filters";
+import { ExportButton } from "./export-button";
 
 type ContactType = "lead" | "customer" | "investor" | "advisor" | "partner";
 
@@ -98,12 +99,15 @@ export default async function ContactsPage({
             {contacts.length} contact{contacts.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Link
-          href="/dashboard/contacts/new"
-          className={buttonVariants({ variant: "default" })}
-        >
-          Add contact
-        </Link>
+        <div className="flex items-center gap-2">
+          <ExportButton />
+          <Link
+            href="/dashboard/contacts/new"
+            className={buttonVariants({ variant: "default" })}
+          >
+            Add contact
+          </Link>
+        </div>
       </div>
 
       <Suspense>
