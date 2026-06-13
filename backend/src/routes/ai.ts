@@ -912,4 +912,90 @@ Include ALL items. Rank by: deal value at risk > customer demand frequency > str
       .where(eq(workspaces.id, workspaceId));
 
     return c.json({ ranked });
+  })
+  .post("/pipeline-health", aiRateLimit, aiQuota, async (c) => {
+    const workspaceId = c.get("workspaceId");
+
+    const openDeals = await db
+      .select({
+        id: deals.id,
+        title: deals.title,
+        stage: deals.stage,
+        value: deals.value,
+        probability: deals.probability,
+        stageChangedAt: deals.stageChangedAt,
+        contactName: contacts.name,
+      })
+      .from(deals)
+      .leftJoin(contacts, eq(deals.contactId, contacts.id))
+      .where(
+        and(
+          eq(deals.workspaceId, workspaceId),
+          ne(deals.stage, "closed_won"),
+          ne(deals.stage, "closed_lost"),
+        ),
+      )
+      .orderBy(desc(deals.value));
+
+    if (openDeals.length === 0) {
+      return c.json({ narrative: "No open deals in your pipeline yet." });
+    }
+
+    const now = Date.now();
+    const stallingDeals = openDeals.filter((d) => {
+      if (!d.stageChangedAt) return true;
+      const daysSince = Math.floor(
+        (now - new Date(d.stageChangedAt).getTime()) / 86_400_000,
+      );
+      return daysSince >= 30;
+    });
+
+    const totalValue = openDeals.reduce((s, d) => s + (d.value ?? 0), 0);
+    const weightedValue = openDeals.reduce(
+      (s, d) => s + Math.round((d.value ?? 0) * ((d.probability ?? 50) / 100)),
+      0,
+    );
+
+    const dealSummary = openDeals
+      .slice(0, 10)
+      .map((d) => {
+        const daysInStage = d.stageChangedAt
+          ? Math.floor(
+              (now - new Date(d.stageChangedAt).getTime()) / 86_400_000,
+            )
+          : null;
+        return `- "${d.title}"${d.contactName ? ` (${d.contactName})` : ""}: ${d.stage.replace(/_/g, " ")}, $${(d.value ?? 0).toLocaleString()}, ${daysInStage !== null ? `${daysInStage}d in stage` : "stage unknown"}`;
+      })
+      .join("\n");
+
+    const message = await anthropic.messages.create({
+      model: "claude-haiku-4-5-20251001",
+      max_tokens: 200,
+      system:
+        "You are a sales coach for a solo founder. Write 2-3 tight sentences summarizing pipeline health and ONE specific action to take today. Be direct and concrete. No fluff.",
+      messages: [
+        {
+          role: "user",
+          content: `Pipeline: ${openDeals.length} open deals, $${totalValue.toLocaleString()} total, $${weightedValue.toLocaleString()} weighted. ${stallingDeals.length} stalling (30d+ in stage).\n\nDeals:\n${dealSummary}\n\nGive me a pipeline health summary and one action.`,
+        },
+      ],
+    });
+
+    const narrative =
+      message.content[0].type === "text"
+        ? message.content[0].text.trim()
+        : "Unable to generate summary.";
+
+    await db
+      .update(workspaces)
+      .set({ aiActionsUsed: sql`${workspaces.aiActionsUsed} + 1` })
+      .where(eq(workspaces.id, workspaceId));
+
+    return c.json({
+      narrative,
+      dealCount: openDeals.length,
+      stallingCount: stallingDeals.length,
+      totalValue,
+      weightedValue,
+    });
   });

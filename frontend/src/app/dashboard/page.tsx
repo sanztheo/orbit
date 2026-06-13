@@ -12,13 +12,16 @@ import {
   CheckSquare,
   DollarSign,
   Link2,
+  Loader2,
   Mail,
   PenLine,
   Phone,
+  Sparkles,
   StickyNote,
   Trophy,
   Users,
   Video,
+  X,
   XCircle,
 } from "lucide-react";
 import {
@@ -201,6 +204,32 @@ export default function DashboardPage() {
       contactName: string | null;
     }[]
   >([]);
+  const [pipelineHealth, setPipelineHealth] = useState<{
+    narrative: string;
+    dealCount: number;
+    stallingCount: number;
+    totalValue: number;
+    weightedValue: number;
+  } | null>(null);
+  const [loadingPipelineHealth, setLoadingPipelineHealth] = useState(false);
+
+  async function getPipelineHealth() {
+    setLoadingPipelineHealth(true);
+    try {
+      const token = await getToken();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+      const res = await fetch(`${apiUrl}/api/ai/pipeline-health`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setPipelineHealth(json);
+      }
+    } finally {
+      setLoadingPipelineHealth(false);
+    }
+  }
 
   async function markContacted(contactId: string) {
     setMarkingId(contactId);
@@ -762,6 +791,54 @@ export default function DashboardPage() {
                 </Link>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* AI Pipeline Health */}
+      {!pipelineHealth ? (
+        <button
+          onClick={getPipelineHealth}
+          disabled={loadingPipelineHealth}
+          className="flex items-center gap-2 self-start rounded-lg border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors disabled:opacity-50"
+        >
+          {loadingPipelineHealth ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Sparkles className="h-3.5 w-3.5" />
+          )}
+          AI pipeline health
+        </button>
+      ) : (
+        <div className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <Sparkles className="h-3.5 w-3.5" />
+              AI Pipeline Health
+            </span>
+            <button
+              onClick={() => setPipelineHealth(null)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="text-sm leading-relaxed">{pipelineHealth.narrative}</p>
+          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+            <span>{pipelineHealth.dealCount} open deals</span>
+            {pipelineHealth.stallingCount > 0 && (
+              <span className="text-amber-600 dark:text-amber-400 font-medium">
+                {pipelineHealth.stallingCount} stalling
+              </span>
+            )}
+            {pipelineHealth.totalValue > 0 && (
+              <span>${pipelineHealth.totalValue.toLocaleString()} total</span>
+            )}
+            {pipelineHealth.weightedValue > 0 && (
+              <span>
+                ${pipelineHealth.weightedValue.toLocaleString()} weighted
+              </span>
+            )}
           </div>
         </div>
       )}
