@@ -208,7 +208,7 @@ export default function DashboardPage() {
           }),
         }),
       ]);
-      // Remove from list optimistically
+      // Remove from both action lists optimistically
       setActions((prev) =>
         prev
           ? {
@@ -216,6 +216,7 @@ export default function DashboardPage() {
               overdueFollowUps: prev.overdueFollowUps.filter(
                 (c) => c.id !== contactId,
               ),
+              coldContacts: prev.coldContacts.filter((c) => c.id !== contactId),
             }
           : prev,
       );
@@ -630,24 +631,42 @@ export default function DashboardPage() {
         >
           {a.coldContacts.map((c) => {
             const days = daysSince(c.lastContactedAt);
+            const isMarking = markingId === c.id;
             return (
-              <Link
+              <div
                 key={c.id}
-                href={`/dashboard/contacts/${c.id}`}
-                className="flex items-start justify-between rounded-lg border border-border p-2.5 hover:bg-muted/40 transition-colors"
+                className="flex items-center gap-2 rounded-lg border border-border p-2.5"
               >
-                <div className="min-w-0">
+                <Link
+                  href={`/dashboard/contacts/${c.id}`}
+                  className="flex-1 min-w-0 hover:opacity-80"
+                >
                   <p className="text-sm font-medium truncate">{c.name}</p>
                   {c.company && (
                     <p className="text-xs text-muted-foreground truncate">
                       {c.company}
                     </p>
                   )}
-                </div>
-                <span className="shrink-0 ml-2 text-xs font-medium text-red-600 dark:text-red-400">
+                </Link>
+                <span className="shrink-0 text-xs font-medium text-red-600 dark:text-red-400">
                   {days >= 999 ? "never" : `${days}d`}
                 </span>
-              </Link>
+                <button
+                  onClick={() => markContacted(c.id)}
+                  disabled={isMarking}
+                  title="Mark as contacted"
+                  className="shrink-0 flex items-center rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-green-500 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors disabled:opacity-40"
+                >
+                  {isMarking ? (
+                    "…"
+                  ) : (
+                    <>
+                      <Phone className="h-3.5 w-3.5 mr-1" />
+                      Called
+                    </>
+                  )}
+                </button>
+              </div>
             );
           })}
           {stats && s.coldContacts > a.coldContacts.length && (
