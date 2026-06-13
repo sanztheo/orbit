@@ -30,11 +30,13 @@ export default function NewTaskPage() {
     const fd = new FormData(e.currentTarget);
     const title = (fd.get("title") as string).trim();
     if (!title) return;
+    const dueAtRaw = fd.get("dueAt") as string;
 
     const body = {
       title,
       priority,
       description: description.trim() || undefined,
+      dueAt: dueAtRaw ? new Date(dueAtRaw).toISOString() : undefined,
     };
 
     setLoading(true);
@@ -80,6 +82,10 @@ export default function NewTaskPage() {
               <SelectItem value="p3">P3 — Low</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="dueAt">Due date</Label>
+          <Input id="dueAt" name="dueAt" type="date" />
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="description">Description</Label>

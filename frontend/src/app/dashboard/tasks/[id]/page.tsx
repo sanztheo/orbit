@@ -99,7 +99,7 @@ export default function TaskDetailPage() {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
       await apiClient.patch(`/api/tasks/${id}`, body, token);
-      router.push("/dashboard/backlog");
+      router.push("/dashboard/tasks");
     } catch {
       setError("Failed to save");
     } finally {
@@ -108,13 +108,13 @@ export default function TaskDetailPage() {
   }
 
   async function handleDelete() {
-    if (!confirm("Delete this backlog item?")) return;
+    if (!confirm("Delete this task?")) return;
     setDeleting(true);
     try {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
       await apiClient.delete(`/api/tasks/${id}`, token);
-      router.push("/dashboard/backlog");
+      router.push("/dashboard/tasks");
     } catch {
       setError("Failed to delete");
       setDeleting(false);
@@ -140,11 +140,11 @@ export default function TaskDetailPage() {
     <div className="mx-auto w-full max-w-lg p-6">
       <div className="mb-6 flex items-center gap-3">
         <Link
-          href="/dashboard/backlog"
+          href="/dashboard/tasks"
           className={buttonVariants({ variant: "ghost", size: "sm" })}
         >
           <ArrowLeft className="h-4 w-4 mr-1" />
-          Backlog
+          Tasks
         </Link>
         <span className="text-muted-foreground">/</span>
         <h1 className="text-xl font-semibold truncate">{task.title}</h1>
@@ -276,7 +276,7 @@ export default function TaskDetailPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push("/dashboard/backlog")}
+            onClick={() => router.push("/dashboard/tasks")}
           >
             Cancel
           </Button>
