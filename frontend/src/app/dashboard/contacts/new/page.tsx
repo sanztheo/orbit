@@ -3,10 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { ArrowLeft, Plus, Loader2 } from "lucide-react";
 
 type ContactType = "lead" | "customer" | "investor" | "advisor" | "partner";
 
@@ -17,9 +20,6 @@ const CONTACT_TYPES: { value: ContactType; label: string }[] = [
   { value: "advisor", label: "Advisor" },
   { value: "partner", label: "Partner" },
 ];
-
-const INPUT =
-  "h-11 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export default function NewContactPage() {
   const router = useRouter();
@@ -84,9 +84,10 @@ export default function NewContactPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/dashboard/contacts"
-          className="text-sm text-muted-foreground hover:text-foreground"
+          className={buttonVariants({ variant: "ghost", size: "sm" })}
         >
-          ← Back
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
         </Link>
         <h1 className="text-xl font-semibold tracking-tight">New contact</h1>
       </div>
@@ -94,10 +95,10 @@ export default function NewContactPage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {/* Primary fields — always visible */}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="name" className="text-sm font-medium">
+          <Label htmlFor="name">
             Name <span className="text-destructive">*</span>
-          </label>
-          <input
+          </Label>
+          <Input
             id="name"
             type="text"
             required
@@ -105,27 +106,23 @@ export default function NewContactPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Jane Doe"
-            className={INPUT}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-sm font-medium">
-            Email
-          </label>
-          <input
+          <Label htmlFor="email">Email</Label>
+          <Input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="jane@example.com"
-            className={INPUT}
           />
         </div>
 
         {/* Type pill picker */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-medium">Type</label>
+          <Label>Type</Label>
           <div className="flex flex-wrap gap-2">
             {CONTACT_TYPES.map((t) => (
               <button
@@ -159,30 +156,25 @@ export default function NewContactPage() {
         {showMore && (
           <div className="flex flex-col gap-4 border-t border-border pt-4">
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="company" className="text-sm font-medium">
-                Company
-              </label>
-              <input
+              <Label htmlFor="company">Company</Label>
+              <Input
                 id="company"
                 type="text"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 placeholder="Acme Inc."
-                className={INPUT}
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="notes" className="text-sm font-medium">
-                Notes
-              </label>
-              <textarea
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Context, how you met, what they care about…"
                 rows={3}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 resize-none"
+                className="resize-none"
               />
             </div>
           </div>
@@ -211,7 +203,17 @@ export default function NewContactPage() {
             disabled={submitting || !name.trim()}
             className="h-11 flex-1 md:flex-none"
           >
-            {submitting ? "Saving…" : "Add contact"}
+            {submitting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving…
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Add contact
+              </>
+            )}
           </Button>
           <Link
             href="/dashboard/contacts"

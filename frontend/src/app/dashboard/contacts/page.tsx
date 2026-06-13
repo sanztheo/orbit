@@ -15,6 +15,14 @@ import { ContactFilters } from "./contact-filters";
 import { ExportButton } from "./export-button";
 import { ExportAllButton } from "./export-all-button";
 import { ImportButton } from "./import-button";
+import {
+  UserPlus,
+  Users,
+  Clock,
+  Star,
+  AlertTriangle,
+  Calendar,
+} from "lucide-react";
 
 type ContactType = "lead" | "customer" | "investor" | "advisor" | "partner";
 
@@ -130,7 +138,8 @@ export default async function ContactsPage({
     <div className="flex flex-col gap-4 p-4 md:gap-6 md:p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight md:text-2xl">
+          <h1 className="flex items-center gap-2 text-xl font-semibold tracking-tight md:text-2xl">
+            <Users className="h-5 w-5 text-muted-foreground" />
             Contacts
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -145,7 +154,8 @@ export default async function ContactsPage({
             href="/dashboard/contacts/new"
             className={buttonVariants({ size: "sm" })}
           >
-            + Add
+            <UserPlus className="h-4 w-4 mr-1.5" />
+            Add
           </Link>
         </div>
       </div>
@@ -226,19 +236,20 @@ export default async function ContactsPage({
                           : `${days}d ago`}
                     </span>
                     {isStale(days) && (
-                      <span className="text-xs text-amber-600 font-medium">
-                        ⚠️ stale
+                      <span className="flex items-center gap-0.5 text-xs text-amber-600 font-medium">
+                        <AlertTriangle className="h-3.5 w-3.5 inline" /> stale
                       </span>
                     )}
                     {contact.nextFollowUpAt && (
                       <span
-                        className={`text-xs font-medium ${
+                        className={`flex items-center gap-0.5 text-xs font-medium ${
                           isFollowUpDue(contact.nextFollowUpAt)
                             ? "text-red-600"
                             : "text-blue-600"
                         }`}
                       >
-                        📅 {formatFollowUpDate(contact.nextFollowUpAt)}
+                        <Calendar className="h-3 w-3 inline" />{" "}
+                        {formatFollowUpDate(contact.nextFollowUpAt)}
                       </span>
                     )}
                   </div>
@@ -254,8 +265,18 @@ export default async function ContactsPage({
                 <TableHead>Name</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Last contacted</TableHead>
-                <TableHead>Priority</TableHead>
+                <TableHead>
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="h-3.5 w-3.5" />
+                    Last contacted
+                  </span>
+                </TableHead>
+                <TableHead>
+                  <span className="flex items-center gap-1.5">
+                    <Star className="h-3.5 w-3.5" />
+                    Priority
+                  </span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -291,8 +312,8 @@ export default async function ContactsPage({
                             : `${days}d ago`}
                       </span>
                       {isStale(days) && (
-                        <span className="ml-1.5 text-xs text-amber-600 font-medium">
-                          ⚠️ stale
+                        <span className="ml-1.5 inline-flex items-center gap-0.5 text-xs text-amber-600 font-medium">
+                          <AlertTriangle className="h-3.5 w-3.5 inline" /> stale
                         </span>
                       )}
                       <div className="text-xs text-muted-foreground">
@@ -300,13 +321,14 @@ export default async function ContactsPage({
                       </div>
                       {contact.nextFollowUpAt && (
                         <div
-                          className={`text-xs font-medium mt-0.5 ${
+                          className={`flex items-center gap-0.5 text-xs font-medium mt-0.5 ${
                             isFollowUpDue(contact.nextFollowUpAt)
                               ? "text-red-600"
                               : "text-blue-600"
                           }`}
                         >
-                          📅 {formatFollowUpDate(contact.nextFollowUpAt)}
+                          <Calendar className="h-3 w-3 inline" />{" "}
+                          {formatFollowUpDate(contact.nextFollowUpAt)}
                         </div>
                       )}
                     </TableCell>

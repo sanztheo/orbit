@@ -2,8 +2,19 @@
 
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Phone,
+  Mail,
+  Video,
+  StickyNote,
+  Link2 as Linkedin,
+  Plus,
+  Loader2,
+  X,
+} from "lucide-react";
 
 type ActivityType = "email" | "call" | "meeting" | "note" | "linkedin";
 
@@ -15,12 +26,12 @@ interface Activity {
   occurredAt: string;
 }
 
-const TYPE_ICONS: Record<ActivityType, string> = {
-  email: "✉️",
-  call: "📞",
-  meeting: "🤝",
-  note: "📝",
-  linkedin: "💼",
+const TYPE_ICONS: Record<ActivityType, React.ReactNode> = {
+  email: <Mail className="h-3.5 w-3.5" />,
+  call: <Phone className="h-3.5 w-3.5" />,
+  meeting: <Video className="h-3.5 w-3.5" />,
+  note: <StickyNote className="h-3.5 w-3.5" />,
+  linkedin: <Linkedin className="h-3.5 w-3.5" />,
 };
 
 const TYPE_OPTIONS: { value: ActivityType; label: string }[] = [
@@ -145,26 +156,29 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-sm">Activity log</h2>
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               setPasteOpen((v) => !v);
               setOpen(false);
               setError(null);
             }}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
             📋 Paste DM
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               setOpen((v) => !v);
               setPasteOpen(false);
               setError(null);
             }}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
-            + Log activity
-          </button>
+            <Plus className="h-4 w-4 mr-1" />
+            Log activity
+          </Button>
         </div>
       </div>
 
@@ -182,44 +196,46 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
                 key={s.value}
                 type="button"
                 onClick={() => setDmSource(s.value)}
-                className={cn(
+                className={[
                   "rounded-md px-2.5 py-1 text-xs font-medium border transition-colors",
                   dmSource === s.value
                     ? "border-foreground bg-foreground text-background"
                     : "border-border hover:border-foreground/40",
-                )}
+                ].join(" ")}
               >
                 {s.icon} {s.label}
               </button>
             ))}
           </div>
-          <textarea
+          <Textarea
             placeholder="Paste the conversation here…"
             value={dmText}
             onChange={(e) => setDmText(e.target.value)}
             rows={6}
             autoFocus
-            className="w-full rounded-lg border border-border px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+            className="resize-none"
           />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={saving || !dmText.trim()}
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                "disabled:opacity-50",
+            <Button type="submit" size="sm" disabled={saving || !dmText.trim()}>
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Saving…
+                </>
+              ) : (
+                "Log DM"
               )}
-            >
-              {saving ? "Saving…" : "Log DM"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setPasteOpen(false)}
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
             >
+              <X className="h-4 w-4 mr-1" />
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -235,64 +251,69 @@ export function ActivityLog({ contactId, initialActivities }: Props) {
                 key={t.value}
                 type="button"
                 onClick={() => setType(t.value)}
-                className={cn(
+                className={[
                   "rounded-md px-2.5 py-1 text-xs font-medium border transition-colors",
                   type === t.value
                     ? "border-foreground bg-foreground text-background"
                     : "border-border hover:border-foreground/40",
-                )}
+                ].join(" ")}
               >
-                {TYPE_ICONS[t.value]} {t.label}
+                <span className="inline-flex items-center gap-1">
+                  {TYPE_ICONS[t.value]} {t.label}
+                </span>
               </button>
             ))}
           </div>
-          <input
+          <Input
             type="text"
             placeholder={`${type === "note" ? "Note title" : "Subject"} (optional)`}
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            className="w-full rounded-lg border border-border px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          <textarea
+          <Textarea
             placeholder="What happened? Key points, next steps…"
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={3}
-            className="w-full rounded-lg border border-border px-3 py-1.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+            className="resize-none"
           />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                "disabled:opacity-50",
+            <Button type="submit" size="sm" disabled={saving}>
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Saving…
+                </>
+              ) : (
+                "Log"
               )}
-            >
-              {saving ? "Saving…" : "Log"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setOpen(false)}
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
             >
+              <X className="h-4 w-4 mr-1" />
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       )}
 
       {activities.length === 0 ? (
         <p className="text-xs text-muted-foreground">
-          No activity logged yet — click "Log activity" to record a call, email,
-          or note.
+          No activity logged yet — click &ldquo;Log activity&rdquo; to record a
+          call, email, or note.
         </p>
       ) : (
         <ol className="flex flex-col gap-2">
           {activities.map((a) => (
             <li key={a.id} className="flex gap-3 text-sm">
-              <span className="shrink-0 text-base">{TYPE_ICONS[a.type]}</span>
+              <span className="shrink-0 flex items-center text-muted-foreground">
+                {TYPE_ICONS[a.type]}
+              </span>
               <div className="flex-1 min-w-0">
                 {a.subject && (
                   <p className="font-medium leading-snug truncate">

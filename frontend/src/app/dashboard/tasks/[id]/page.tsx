@@ -4,10 +4,19 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
+import { ArrowLeft, Save, Loader2, Trash2, Calendar, Star } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 const STATUSES = [
   { value: "todo", label: "Inbox" },
@@ -38,9 +47,6 @@ interface Task {
   createdAt: string;
 }
 
-const sel =
-  "h-9 rounded-md border border-input bg-background px-3 text-sm w-full";
-
 export default function TaskDetailPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
@@ -50,6 +56,8 @@ export default function TaskDetailPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("");
+  const [priority, setPriority] = useState<string>("");
 
   useEffect(() => {
     async function load() {
@@ -61,6 +69,8 @@ export default function TaskDetailPage() {
           token,
         );
         setTask(res.data);
+        setStatus(res.data.status);
+        setPriority(res.data.priority);
       } catch {
         setError("Task not found");
       } finally {
@@ -79,8 +89,8 @@ export default function TaskDetailPage() {
     const body = {
       title: (fd.get("title") as string).trim(),
       description: (fd.get("description") as string) || null,
-      status: fd.get("status") as string,
-      priority: fd.get("priority") as string,
+      status,
+      priority,
       dueAt: dueAtRaw ? new Date(dueAtRaw).toISOString() : undefined,
     };
     if (!body.title) return;
@@ -114,6 +124,7 @@ export default function TaskDetailPage() {
   if (fetching) {
     return (
       <div className="flex flex-1 items-center justify-center p-8 text-muted-foreground">
+        <Loader2 className="h-5 w-5 animate-spin mr-2" />
         Loading…
       </div>
     );
@@ -130,9 +141,10 @@ export default function TaskDetailPage() {
       <div className="mb-6 flex items-center gap-3">
         <Link
           href="/dashboard/backlog"
-          className="text-sm text-muted-foreground hover:text-foreground"
+          className={buttonVariants({ variant: "ghost", size: "sm" })}
         >
-          ← Backlog
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Backlog
         </Link>
         <span className="text-muted-foreground">/</span>
         <h1 className="text-xl font-semibold truncate">{task.title}</h1>
@@ -145,7 +157,7 @@ export default function TaskDetailPage() {
             <p className="text-xs text-muted-foreground mb-0.5">Requested by</p>
             <Link
               href={`/dashboard/contacts/${task.contactId}`}
-              className="font-medium text-blue-600 hover:underline"
+              className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
             >
               {task.contactName ?? "Contact"}
             </Link>
@@ -155,7 +167,7 @@ export default function TaskDetailPage() {
               <p className="text-xs text-muted-foreground mb-0.5">
                 Deal value at stake
               </p>
-              <span className="rounded bg-emerald-50 px-2 py-0.5 text-sm font-semibold text-emerald-700">
+              <span className="rounded bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 text-sm font-semibold text-emerald-700 dark:text-emerald-300">
                 ${task.priorityScore.toLocaleString()}
               </span>
             </div>
@@ -177,51 +189,62 @@ export default function TaskDetailPage() {
 
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="description">Description</Label>
-          <textarea
+          <Textarea
             id="description"
             name="description"
             rows={3}
             defaultValue={task.description ?? ""}
             placeholder="Context, acceptance criteria…"
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="status">Status</Label>
-            <select
-              id="status"
-              name="status"
-              defaultValue={task.status}
-              className={sel}
-            >
-              {STATUSES.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
+            <Label htmlFor="status">
+              <Star className="h-3.5 w-3.5 inline mr-1 opacity-60" />
+              Status
+            </Label>
+            <Select value={status} onValueChange={(v) => setStatus(v ?? "")}>
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="priority">Priority</Label>
-            <select
-              id="priority"
-              name="priority"
-              defaultValue={task.priority}
-              className={sel}
+            <Label htmlFor="priority">
+              <Star className="h-3.5 w-3.5 inline mr-1 opacity-60" />
+              Priority
+            </Label>
+            <Select
+              value={priority}
+              onValueChange={(v) => setPriority(v ?? "")}
             >
-              {PRIORITIES.map((p) => (
-                <option key={p.value} value={p.value}>
-                  {p.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="priority">
+                <SelectValue placeholder="Select priority" />
+              </SelectTrigger>
+              <SelectContent>
+                {PRIORITIES.map((p) => (
+                  <SelectItem key={p.value} value={p.value}>
+                    {p.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="dueAt">Due date</Label>
+          <Label htmlFor="dueAt">
+            <Calendar className="h-3.5 w-3.5 inline mr-1 opacity-60" />
+            Due date
+          </Label>
           <Input
             id="dueAt"
             name="dueAt"
@@ -232,11 +255,23 @@ export default function TaskDetailPage() {
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        )}
 
         <div className="flex items-center gap-2">
           <Button type="submit" disabled={saving}>
-            {saving ? "Saving…" : "Save changes"}
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Saving…
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save changes
+              </>
+            )}
           </Button>
           <Button
             type="button"
@@ -247,12 +282,23 @@ export default function TaskDetailPage() {
           </Button>
           <Button
             type="button"
-            variant="outline"
-            className="ml-auto text-red-600 hover:text-red-700 hover:border-red-300"
+            variant="destructive"
+            size="sm"
+            className="ml-auto"
             onClick={handleDelete}
             disabled={deleting}
           >
-            {deleting ? "Deleting…" : "Delete"}
+            {deleting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Deleting…
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </>
+            )}
           </Button>
         </div>
       </form>

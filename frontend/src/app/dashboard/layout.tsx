@@ -6,14 +6,22 @@ import { cn } from "@/lib/utils";
 import { KeyboardShortcuts } from "./keyboard-shortcuts";
 import { ThemeToggle } from "./theme-toggle";
 import { GlobalSearch } from "./global-search";
+import {
+  LayoutDashboard,
+  Users,
+  Briefcase,
+  CheckSquare,
+  BookOpen,
+  Settings2,
+} from "lucide-react";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/dashboard", icon: "⊞" },
-  { label: "Contacts", href: "/dashboard/contacts", icon: "◎" },
-  { label: "Deals", href: "/dashboard/deals", icon: "◈" },
-  { label: "Tasks", href: "/dashboard/tasks", icon: "☑" },
-  { label: "Backlog", href: "/dashboard/backlog", icon: "▤" },
-  { label: "Settings", href: "/dashboard/settings", icon: "⚙" },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Contacts", href: "/dashboard/contacts", icon: Users },
+  { label: "Deals", href: "/dashboard/deals", icon: Briefcase },
+  { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare },
+  { label: "Backlog", href: "/dashboard/backlog", icon: BookOpen },
+  { label: "Settings", href: "/dashboard/settings", icon: Settings2 },
 ] as const;
 
 export default async function DashboardLayout({
@@ -36,18 +44,22 @@ export default async function DashboardLayout({
           <span className="text-lg font-semibold tracking-tight">Orbit</span>
         </div>
         <nav className="flex flex-col gap-1">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                buttonVariants({ variant: "ghost", size: "sm" }),
-                "justify-start",
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "justify-start",
+                )}
+              >
+                <Icon className="h-4 w-4 mr-2" />
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
         <div className="mt-auto px-2 pt-4">
           <ThemeToggle />
@@ -67,16 +79,19 @@ export default async function DashboardLayout({
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex border-t border-border bg-background">
-        {NAV_ITEMS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <span className="text-lg leading-none">{item.icon}</span>
-            <span className="text-[10px] font-medium">{item.label}</span>
-          </Link>
-        ))}
+        {NAV_ITEMS.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Icon className="h-5 w-5" />
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </Link>
+          );
+        })}
       </nav>
     </div>
   );

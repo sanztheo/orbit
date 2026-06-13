@@ -1,12 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 import { apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import {
+  Plus,
+  BookOpen,
+  Star,
+  CheckCircle2,
+  Circle,
+  ArrowUpCircle,
+  XCircle,
+  ExternalLink,
+  ChevronRight,
+  Zap,
+  Check,
+  Loader2,
+} from "lucide-react";
 
 type TaskStatus = "todo" | "in_progress" | "done" | "cancelled";
 type TaskPriority = "p0" | "p1" | "p2" | "p3";
@@ -24,21 +40,52 @@ interface BacklogItem {
 }
 
 const COLUMNS: { key: TaskStatus; label: string; color: string }[] = [
-  { key: "todo", label: "Inbox", color: "border-gray-200" },
-  { key: "in_progress", label: "This Sprint", color: "border-blue-200" },
-  { key: "done", label: "Done", color: "border-green-200" },
+  { key: "todo", label: "Inbox", color: "border-border" },
+  {
+    key: "in_progress",
+    label: "This Sprint",
+    color: "border-blue-200 dark:border-blue-800",
+  },
+  {
+    key: "done",
+    label: "Done",
+    color: "border-green-200 dark:border-green-800",
+  },
 ];
 
 const PRIORITY_BADGE: Record<TaskPriority, { label: string; cls: string }> = {
-  p0: { label: "P0", cls: "bg-red-100 text-red-700" },
-  p1: { label: "P1", cls: "bg-orange-100 text-orange-700" },
-  p2: { label: "P2", cls: "bg-blue-100 text-blue-700" },
-  p3: { label: "P3", cls: "bg-gray-100 text-gray-500" },
+  p0: {
+    label: "P0",
+    cls: "bg-red-100 dark:bg-red-950/20 text-red-700 dark:text-red-300",
+  },
+  p1: {
+    label: "P1",
+    cls: "bg-orange-100 dark:bg-orange-950/20 text-orange-700 dark:text-orange-300",
+  },
+  p2: {
+    label: "P2",
+    cls: "bg-blue-100 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300",
+  },
+  p3: { label: "P3", cls: "bg-muted text-muted-foreground" },
 };
 
 const STATUS_NEXT: Partial<Record<TaskStatus, TaskStatus>> = {
   todo: "in_progress",
   in_progress: "done",
+};
+
+const STATUS_ICON: Record<TaskStatus, React.ReactNode> = {
+  todo: <Circle className="h-3 w-3 text-muted-foreground" />,
+  in_progress: <ArrowUpCircle className="h-3 w-3 text-blue-500" />,
+  done: <CheckCircle2 className="h-3 w-3 text-green-500" />,
+  cancelled: <XCircle className="h-3 w-3 text-muted-foreground" />,
+};
+
+const PRIORITY_ICON: Record<TaskPriority, React.ReactNode> = {
+  p0: <Star className="h-3 w-3 fill-red-500 text-red-500" />,
+  p1: <Star className="h-3 w-3 fill-orange-400 text-orange-400" />,
+  p2: <Star className="h-3 w-3 fill-blue-400 text-blue-400" />,
+  p3: <Star className="h-3 w-3 text-muted-foreground" />,
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -52,7 +99,7 @@ export default function BacklogPage() {
   const [generatingLoop, setGeneratingLoop] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  async function fetchItems() {
+  const fetchItems = useCallback(async () => {
     const token = await getToken();
     if (!token) return;
     try {
@@ -64,11 +111,11 @@ export default function BacklogPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [getToken]);
 
   useEffect(() => {
     fetchItems();
-  }, []);
+  }, [fetchItems]);
 
   async function advance(item: BacklogItem) {
     const next = STATUS_NEXT[item.status];
@@ -124,8 +171,20 @@ export default function BacklogPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center p-8 text-muted-foreground">
-        Loading backlog…
+      <div className="flex flex-col gap-4 p-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-7 w-40" />
+          <Skeleton className="h-8 w-24" />
+        </div>
+        <div className="flex gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex w-72 shrink-0 flex-col gap-2">
+              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -134,7 +193,10 @@ export default function BacklogPage() {
     <div className="flex flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold">Product Backlog</h1>
+          <h1 className="flex items-center gap-2 text-xl font-semibold">
+            <BookOpen className="h-5 w-5 text-muted-foreground" />
+            Product Backlog
+          </h1>
           <p className="mt-0.5 text-sm text-muted-foreground">
             Feature requests linked to the contacts who asked
           </p>
@@ -143,12 +205,14 @@ export default function BacklogPage() {
           href="/dashboard/tasks/new"
           className={buttonVariants({ size: "sm" })}
         >
-          + Add item
+          <Plus className="mr-1.5 h-4 w-4" />
+          New item
         </Link>
       </div>
 
       {items.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
+          <BookOpen className="h-8 w-8 text-muted-foreground/40" />
           <p className="text-muted-foreground">Backlog is empty</p>
           <p className="text-xs text-muted-foreground">
             Add items directly or link feature requests from a contact record
@@ -157,6 +221,7 @@ export default function BacklogPage() {
             href="/dashboard/tasks/new"
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
+            <Plus className="mr-1.5 h-4 w-4" />
             Add backlog item
           </Link>
         </div>
@@ -167,7 +232,8 @@ export default function BacklogPage() {
               <div
                 className={`flex items-center justify-between rounded-t-lg border-t-2 px-1 pt-2 ${color}`}
               >
-                <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {STATUS_ICON[key]}
                   {label}
                 </span>
                 <Badge variant="secondary" className="text-xs">
@@ -187,15 +253,16 @@ export default function BacklogPage() {
                   return (
                     <div
                       key={item.id}
-                      className="rounded-lg border border-border bg-white p-3 shadow-xs"
+                      className="rounded-lg border border-border bg-card p-3 shadow-xs"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm font-medium leading-snug">
                           {item.title}
                         </p>
                         <span
-                          className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${pb.cls}`}
+                          className={`flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium ${pb.cls}`}
                         >
+                          {PRIORITY_ICON[item.priority]}
                           {pb.label}
                         </span>
                       </div>
@@ -208,13 +275,14 @@ export default function BacklogPage() {
                         <div className="mt-1 flex items-center gap-2">
                           <Link
                             href={`/dashboard/contacts/${item.contactId}`}
-                            className="text-xs text-blue-600 hover:underline"
+                            className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline"
                           >
-                            ↗ {item.contactName ?? "Contact"}
+                            <ExternalLink className="h-3 w-3" />
+                            {item.contactName ?? "Contact"}
                           </Link>
                           {item.priorityScore > 0 && (
-                            <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-xs font-medium text-emerald-700">
-                              💰 ${item.priorityScore.toLocaleString()}
+                            <span className="rounded bg-emerald-50 dark:bg-emerald-950/20 px-1.5 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                              ${item.priorityScore.toLocaleString()}
                             </span>
                           )}
                         </div>
@@ -230,9 +298,14 @@ export default function BacklogPage() {
                           <button
                             onClick={() => advance(item)}
                             disabled={movingId === item.id}
-                            className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"
+                            className="flex items-center gap-1 rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted disabled:opacity-40"
                           >
-                            → Move to{" "}
+                            {movingId === item.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <ChevronRight className="h-3 w-3" />
+                            )}
+                            Move to{" "}
                             {STATUS_NEXT[item.status] === "in_progress"
                               ? "sprint"
                               : "done"}
@@ -243,18 +316,23 @@ export default function BacklogPage() {
                             onClick={() => closeTheLoop(item)}
                             disabled={generatingLoop === item.id}
                             className={cn(
-                              "rounded px-2 py-0.5 text-xs font-medium text-purple-700 hover:bg-purple-50 disabled:opacity-40",
+                              "flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/20 disabled:opacity-40",
                             )}
                           >
+                            {generatingLoop === item.id ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Zap className="h-3 w-3" />
+                            )}
                             {generatingLoop === item.id
                               ? "Drafting…"
-                              : "✦ Notify requester"}
+                              : "Notify requester"}
                           </button>
                         )}
                       </div>
                       {draft && (
                         <div className="mt-2 flex flex-col gap-1">
-                          <textarea
+                          <Textarea
                             value={draft}
                             onChange={(e) =>
                               setLoopDrafts((prev) =>
@@ -262,13 +340,20 @@ export default function BacklogPage() {
                               )
                             }
                             rows={5}
-                            className="w-full rounded border border-border bg-muted/30 p-2 text-xs font-mono leading-relaxed resize-none focus:outline-none"
+                            className="w-full resize-none font-mono text-xs leading-relaxed"
                           />
                           <button
                             onClick={() => copyDraft(item.id, draft)}
-                            className="self-end text-xs text-muted-foreground hover:text-foreground"
+                            className="flex items-center gap-1 self-end text-xs text-muted-foreground hover:text-foreground"
                           >
-                            {copiedId === item.id ? "Copied!" : "Copy"}
+                            {copiedId === item.id ? (
+                              <>
+                                <Check className="h-3 w-3 text-green-500" />
+                                Copied!
+                              </>
+                            ) : (
+                              "Copy"
+                            )}
                           </button>
                         </div>
                       )}

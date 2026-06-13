@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { Zap, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -77,23 +77,32 @@ export function MorningBrief() {
         </div>
         <div className="flex items-center gap-2">
           {brief && (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => setOpen((v) => !v)}
-              className="text-xs text-muted-foreground hover:text-foreground"
             >
+              {open ? (
+                <ChevronUp className="h-4 w-4 mr-1" />
+              ) : (
+                <ChevronDown className="h-4 w-4 mr-1" />
+              )}
               {open ? "Collapse" : "Expand"}
-            </button>
+            </Button>
           )}
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={generate}
             disabled={loading}
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "disabled:opacity-50",
-            )}
           >
-            {loading ? "Generating…" : brief ? "Refresh" : "⚡ Brief me"}
-          </button>
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Zap className="h-4 w-4 mr-2" />
+            )}
+            {loading ? "Generating…" : brief ? "Refresh" : "Brief me"}
+          </Button>
         </div>
       </div>
 

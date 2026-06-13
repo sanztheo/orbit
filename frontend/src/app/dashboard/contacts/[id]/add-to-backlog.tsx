@@ -2,8 +2,16 @@
 
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Plus, Loader2, X, ListTodo } from "lucide-react";
 
 interface BacklogTask {
   id: string;
@@ -61,59 +69,63 @@ export function AddToBacklog({ contactId, initialTasks }: Props) {
     <div className="rounded-xl border border-border p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-sm">Backlog requests</h2>
+          <h2 className="font-semibold text-sm flex items-center">
+            <ListTodo className="h-4 w-4 mr-2" />
+            Backlog requests
+          </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Feature requests this contact triggered
           </p>
         </div>
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-        >
-          + Add item
-        </button>
+        <Button variant="outline" size="sm" onClick={() => setOpen((v) => !v)}>
+          <Plus className="h-4 w-4 mr-1" />
+          Add item
+        </Button>
       </div>
 
       {open && (
         <form onSubmit={submit} className="flex flex-col gap-2">
-          <input
+          <Input
             type="text"
             placeholder="Feature request title…"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             autoFocus
           />
           <div className="flex items-center gap-2">
-            <select
+            <Select
               value={priority}
-              onChange={(e) =>
-                setPriority(e.target.value as "p0" | "p1" | "p2" | "p3")
-              }
-              className="rounded-lg border border-border px-2 py-1.5 text-xs"
+              onValueChange={(v) => setPriority(v as "p0" | "p1" | "p2" | "p3")}
             >
-              <option value="p0">P0 — Critical</option>
-              <option value="p1">P1 — High</option>
-              <option value="p2">P2 — Medium</option>
-              <option value="p3">P3 — Low</option>
-            </select>
-            <button
-              type="submit"
-              disabled={saving || !title.trim()}
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                "disabled:opacity-50",
+              <SelectTrigger className="w-[160px] text-xs h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="p0">P0 — Critical</SelectItem>
+                <SelectItem value="p1">P1 — High</SelectItem>
+                <SelectItem value="p2">P2 — Medium</SelectItem>
+                <SelectItem value="p3">P3 — Low</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button type="submit" size="sm" disabled={saving || !title.trim()}>
+              {saving ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Saving…
+                </>
+              ) : (
+                "Add"
               )}
-            >
-              {saving ? "Saving…" : "Add"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setOpen(false)}
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
             >
+              <X className="h-4 w-4 mr-1" />
               Cancel
-            </button>
+            </Button>
           </div>
           {error && <p className="text-xs text-red-600">{error}</p>}
         </form>
@@ -121,7 +133,8 @@ export function AddToBacklog({ contactId, initialTasks }: Props) {
 
       {tasks.length === 0 ? (
         <p className="text-xs text-muted-foreground">
-          No backlog items yet — click "Add item" to link a feature request.
+          No backlog items yet — click &ldquo;Add item&rdquo; to link a feature
+          request.
         </p>
       ) : (
         <ul className="flex flex-col gap-1.5">

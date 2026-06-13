@@ -10,6 +10,16 @@ import { CadencePicker } from "./cadence-picker";
 import { ActivityLog } from "./activity-log";
 import { ColdStart } from "./cold-start";
 import { DeleteContactButton } from "./delete-button";
+import {
+  ArrowLeft,
+  Pencil,
+  Mail,
+  Building2,
+  Clock,
+  Calendar,
+  Link2,
+  ExternalLink,
+} from "lucide-react";
 
 interface Contact {
   id: string;
@@ -91,15 +101,25 @@ export default async function ContactDetailPage({
     pipelineType: string;
   }[] = dealsRes.ok ? (await dealsRes.json()).data : [];
 
+  const now = new Date();
+  const staleDays = contact.lastContactedAt
+    ? Math.floor(
+        (now.getTime() - new Date(contact.lastContactedAt).getTime()) /
+          86_400_000,
+      )
+    : null;
+  const isStale = staleDays === null || staleDays >= 180;
+
   return (
     <div className="flex flex-col gap-6 p-6 max-w-2xl">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/contacts"
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
           >
-            ← Contacts
+            <ArrowLeft className="h-4 w-4" />
+            Contacts
           </Link>
           <span className="text-muted-foreground">/</span>
           <h1 className="text-xl font-semibold">{contact.name}</h1>
@@ -111,51 +131,47 @@ export default async function ContactDetailPage({
             href={`/dashboard/contacts/${contact.id}/edit`}
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
+            <Pencil className="h-3.5 w-3.5 mr-1.5" />
             Edit
           </Link>
         </div>
       </div>
 
       {/* Staleness alert */}
-      {(() => {
-        const days = contact.lastContactedAt
-          ? Math.floor(
-              (Date.now() - new Date(contact.lastContactedAt).getTime()) /
-                86_400_000,
-            )
-          : null;
-        if (days === null || days >= 180) {
-          return (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex items-start gap-2">
-              <span className="shrink-0 mt-0.5">⚠️</span>
-              <div>
-                <span className="font-medium">Data may be stale</span>
-                {" — "}
-                {days === null
-                  ? "never contacted"
-                  : `no activity in ${days} days`}
-                .{" "}
-                <Link
-                  href={`/dashboard/contacts/${contact.id}/edit`}
-                  className="underline underline-offset-2 hover:text-amber-900"
-                >
-                  Verify or update info →
-                </Link>
-              </div>
-            </div>
-          );
-        }
-        return null;
-      })()}
+      {isStale && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex items-start gap-2">
+          <span className="shrink-0 mt-0.5">⚠️</span>
+          <div>
+            <span className="font-medium">Data may be stale</span>
+            {" — "}
+            {staleDays === null
+              ? "never contacted"
+              : `no activity in ${staleDays} days`}
+            .{" "}
+            <Link
+              href={`/dashboard/contacts/${contact.id}/edit`}
+              className="underline underline-offset-2 hover:text-amber-900"
+            >
+              Verify or update info →
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Info grid */}
       <div className="rounded-xl border border-border p-5 grid grid-cols-2 gap-4 text-sm">
         <div>
-          <p className="text-xs text-muted-foreground mb-1">Email</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+            <Mail className="h-3 w-3" />
+            Email
+          </p>
           <p>{contact.email ?? "—"}</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground mb-1">Company</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+            <Building2 className="h-3 w-3" />
+            Company
+          </p>
           {contact.company ? (
             <div className="flex items-center gap-2">
               <p>{contact.company}</p>
@@ -171,16 +187,25 @@ export default async function ContactDetailPage({
           )}
         </div>
         <div>
-          <p className="text-xs text-muted-foreground mb-1">Last contacted</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Last contacted
+          </p>
           <p>{fmt(contact.lastContactedAt)}</p>
         </div>
         <div>
-          <p className="text-xs text-muted-foreground mb-1">Next follow-up</p>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            Next follow-up
+          </p>
           <p>{fmt(contact.nextFollowUpAt)}</p>
         </div>
         {contact.linkedinUrl && (
           <div>
-            <p className="text-xs text-muted-foreground mb-1">LinkedIn</p>
+            <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+              <Link2 className="h-3 w-3" />
+              LinkedIn
+            </p>
             <a
               href={contact.linkedinUrl}
               target="_blank"
@@ -193,7 +218,10 @@ export default async function ContactDetailPage({
         )}
         {contact.twitterHandle && (
           <div>
-            <p className="text-xs text-muted-foreground mb-1">Twitter</p>
+            <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+              <ExternalLink className="h-3 w-3" />
+              Twitter
+            </p>
             <p>@{contact.twitterHandle}</p>
           </div>
         )}

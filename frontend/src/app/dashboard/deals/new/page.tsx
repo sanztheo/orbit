@@ -7,6 +7,15 @@ import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { ArrowLeft, Plus, Loader2 } from "lucide-react";
 
 const STAGES = [
   { value: "prospect", label: "Prospect" },
@@ -39,6 +48,7 @@ export default function NewDealPage() {
     searchParams.get("contactId") ?? "",
   );
   const [pipelineType, setPipelineType] = useState("sales");
+  const [stage, setStage] = useState("prospect");
 
   useEffect(() => {
     getToken().then((token) => {
@@ -62,7 +72,7 @@ export default function NewDealPage() {
     const body = {
       title: title.trim(),
       pipelineType: pipelineType || "sales",
-      stage: (fd.get("stage") as string) || "prospect",
+      stage: stage || "prospect",
       ...(valueRaw ? { value: Number(valueRaw) } : {}),
       notes: (fd.get("notes") as string) || undefined,
       ...(contactId ? { contactId } : {}),
@@ -90,6 +100,17 @@ export default function NewDealPage() {
 
   return (
     <div className="mx-auto w-full max-w-lg p-6">
+      <div className="mb-6 flex items-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push("/dashboard/deals")}
+        >
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Back
+        </Button>
+      </div>
       <h1 className="mb-6 text-xl font-semibold">New deal</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
@@ -103,34 +124,36 @@ export default function NewDealPage() {
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="pipelineType">Pipeline type</Label>
-          <select
-            id="pipelineType"
-            name="pipelineType"
+          <Select
             value={pipelineType}
-            onChange={(e) => setPipelineType(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            onValueChange={(v) => setPipelineType(v ?? "")}
           >
-            {PIPELINE_TYPES.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger id="pipelineType">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PIPELINE_TYPES.map((p) => (
+                <SelectItem key={p.value} value={p.value}>
+                  {p.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="stage">Stage</Label>
-          <select
-            id="stage"
-            name="stage"
-            defaultValue="prospect"
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-          >
-            {STAGES.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
+          <Select value={stage} onValueChange={(v) => setStage(v ?? "")}>
+            <SelectTrigger id="stage">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STAGES.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="value">Value ($)</Label>
@@ -145,25 +168,28 @@ export default function NewDealPage() {
         {contacts.length > 0 && (
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="contactId">Contact (optional)</Label>
-            <select
-              id="contactId"
+            <Select
               value={contactId}
-              onChange={(e) => setContactId(e.target.value)}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+              onValueChange={(v) => setContactId(v ?? "")}
             >
-              <option value="">— None —</option>
-              {contacts.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                  {c.company ? ` (${c.company})` : ""}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="contactId">
+                <SelectValue placeholder="— None —" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">— None —</SelectItem>
+                {contacts.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                    {c.company ? ` (${c.company})` : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
         {pipelineType === "fundraising" && (
-          <div className="rounded-lg border border-blue-100 bg-blue-50/50 p-4 flex flex-col gap-3">
-            <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
+          <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/20 p-4 flex flex-col gap-3">
+            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">
               Investor fields
             </p>
             <div className="flex flex-col gap-1.5">
@@ -197,18 +223,29 @@ export default function NewDealPage() {
         )}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="notes">Notes</Label>
-          <textarea
+          <Textarea
             id="notes"
             name="notes"
             rows={3}
             placeholder="Context, next steps…"
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        )}
         <div className="flex gap-2">
           <Button type="submit" disabled={loading}>
-            {loading ? "Creating…" : "Create deal"}
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Creating…
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Create deal
+              </>
+            )}
           </Button>
           <Button
             type="button"

@@ -208,6 +208,10 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ## UX Polish
 
+[P1] [DONE] Add dark/light/system theme toggle in Settings — founder expects to control appearance; three-button picker (Light/Dark/System) using next-themes, persists across sessions via localStorage.
+
+
+
 [P0] [TODO] Design and implement empty states for each main view (no contacts, no deals, no backlog items) as action prompts, not failure states — Research insight: Orbit's UX must never make founders feel guilty for having an empty CRM. Empty state = onboarding prompt, not a blank void.
 
 [P1] [DONE] Implement optimistic UI updates for deal drag-and-drop (update UI immediately, sync to server in background, rollback on error) — Laggy Kanban boards kill daily use. Optimistic updates make the tool feel fast even on slow connections.

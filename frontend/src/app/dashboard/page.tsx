@@ -4,6 +4,19 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import {
+  AlertTriangle,
+  Bell,
+  Briefcase,
+  CheckCircle2,
+  CheckSquare,
+  DollarSign,
+  Lock,
+  Phone,
+  Trophy,
+  Users,
+  XCircle,
+} from "lucide-react";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -74,6 +87,7 @@ function StatCard({
   urgent,
   href,
   loading,
+  icon,
 }: {
   title: string;
   value: number;
@@ -81,6 +95,7 @@ function StatCard({
   urgent?: boolean;
   href: string;
   loading?: boolean;
+  icon?: React.ReactNode;
 }) {
   return (
     <Link href={href} className="block">
@@ -88,6 +103,7 @@ function StatCard({
         className={`transition-colors hover:bg-muted/40 ${urgent && value > 0 ? "border-red-200" : ""}`}
       >
         <CardHeader className="pb-1 pt-4 px-4">
+          {icon && <div className="mb-1">{icon}</div>}
           <CardDescription className="text-xs">{title}</CardDescription>
         </CardHeader>
         <CardContent className="pb-4 px-4">
@@ -118,7 +134,7 @@ function ActionSection({
       <div className="flex items-center gap-2">
         <h2 className="text-sm font-semibold">{title}</h2>
         {count > 0 && (
-          <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+          <span className="rounded-full bg-red-100 dark:bg-red-950/30 px-2 py-0.5 text-xs font-medium text-red-700 dark:text-red-300">
             {count}
           </span>
         )}
@@ -139,6 +155,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
   const [markingId, setMarkingId] = useState<string | null>(null);
+  const [closingDealId, setClosingDealId] = useState<string | null>(null);
   const [checklistDismissed, setChecklistDismissed] = useState(() => {
     if (typeof window === "undefined") return false;
     return localStorage.getItem("orbit_checklist_dismissed") === "1";
@@ -184,6 +201,36 @@ export default function DashboardPage() {
       );
     } finally {
       setMarkingId(null);
+    }
+  }
+
+  async function closeDeal(
+    dealId: string,
+    outcome: "closed_won" | "closed_lost",
+  ) {
+    setClosingDealId(dealId);
+    try {
+      const token = await getToken();
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+      await fetch(`${apiUrl}/api/deals/${dealId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ stage: outcome }),
+      });
+      setActions((prev) =>
+        prev
+          ? {
+              ...prev,
+              stallingDeals: prev.stallingDeals.filter((d) => d.id !== dealId),
+              atRiskDeals: prev.atRiskDeals.filter((d) => d.id !== dealId),
+            }
+          : prev,
+      );
+    } finally {
+      setClosingDealId(null);
     }
   }
 
@@ -299,6 +346,7 @@ export default function DashboardPage() {
           urgent
           href="/dashboard/deals"
           loading={loading}
+          icon={<Briefcase className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Cold Contacts"
@@ -306,6 +354,7 @@ export default function DashboardPage() {
           urgent
           href="/dashboard/contacts"
           loading={loading}
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Overdue Follow-ups"
@@ -313,18 +362,21 @@ export default function DashboardPage() {
           urgent
           href="/dashboard/contacts"
           loading={loading}
+          icon={<Bell className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Open Tasks"
           value={s.openTasks}
           href="/dashboard/tasks"
           loading={loading}
+          icon={<CheckSquare className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Won This Month"
           value={s.wonThisMonth}
           href="/dashboard/deals"
           loading={loading}
+          icon={<Trophy className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Pipeline Value"
@@ -334,12 +386,14 @@ export default function DashboardPage() {
           }
           href="/dashboard/deals"
           loading={loading}
+          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
         />
         <StatCard
           title="Total Contacts"
           value={s.totalContacts}
           href="/dashboard/contacts"
           loading={loading}
+          icon={<Users className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
 
@@ -405,18 +459,18 @@ export default function DashboardPage() {
                     className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm ${step.done ? "bg-emerald-50" : step.locked ? "bg-muted/40 opacity-60" : "bg-white border border-border"}`}
                   >
                     <div className="flex items-center gap-2">
+                      {step.done ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      ) : step.locked ? (
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <span className="text-muted-foreground">○</span>
+                      )}
                       <span
                         className={
                           step.done
-                            ? "text-emerald-600"
-                            : "text-muted-foreground"
-                        }
-                      >
-                        {step.done ? "✓" : step.locked ? "🔒" : "○"}
-                      </span>
-                      <span
-                        className={
-                          step.done ? "text-emerald-800 line-through" : ""
+                            ? "text-emerald-800 dark:text-emerald-200 line-through"
+                            : ""
                         }
                       >
                         {step.label}
@@ -425,7 +479,7 @@ export default function DashboardPage() {
                     {!step.done && !step.locked && step.href && (
                       <Link
                         href={step.href}
-                        className="text-xs text-blue-600 hover:underline shrink-0"
+                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline shrink-0"
                       >
                         {step.action}
                       </Link>
@@ -438,14 +492,16 @@ export default function DashboardPage() {
         })()}
 
       {a.atRiskDeals.length > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20 p-4">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-amber-600">⚠</span>
-            <h2 className="text-sm font-semibold text-amber-900">At Risk</h2>
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+              At Risk
+            </h2>
+            <span className="rounded-full bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-300">
               {a.atRiskDeals.length}
             </span>
-            <span className="text-xs text-amber-700 ml-1">
+            <span className="text-xs text-amber-700 dark:text-amber-300 ml-1">
               deals 14–29 days without movement
             </span>
           </div>
@@ -456,12 +512,12 @@ export default function DashboardPage() {
                 <Link
                   key={deal.id}
                   href="/dashboard/deals"
-                  className="flex items-center gap-2 rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm hover:bg-amber-50 transition-colors"
+                  className="flex items-center gap-2 rounded-lg border border-amber-200 dark:border-amber-800 bg-card px-3 py-2 text-sm hover:bg-amber-50 dark:hover:bg-amber-950/20 transition-colors"
                 >
                   <span className="font-medium truncate max-w-[160px]">
                     {deal.title}
                   </span>
-                  <span className="shrink-0 text-xs font-medium text-amber-700">
+                  <span className="shrink-0 text-xs font-medium text-amber-700 dark:text-amber-300">
                     {days}d
                   </span>
                   <span className="shrink-0 text-xs text-muted-foreground capitalize">
@@ -482,23 +538,44 @@ export default function DashboardPage() {
         >
           {a.stallingDeals.map((deal) => {
             const days = daysSince(deal.stageChangedAt);
+            const isClosing = closingDealId === deal.id;
             return (
-              <Link
+              <div
                 key={deal.id}
-                href="/dashboard/deals"
-                className="flex items-start justify-between rounded-lg border border-border p-2.5 hover:bg-muted/40 transition-colors"
+                className="flex items-center gap-2 rounded-lg border border-border p-2.5"
               >
-                <div className="min-w-0">
+                <Link
+                  href="/dashboard/deals"
+                  className="flex-1 min-w-0 hover:opacity-80"
+                >
                   <p className="text-sm font-medium truncate">{deal.title}</p>
                   <p className="text-xs text-muted-foreground capitalize">
                     {deal.stage.replace(/_/g, " ")}
-                    {deal.value ? ` · $${deal.value.toLocaleString()}` : ""}
+                    {deal.value
+                      ? ` · $${deal.value.toLocaleString()}`
+                      : ""} ·{" "}
+                    <span className="text-red-600 dark:text-red-400 font-medium">
+                      {days}d
+                    </span>
                   </p>
-                </div>
-                <span className="shrink-0 ml-2 text-xs font-medium text-red-600">
-                  {days}d
-                </span>
-              </Link>
+                </Link>
+                <button
+                  onClick={() => closeDeal(deal.id, "closed_won")}
+                  disabled={isClosing}
+                  title="Mark won"
+                  className="shrink-0 rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-green-500 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors disabled:opacity-40"
+                >
+                  {isClosing ? "…" : <CheckCircle2 className="h-3.5 w-3.5" />}
+                </button>
+                <button
+                  onClick={() => closeDeal(deal.id, "closed_lost")}
+                  disabled={isClosing}
+                  title="Mark lost"
+                  className="shrink-0 rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-40"
+                >
+                  <XCircle className="h-3.5 w-3.5" />
+                </button>
+              </div>
             );
           })}
           {stats && s.stallingDeals > a.stallingDeals.length && (
@@ -532,7 +609,7 @@ export default function DashboardPage() {
                     </p>
                   )}
                 </div>
-                <span className="shrink-0 ml-2 text-xs font-medium text-red-600">
+                <span className="shrink-0 ml-2 text-xs font-medium text-red-600 dark:text-red-400">
                   {days >= 999 ? "never" : `${days}d`}
                 </span>
               </Link>
@@ -569,7 +646,7 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium truncate">{c.name}</p>
                   <p className="text-xs text-muted-foreground">
                     every {c.cadenceDays}d ·{" "}
-                    <span className="text-red-600 font-medium">
+                    <span className="text-red-600 dark:text-red-400 font-medium">
                       +{overdue}d late
                     </span>
                   </p>
@@ -578,9 +655,16 @@ export default function DashboardPage() {
                   onClick={() => markContacted(c.id)}
                   disabled={isMarking}
                   title="Mark as contacted"
-                  className="shrink-0 rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-green-500 hover:text-green-700 hover:bg-green-50 transition-colors disabled:opacity-40"
+                  className="shrink-0 flex items-center rounded-md border border-border px-2 py-1 text-xs font-medium text-muted-foreground hover:border-green-500 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-950/20 transition-colors disabled:opacity-40"
                 >
-                  {isMarking ? "…" : "✓ Called"}
+                  {isMarking ? (
+                    "…"
+                  ) : (
+                    <>
+                      <Phone className="h-3.5 w-3.5 mr-1" />
+                      Called
+                    </>
+                  )}
                 </button>
               </div>
             );

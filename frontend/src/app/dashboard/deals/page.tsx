@@ -91,9 +91,11 @@ function daysSince(iso: string): number {
 }
 
 function stageColor(key: DealStage): string {
-  if (key === "closed_won") return "bg-green-50 border-green-200";
-  if (key === "closed_lost") return "bg-red-50 border-red-200";
-  return "bg-white border-border";
+  if (key === "closed_won")
+    return "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800";
+  if (key === "closed_lost")
+    return "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800";
+  return "bg-card border-border";
 }
 
 export default function DealsPage() {
@@ -288,7 +290,7 @@ export default function DealsPage() {
           {pipelineWeighted > 0 && (
             <span className="text-muted-foreground">
               Weighted:{" "}
-              <span className="font-semibold text-emerald-700">
+              <span className="font-semibold text-emerald-700 dark:text-emerald-300">
                 ${pipelineWeighted.toLocaleString()}
               </span>
             </span>
@@ -305,7 +307,7 @@ export default function DealsPage() {
             className={cn(
               "rounded-md px-3 py-1 text-sm font-medium transition-colors",
               activePipeline === key
-                ? "bg-white shadow-sm text-foreground"
+                ? "bg-card shadow-sm text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -325,13 +327,13 @@ export default function DealsPage() {
       </div>
 
       {wonDeal && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
-              <p className="text-sm font-semibold text-emerald-900">
+              <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
                 🏆 Deal won: {wonDeal.title}
               </p>
-              <p className="text-xs text-emerald-700 mt-0.5">
+              <p className="text-xs text-emerald-700 dark:text-emerald-300 mt-0.5">
                 What closed it? (logged to contact timeline)
               </p>
               <input
@@ -340,7 +342,7 @@ export default function DealsPage() {
                 value={winReason}
                 onChange={(e) => setWinReason(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && submitWinReason()}
-                className="mt-2 w-full rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className="mt-2 w-full rounded-lg border border-emerald-200 dark:border-emerald-800 bg-card px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                 autoFocus
               />
             </div>
@@ -350,7 +352,7 @@ export default function DealsPage() {
                 disabled={winSubmitting}
                 className={cn(
                   buttonVariants({ size: "sm" }),
-                  "bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50",
+                  "bg-emerald-700 dark:bg-emerald-800 hover:bg-emerald-800 dark:hover:bg-emerald-700 disabled:opacity-50",
                 )}
               >
                 {winSubmitting ? "Saving…" : "Log it"}
@@ -445,7 +447,7 @@ export default function DealsPage() {
                         <Link
                           href={`/dashboard/contacts/${deal.contactId}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="mt-0.5 block text-xs text-blue-600 hover:underline truncate"
+                          className="mt-0.5 block text-xs text-blue-600 dark:text-blue-400 hover:underline truncate"
                         >
                           {deal.contactName}
                         </Link>
@@ -460,7 +462,7 @@ export default function DealsPage() {
                         </Link>
                       )}
                       {deal.fundName && (
-                        <p className="mt-0.5 text-xs font-medium text-blue-700 truncate">
+                        <p className="mt-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 truncate">
                           🏦 {deal.fundName}
                           {deal.checkSize
                             ? ` · $${deal.checkSize.toLocaleString()}`
@@ -473,7 +475,7 @@ export default function DealsPage() {
                           target="_blank"
                           rel="noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="mt-0.5 block text-xs text-blue-500 hover:underline truncate"
+                          className="mt-0.5 block text-xs text-blue-500 dark:text-blue-400 hover:underline truncate"
                         >
                           Portfolio →
                         </a>
@@ -487,7 +489,7 @@ export default function DealsPage() {
                         className={cn(
                           "mt-1 text-xs",
                           isStale
-                            ? "font-medium text-red-600"
+                            ? "font-medium text-red-600 dark:text-red-400"
                             : "text-muted-foreground",
                         )}
                       >
@@ -496,7 +498,7 @@ export default function DealsPage() {
                           : `${staleDays}d in stage${isStale ? " ⚠" : ""}`}
                       </p>
                       {deal.expectedCloseAt && (
-                        <p className="mt-0.5 text-xs text-amber-700">
+                        <p className="mt-0.5 text-xs text-amber-700 dark:text-amber-300">
                           Close by{" "}
                           {new Date(deal.expectedCloseAt).toLocaleDateString(
                             "en-US",
@@ -523,7 +525,7 @@ export default function DealsPage() {
                             if (e.key === "Escape") setEditingNextAction(null);
                           }}
                           placeholder="Next step…"
-                          className="mt-1 w-full rounded border border-primary/40 bg-white px-1.5 py-0.5 text-xs focus:outline-none"
+                          className="mt-1 w-full rounded border border-primary/40 bg-card px-1.5 py-0.5 text-xs focus:outline-none"
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (

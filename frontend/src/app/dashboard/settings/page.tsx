@@ -2,6 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { useTheme } from "next-themes";
+import {
+  Webhook,
+  Save,
+  Check,
+  Building2,
+  Users,
+  Zap,
+  Sun,
+  Moon,
+  Monitor,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -24,6 +38,7 @@ interface WorkspaceInfo {
 
 export default function SettingsPage() {
   const { getToken } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [webhookUrl, setWebhookUrl] = useState("");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -87,29 +102,77 @@ export default function SettingsPage() {
     <div className="flex flex-col gap-6 p-6 max-w-xl">
       <h1 className="text-xl font-semibold">Settings</h1>
 
+      <section className="rounded-xl border border-border p-5 flex flex-col gap-4">
+        <div>
+          <h2 className="font-semibold text-sm flex items-center">
+            <Sun className="h-4 w-4 mr-2" />
+            Appearance
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Choose how Orbit looks on your device.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant={theme === "light" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTheme("light")}
+          >
+            <Sun className="h-4 w-4 mr-1.5" />
+            Light
+          </Button>
+          <Button
+            variant={theme === "dark" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTheme("dark")}
+          >
+            <Moon className="h-4 w-4 mr-1.5" />
+            Dark
+          </Button>
+          <Button
+            variant={theme === "system" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTheme("system")}
+          >
+            <Monitor className="h-4 w-4 mr-1.5" />
+            System
+          </Button>
+        </div>
+      </section>
+
       {workspace && (
         <section className="rounded-xl border border-border p-5 flex flex-col gap-4">
           <div>
-            <h2 className="font-semibold text-sm">Workspace</h2>
+            <h2 className="font-semibold text-sm flex items-center">
+              <Building2 className="h-4 w-4 mr-2" />
+              Workspace
+            </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               {workspace.name}
             </p>
           </div>
           <div className="grid grid-cols-3 gap-3">
             <div className="rounded-lg bg-muted/40 p-3">
-              <p className="text-xs text-muted-foreground mb-1">Plan</p>
+              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <Building2 className="h-3 w-3" />
+                Plan
+              </p>
               <p className="text-sm font-semibold capitalize">
                 {PLAN_LABEL[workspace.plan] ?? workspace.plan}
               </p>
             </div>
             <div className="rounded-lg bg-muted/40 p-3">
-              <p className="text-xs text-muted-foreground mb-1">Seats</p>
+              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                Seats
+              </p>
               <p className="text-sm font-semibold">
                 {workspace.memberCount} / {workspace.seatLimit}
               </p>
             </div>
             <div className="rounded-lg bg-muted/40 p-3">
-              <p className="text-xs text-muted-foreground mb-1">
+              <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                <Zap className="h-3 w-3" />
                 AI this month
               </p>
               <p className="text-sm font-semibold">
@@ -127,7 +190,10 @@ export default function SettingsPage() {
 
       <section className="rounded-xl border border-border p-5 flex flex-col gap-4">
         <div>
-          <h2 className="font-semibold text-sm">Webhook</h2>
+          <h2 className="font-semibold text-sm flex items-center">
+            <Webhook className="h-4 w-4 mr-2" />
+            Webhook
+          </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Orbit fires a POST to this URL when a deal changes stage or a
             contact is created. Use it to trigger Zapier, Make, or your own
@@ -139,7 +205,7 @@ export default function SettingsPage() {
           <p className="text-sm text-muted-foreground">Loading…</p>
         ) : (
           <div className="flex flex-col gap-3">
-            <input
+            <Input
               type="url"
               placeholder="https://hooks.zapier.com/hooks/catch/…"
               value={webhookUrl}
@@ -147,19 +213,27 @@ export default function SettingsPage() {
                 setWebhookUrl(e.target.value);
                 setSaved(false);
               }}
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
             />
 
             <div className="flex items-center gap-3">
-              <button
-                onClick={save}
-                disabled={saving}
-                className="rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-              >
-                {saving ? "Saving…" : "Save"}
-              </button>
+              <Button onClick={save} disabled={saving} size="sm">
+                {saving ? (
+                  <>
+                    <Save className="h-4 w-4 mr-2 animate-pulse" />
+                    Saving…
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save
+                  </>
+                )}
+              </Button>
               {saved && (
-                <span className="text-xs text-emerald-700">Saved ✓</span>
+                <span className="text-xs text-emerald-700 flex items-center">
+                  <Check className="h-4 w-4 mr-1" />
+                  Saved
+                </span>
               )}
               {error && <span className="text-xs text-red-600">{error}</span>}
             </div>

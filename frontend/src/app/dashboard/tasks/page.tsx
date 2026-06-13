@@ -30,10 +30,10 @@ const COLUMNS: { key: TaskStatus; label: string }[] = [
 ];
 
 const PRIORITY_COLOR: Record<TaskPriority, string> = {
-  p0: "bg-red-100 text-red-700",
-  p1: "bg-orange-100 text-orange-700",
-  p2: "bg-blue-100 text-blue-700",
-  p3: "bg-gray-100 text-gray-600",
+  p0: "bg-red-100 dark:bg-red-950/20 text-red-700 dark:text-red-300",
+  p1: "bg-orange-100 dark:bg-orange-950/20 text-orange-700 dark:text-orange-300",
+  p2: "bg-blue-100 dark:bg-blue-950/20 text-blue-700 dark:text-blue-300",
+  p3: "bg-muted text-muted-foreground",
 };
 
 const STATUS_NEXT: Partial<Record<TaskStatus, TaskStatus>> = {
@@ -142,7 +142,7 @@ export default function TasksPage() {
               {(byStatus[key] ?? []).map((task) => (
                 <div
                   key={task.id}
-                  className="rounded-lg border border-border bg-white p-3 shadow-xs"
+                  className="rounded-lg border border-border bg-card p-3 shadow-xs"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium leading-snug">
@@ -162,7 +162,7 @@ export default function TasksPage() {
                   {task.contactId && (
                     <Link
                       href={`/dashboard/contacts/${task.contactId}`}
-                      className="mt-1 block text-xs text-blue-600 hover:underline truncate"
+                      className="mt-1 block text-xs text-blue-600 dark:text-blue-400 hover:underline truncate"
                     >
                       ↗ {task.contactName ?? "Contact"}
                     </Link>
@@ -172,7 +172,7 @@ export default function TasksPage() {
                       className={cn(
                         "mt-1 text-xs",
                         new Date(task.dueAt) < new Date()
-                          ? "text-red-600 font-medium"
+                          ? "text-red-600 dark:text-red-400 font-medium"
                           : "text-muted-foreground",
                       )}
                     >
