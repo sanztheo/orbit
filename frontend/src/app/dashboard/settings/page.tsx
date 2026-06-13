@@ -5,6 +5,23 @@ import { useAuth } from "@clerk/nextjs";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
+const PLAN_LABEL: Record<string, string> = {
+  solo: "Solo",
+  founder: "Founder",
+  studio: "Studio",
+};
+
+const AI_MONTHLY_LIMIT = 50;
+
+interface WorkspaceInfo {
+  name: string;
+  plan: string;
+  memberCount: number;
+  seatLimit: number;
+  aiActionsUsed: number;
+  aiActionsResetAt: string;
+}
+
 export default function SettingsPage() {
   const { getToken } = useAuth();
   const [webhookUrl, setWebhookUrl] = useState("");
@@ -12,16 +29,26 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [workspace, setWorkspace] = useState<WorkspaceInfo | null>(null);
 
   useEffect(() => {
     async function load() {
       const token = await getToken();
-      const res = await fetch(`${API_URL}/api/webhooks`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (res.ok) {
-        const json: { webhookUrl: string | null } = await res.json();
+      const [webhookRes, wsRes] = await Promise.all([
+        fetch(`${API_URL}/api/webhooks`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }),
+        fetch(`${API_URL}/api/workspace`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }),
+      ]);
+      if (webhookRes.ok) {
+        const json: { webhookUrl: string | null } = await webhookRes.json();
         setWebhookUrl(json.webhookUrl ?? "");
+      }
+      if (wsRes.ok) {
+        const json: { data: WorkspaceInfo } = await wsRes.json();
+        setWorkspace(json.data);
       }
       setLoading(false);
     }
@@ -59,6 +86,44 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col gap-6 p-6 max-w-xl">
       <h1 className="text-xl font-semibold">Settings</h1>
+
+      {workspace && (
+        <section className="rounded-xl border border-border p-5 flex flex-col gap-4">
+          <div>
+            <h2 className="font-semibold text-sm">Workspace</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {workspace.name}
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-lg bg-muted/40 p-3">
+              <p className="text-xs text-muted-foreground mb-1">Plan</p>
+              <p className="text-sm font-semibold capitalize">
+                {PLAN_LABEL[workspace.plan] ?? workspace.plan}
+              </p>
+            </div>
+            <div className="rounded-lg bg-muted/40 p-3">
+              <p className="text-xs text-muted-foreground mb-1">Seats</p>
+              <p className="text-sm font-semibold">
+                {workspace.memberCount} / {workspace.seatLimit}
+              </p>
+            </div>
+            <div className="rounded-lg bg-muted/40 p-3">
+              <p className="text-xs text-muted-foreground mb-1">
+                AI this month
+              </p>
+              <p className="text-sm font-semibold">
+                {workspace.aiActionsUsed} / {AI_MONTHLY_LIMIT}
+              </p>
+            </div>
+          </div>
+          {workspace.aiActionsUsed >= AI_MONTHLY_LIMIT && (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+              Monthly AI limit reached. Actions reset on the 1st of next month.
+            </p>
+          )}
+        </section>
+      )}
 
       <section className="rounded-xl border border-border p-5 flex flex-col gap-4">
         <div>
