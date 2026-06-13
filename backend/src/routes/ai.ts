@@ -139,6 +139,136 @@ Draft a follow-up email to ${contact.name}.`;
     },
   )
   .post(
+    "/meeting-brief",
+    aiRateLimit,
+    zValidator("json", z.object({ contactId: z.string().min(1) })),
+    async (c) => {
+      const workspaceId = c.get("workspaceId");
+      const { contactId } = c.req.valid("json");
+
+      const [contact] = await db
+        .select()
+        .from(contacts)
+        .where(
+          and(
+            eq(contacts.id, contactId),
+            eq(contacts.workspaceId, workspaceId),
+          ),
+        )
+        .limit(1);
+
+      if (!contact)
+        return c.json(
+          { error: "not_found", message: "Contact not found" },
+          404,
+        );
+
+      const [recentActivities, relatedDeals, backlogItems] = await Promise.all([
+        db
+          .select()
+          .from(activities)
+          .where(
+            and(
+              eq(activities.contactId, contactId),
+              eq(activities.workspaceId, workspaceId),
+            ),
+          )
+          .orderBy(desc(activities.occurredAt))
+          .limit(5),
+        db
+          .select({
+            title: deals.title,
+            stage: deals.stage,
+            value: deals.value,
+          })
+          .from(deals)
+          .where(
+            and(
+              eq(deals.contactId, contactId),
+              eq(deals.workspaceId, workspaceId),
+            ),
+          )
+          .limit(3),
+        db
+          .select({ title: tasks.title, priority: tasks.priority })
+          .from(tasks)
+          .where(
+            and(
+              eq(tasks.contactId, contactId),
+              eq(tasks.workspaceId, workspaceId),
+            ),
+          )
+          .limit(5),
+      ]);
+
+      const activityLine =
+        recentActivities.length > 0
+          ? recentActivities
+              .map((a) => {
+                const date = a.occurredAt.toISOString().split("T")[0];
+                return `[${date}] ${a.type}${a.subject ? ` — ${a.subject}` : ""}${a.body ? `: ${a.body.slice(0, 200)}` : ""}`;
+              })
+              .join("\n")
+          : "No logged activity.";
+
+      const dealLine =
+        relatedDeals.length > 0
+          ? relatedDeals
+              .map(
+                (d) =>
+                  `${d.title} (${d.stage}${d.value ? `, $${d.value}` : ""})`,
+              )
+              .join("; ")
+          : "None";
+
+      const backlogLine =
+        backlogItems.length > 0
+          ? backlogItems
+              .map((t) => `[${t.priority.toUpperCase()}] ${t.title}`)
+              .join("; ")
+          : "None";
+
+      const message = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 512,
+        system: `You are an AI that generates pre-meeting briefing cards for founders.
+Output a structured briefing in this exact format (plain text, no markdown headers):
+
+WHO: [1 sentence — their role, company, relationship type]
+LAST CONTACT: [when and what was discussed, or "Never" if no history]
+OPEN DEALS: [deal status or "None"]
+THEY ASKED FOR: [feature requests they made, or "Nothing on record"]
+TALKING POINTS: [2-3 bullet points — what to address in this meeting]
+WATCH OUT FOR: [1 sentence — any risk or tension from history, or "Nothing flagged"]
+
+Be specific. Use the actual data. Under 200 words total.`,
+        messages: [
+          {
+            role: "user",
+            content: `Contact: ${contact.name}${contact.company ? ` at ${contact.company}` : ""} — ${contact.type}${contact.notes ? `\nNotes: ${contact.notes}` : ""}
+
+Recent activity:\n${activityLine}
+
+Active deals: ${dealLine}
+Feature requests: ${backlogLine}
+
+Generate the pre-meeting brief.`,
+          },
+        ],
+      });
+
+      const brief =
+        message.content[0].type === "text" ? message.content[0].text : "";
+
+      await db
+        .update(workspaces)
+        .set({ aiActionsUsed: sql`${workspaces.aiActionsUsed} + 1` })
+        .where(eq(workspaces.id, workspaceId));
+
+      return c.json({ brief });
+    },
+  )
+  .post(
     "/close-the-loop",
     aiRateLimit,
     zValidator("json", z.object({ taskId: z.string().min(1) })),

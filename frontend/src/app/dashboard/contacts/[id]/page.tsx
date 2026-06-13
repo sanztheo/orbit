@@ -4,6 +4,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FollowUpDraft } from "./follow-up-draft";
+import { MeetingBrief } from "./meeting-brief";
 import { AddToBacklog } from "./add-to-backlog";
 import { CadencePicker } from "./cadence-picker";
 import { ActivityLog } from "./activity-log";
@@ -158,6 +159,9 @@ export default async function ContactDetailPage({
         contactId={contact.id}
         initialActivities={initialActivities}
       />
+
+      {/* Pre-meeting brief */}
+      <MeetingBrief contactId={contact.id} />
 
       {/* Backlog requests */}
       <AddToBacklog contactId={contact.id} initialTasks={linkedTasks} />
