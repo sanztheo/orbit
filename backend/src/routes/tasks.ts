@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db, tasks, contacts, deals } from "../db/index.js";
@@ -66,6 +66,35 @@ export const tasksRouter = new Hono<WorkspaceEnv>()
       .values({ id: generateId(), workspaceId, ...body })
       .returning();
     return c.json({ data: row }, 201);
+  })
+  .get("/feature-report", async (c) => {
+    const workspaceId = c.get("workspaceId");
+    const rows = await db
+      .select({
+        id: tasks.id,
+        title: tasks.title,
+        priority: tasks.priority,
+        status: tasks.status,
+        contactId: tasks.contactId,
+        contactName: contacts.name,
+        dealValueSum: sql<number>`COALESCE((SELECT SUM(${deals.value}) FROM ${deals} WHERE ${deals.contactId} = ${tasks.contactId} AND ${deals.workspaceId} = ${tasks.workspaceId}), 0)`,
+      })
+      .from(tasks)
+      .leftJoin(contacts, eq(tasks.contactId, contacts.id))
+      .where(
+        and(
+          eq(tasks.workspaceId, workspaceId),
+          isNotNull(tasks.contactId),
+          ne(tasks.status, "done"),
+          ne(tasks.status, "cancelled"),
+        ),
+      )
+      .orderBy(
+        desc(
+          sql<number>`COALESCE((SELECT SUM(${deals.value}) FROM ${deals} WHERE ${deals.contactId} = ${tasks.contactId} AND ${deals.workspaceId} = ${tasks.workspaceId}), 0)`,
+        ),
+      );
+    return c.json({ data: rows });
   })
   .get("/:id", async (c) => {
     const workspaceId = c.get("workspaceId");

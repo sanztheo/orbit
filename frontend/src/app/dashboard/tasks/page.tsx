@@ -101,12 +101,20 @@ export default function TasksPage() {
     <div className="flex flex-col gap-4 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Tasks</h1>
-        <Link
-          href="/dashboard/tasks/new"
-          className={buttonVariants({ size: "sm" })}
-        >
-          + New task
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/tasks/feature-report"
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            📊 Feature report
+          </Link>
+          <Link
+            href="/dashboard/tasks/new"
+            className={buttonVariants({ size: "sm" })}
+          >
+            + New task
+          </Link>
+        </div>
       </div>
 
       {tasks.length === 0 ? (
