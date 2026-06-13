@@ -4,7 +4,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db, contacts } from "../db/index.js";
 import { generateId } from "../lib/ids.js";
-import type { AuthEnv } from "../middleware/auth.js";
+import type { WorkspaceEnv } from "../middleware/workspace.js";
 
 const createSchema = z.object({
   name: z.string().min(1),
@@ -29,44 +29,50 @@ const updateSchema = createSchema.partial().extend({
   priorityScore: z.number().int().min(0).optional(),
 });
 
-export const contactsRouter = new Hono<AuthEnv>()
+export const contactsRouter = new Hono<WorkspaceEnv>()
   .get("/", async (c) => {
-    const userId = c.get("userId");
+    const workspaceId = c.get("workspaceId");
     const rows = await db
       .select()
       .from(contacts)
-      .where(eq(contacts.userId, userId));
+      .where(eq(contacts.workspaceId, workspaceId));
     return c.json({ data: rows, total: rows.length });
   })
   .post("/", zValidator("json", createSchema), async (c) => {
-    const userId = c.get("userId");
+    const workspaceId = c.get("workspaceId");
     const body = c.req.valid("json");
     const [row] = await db
       .insert(contacts)
-      .values({ id: generateId(), userId, ...body })
+      .values({ id: generateId(), workspaceId, ...body })
       .returning();
     return c.json({ data: row }, 201);
   })
   .get("/:id", async (c) => {
-    const userId = c.get("userId");
+    const workspaceId = c.get("workspaceId");
     const [row] = await db
       .select()
       .from(contacts)
       .where(
-        and(eq(contacts.id, c.req.param("id")), eq(contacts.userId, userId)),
+        and(
+          eq(contacts.id, c.req.param("id")),
+          eq(contacts.workspaceId, workspaceId),
+        ),
       );
     if (!row)
       return c.json({ error: "not_found", message: "Contact not found" }, 404);
     return c.json({ data: row });
   })
   .patch("/:id", zValidator("json", updateSchema), async (c) => {
-    const userId = c.get("userId");
+    const workspaceId = c.get("workspaceId");
     const body = c.req.valid("json");
     const [row] = await db
       .update(contacts)
       .set({ ...body, updatedAt: new Date() })
       .where(
-        and(eq(contacts.id, c.req.param("id")), eq(contacts.userId, userId)),
+        and(
+          eq(contacts.id, c.req.param("id")),
+          eq(contacts.workspaceId, workspaceId),
+        ),
       )
       .returning();
     if (!row)
@@ -74,11 +80,14 @@ export const contactsRouter = new Hono<AuthEnv>()
     return c.json({ data: row });
   })
   .delete("/:id", async (c) => {
-    const userId = c.get("userId");
+    const workspaceId = c.get("workspaceId");
     const [row] = await db
       .delete(contacts)
       .where(
-        and(eq(contacts.id, c.req.param("id")), eq(contacts.userId, userId)),
+        and(
+          eq(contacts.id, c.req.param("id")),
+          eq(contacts.workspaceId, workspaceId),
+        ),
       )
       .returning();
     if (!row)

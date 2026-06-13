@@ -4,7 +4,12 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db, deals } from "../db/index.js";
 import { generateId } from "../lib/ids.js";
-import type { AuthEnv } from "../middleware/auth.js";
+import type { WorkspaceEnv } from "../middleware/workspace.js";
+
+const toDate = z
+  .string()
+  .datetime()
+  .transform((s) => new Date(s));
 
 const createSchema = z.object({
   title: z.string().min(1),
@@ -22,58 +27,77 @@ const createSchema = z.object({
     ])
     .optional(),
   probability: z.number().int().min(0).max(100).optional(),
-  expectedCloseAt: z
-    .string()
-    .datetime()
-    .transform((s) => new Date(s))
-    .optional(),
+  expectedCloseAt: toDate.optional(),
   notes: z.string().optional(),
 });
 
 const updateSchema = createSchema.partial();
 
-export const dealsRouter = new Hono<AuthEnv>()
+export const dealsRouter = new Hono<WorkspaceEnv>()
   .get("/", async (c) => {
-    const userId = c.get("userId");
-    const rows = await db.select().from(deals).where(eq(deals.userId, userId));
+    const workspaceId = c.get("workspaceId");
+    const rows = await db
+      .select()
+      .from(deals)
+      .where(eq(deals.workspaceId, workspaceId));
     return c.json({ data: rows, total: rows.length });
   })
   .post("/", zValidator("json", createSchema), async (c) => {
-    const userId = c.get("userId");
+    const workspaceId = c.get("workspaceId");
     const body = c.req.valid("json");
     const [row] = await db
       .insert(deals)
-      .values({ id: generateId(), userId, ...body })
+      .values({ id: generateId(), workspaceId, ...body })
       .returning();
     return c.json({ data: row }, 201);
   })
   .get("/:id", async (c) => {
-    const userId = c.get("userId");
+    const workspaceId = c.get("workspaceId");
     const [row] = await db
       .select()
       .from(deals)
-      .where(and(eq(deals.id, c.req.param("id")), eq(deals.userId, userId)));
+      .where(
+        and(
+          eq(deals.id, c.req.param("id")),
+          eq(deals.workspaceId, workspaceId),
+        ),
+      );
     if (!row)
       return c.json({ error: "not_found", message: "Deal not found" }, 404);
     return c.json({ data: row });
   })
   .patch("/:id", zValidator("json", updateSchema), async (c) => {
-    const userId = c.get("userId");
+    const workspaceId = c.get("workspaceId");
     const body = c.req.valid("json");
+    const stageChanged = body.stage !== undefined;
     const [row] = await db
       .update(deals)
-      .set({ ...body, updatedAt: new Date() })
-      .where(and(eq(deals.id, c.req.param("id")), eq(deals.userId, userId)))
+      .set({
+        ...body,
+        updatedAt: new Date(),
+        ...(stageChanged ? { stageChangedAt: new Date() } : {}),
+      })
+      .where(
+        and(
+          eq(deals.id, c.req.param("id")),
+          eq(deals.workspaceId, workspaceId),
+        ),
+      )
       .returning();
     if (!row)
       return c.json({ error: "not_found", message: "Deal not found" }, 404);
     return c.json({ data: row });
   })
   .delete("/:id", async (c) => {
-    const userId = c.get("userId");
+    const workspaceId = c.get("workspaceId");
     const [row] = await db
       .delete(deals)
-      .where(and(eq(deals.id, c.req.param("id")), eq(deals.userId, userId)))
+      .where(
+        and(
+          eq(deals.id, c.req.param("id")),
+          eq(deals.workspaceId, workspaceId),
+        ),
+      )
       .returning();
     if (!row)
       return c.json({ error: "not_found", message: "Deal not found" }, 404);

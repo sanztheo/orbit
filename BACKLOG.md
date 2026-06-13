@@ -12,11 +12,19 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 [P0] [DONE] Create `frontend/` — Next.js 16 App Router on :3000 with Clerk, shadcn/ui, typed api-client.ts.
 
-[P0] [TODO] Add `frontend/src/middleware.ts` — Clerk auth middleware protecting /dashboard/* routes, redirect unauthenticated to /sign-in — Without this every route is public.
+[P0] [DONE] Add `frontend/src/middleware.ts` — Clerk auth middleware protecting /dashboard/* routes, redirect unauthenticated to /sign-in.
 
-[P0] [TODO] Add workspace_id to DB schema — current schema uses userId directly; multi-seat tiers require workspace isolation. Add workspaces table + workspace_id FK on contacts/deals/tasks. — Data leak risk without this.
+[P0] [DONE] Add workspace_id to DB schema — workspaces + workspace_memberships tables, workspaceId FK on all tables, lazy workspace provisioning on first API call.
 
-[P0] [TODO] Add Clerk webhook handler in backend `POST /webhooks/clerk` — create workspace + owner record on user.created event; Clerk dashboard must set webhook URL — First-login provisioning won't work without this.
+[P0] [DONE] Build dashboard shell — layout with sidebar nav (Contacts/Deals/Tasks/Backlog/Dashboard), contacts list page, new contact form.
+
+[P0] [TODO] Add Clerk webhook handler in backend `POST /webhooks/clerk` — optional enhancement; lazy provisioning (create workspace on first API call) handles the MVP case without requiring webhook configuration.
+
+[P0] [TODO] Build pipeline_type enum on deals table (sales / fundraising / partnership) with stage label sets per type and a type switcher in Kanban header — investor pipeline stages differ from sales; one component, two label sets.
+
+[P0] [TODO] Add mobile-first contact quick-add flow (name + email only, skip optional fields) — 53% abandonment due to setup friction; add-contact must work one-handed on mobile.
+
+[P1] [TODO] Build relationship health score in contact list (days since last_contacted_at, color-coded red/amber/green) — ambient risk signal that Folk doesn't have; shows "last touched 47 days ago" in red directly in list.
 
 [P1] [TODO] Add Railway deploy config `backend/railway.toml` — Hono needs persistent Node.js process with pg pool; Vercel edge functions can't hold DB connections — Required for production.
 
