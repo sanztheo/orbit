@@ -7,12 +7,22 @@ import { apiClient } from "@/lib/api-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function NewTaskPage() {
   const router = useRouter();
   const { getToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [priority, setPriority] = useState("p2");
+  const [description, setDescription] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -23,16 +33,20 @@ export default function NewTaskPage() {
 
     const body = {
       title,
-      priority: fd.get("priority") as string,
-      description: (fd.get("description") as string) || undefined,
+      priority,
+      description: description.trim() || undefined,
     };
 
     setLoading(true);
     try {
       const token = await getToken();
       if (!token) throw new Error("Not authenticated");
-      await apiClient.post("/api/tasks", body, token);
-      router.push("/dashboard/tasks");
+      const result = await apiClient.post<{ data: { id: string } }>(
+        "/api/tasks",
+        body,
+        token,
+      );
+      router.push(`/dashboard/tasks/${result.data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create task");
     } finally {
@@ -54,27 +68,27 @@ export default function NewTaskPage() {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="priority">Priority</Label>
-          <select
-            id="priority"
-            name="priority"
-            defaultValue="p2"
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-          >
-            <option value="p0">P0 — Critical</option>
-            <option value="p1">P1 — High</option>
-            <option value="p2">P2 — Normal</option>
-            <option value="p3">P3 — Low</option>
-          </select>
+          <Label>Priority</Label>
+          <Select value={priority} onValueChange={(v) => v && setPriority(v)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="p0">P0 — Critical</SelectItem>
+              <SelectItem value="p1">P1 — High</SelectItem>
+              <SelectItem value="p2">P2 — Normal</SelectItem>
+              <SelectItem value="p3">P3 — Low</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="description">Description</Label>
-          <textarea
+          <Textarea
             id="description"
-            name="description"
             rows={3}
             placeholder="What needs to happen…"
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}

@@ -71,7 +71,8 @@ export default function NewContactPage() {
           (body as { message?: string }).message ?? `HTTP ${res.status}`,
         );
       }
-      router.push("/dashboard/contacts");
+      const { data } = await res.json();
+      router.push(`/dashboard/contacts/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create contact");
     } finally {
