@@ -21,9 +21,17 @@ interface SearchDeal {
   value: number | null;
 }
 
+interface SearchTask {
+  id: string;
+  title: string;
+  status: string;
+  priority: string;
+}
+
 interface SearchResults {
   contacts: SearchContact[];
   deals: SearchDeal[];
+  tasks: SearchTask[];
 }
 
 export function GlobalSearch() {
@@ -95,9 +103,14 @@ export function GlobalSearch() {
       sub: [c.company, c.email].filter(Boolean).join(" · "),
     })),
     ...(results?.deals ?? []).map((d) => ({
-      href: `/dashboard/deals`,
+      href: `/dashboard/deals/${d.id}`,
       label: d.title,
       sub: `${d.stage.replace(/_/g, " ")}${d.value ? ` · $${d.value.toLocaleString()}` : ""}`,
+    })),
+    ...(results?.tasks ?? []).map((t) => ({
+      href: `/dashboard/tasks/${t.id}`,
+      label: t.title,
+      sub: `${t.priority.toUpperCase()} · ${t.status.replace(/_/g, " ")}`,
     })),
   ];
 
@@ -136,7 +149,7 @@ export function GlobalSearch() {
             value={q}
             onChange={(e) => handleInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Search contacts, deals…"
+            placeholder="Search contacts, deals, tasks…"
             className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           {loading && <span className="text-xs text-muted-foreground">…</span>}
@@ -177,13 +190,37 @@ export function GlobalSearch() {
               return (
                 <li key={d.id}>
                   <button
-                    onClick={() => navigate("/dashboard/deals")}
+                    onClick={() => navigate(`/dashboard/deals/${d.id}`)}
                     className={`w-full text-left px-4 py-2 text-sm flex flex-col transition-colors ${activeIdx === idx ? "bg-muted" : "hover:bg-muted/50"}`}
                   >
                     <span className="font-medium">{d.title}</span>
                     <span className="text-xs text-muted-foreground capitalize">
                       {d.stage.replace(/_/g, " ")}
                       {d.value ? ` · $${d.value.toLocaleString()}` : ""}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+            {results && (results.tasks ?? []).length > 0 && (
+              <li className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Tasks
+              </li>
+            )}
+            {(results?.tasks ?? []).map((t, i) => {
+              const idx =
+                (results?.contacts.length ?? 0) +
+                (results?.deals.length ?? 0) +
+                i;
+              return (
+                <li key={t.id}>
+                  <button
+                    onClick={() => navigate(`/dashboard/tasks/${t.id}`)}
+                    className={`w-full text-left px-4 py-2 text-sm flex flex-col transition-colors ${activeIdx === idx ? "bg-muted" : "hover:bg-muted/50"}`}
+                  >
+                    <span className="font-medium">{t.title}</span>
+                    <span className="text-xs text-muted-foreground capitalize">
+                      {t.priority.toUpperCase()} · {t.status.replace(/_/g, " ")}
                     </span>
                   </button>
                 </li>

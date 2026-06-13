@@ -1,16 +1,16 @@
 import { Hono } from "hono";
 import { and, eq, ilike, or } from "drizzle-orm";
-import { db, contacts, deals } from "../db/index.js";
+import { db, contacts, deals, tasks } from "../db/index.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
 
 export const searchRouter = new Hono<WorkspaceEnv>().get("/", async (c) => {
   const workspaceId = c.get("workspaceId");
   const q = (c.req.query("q") ?? "").trim();
-  if (q.length < 2) return c.json({ contacts: [], deals: [] });
+  if (q.length < 2) return c.json({ contacts: [], deals: [], tasks: [] });
 
   const pattern = `%${q}%`;
 
-  const [contactRows, dealRows] = await Promise.all([
+  const [contactRows, dealRows, taskRows] = await Promise.all([
     db
       .select({
         id: contacts.id,
@@ -45,7 +45,23 @@ export const searchRouter = new Hono<WorkspaceEnv>().get("/", async (c) => {
         and(eq(deals.workspaceId, workspaceId), ilike(deals.title, pattern)),
       )
       .limit(5),
+
+    db
+      .select({
+        id: tasks.id,
+        title: tasks.title,
+        status: tasks.status,
+        priority: tasks.priority,
+      })
+      .from(tasks)
+      .where(
+        and(
+          eq(tasks.workspaceId, workspaceId),
+          or(ilike(tasks.title, pattern), ilike(tasks.description, pattern)),
+        ),
+      )
+      .limit(3),
   ]);
 
-  return c.json({ contacts: contactRows, deals: dealRows });
+  return c.json({ contacts: contactRows, deals: dealRows, tasks: taskRows });
 });
