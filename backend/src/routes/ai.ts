@@ -998,4 +998,102 @@ Include ALL items. Rank by: deal value at risk > customer demand frequency > str
       totalValue,
       weightedValue,
     });
-  });
+  })
+  .post(
+    "/network-search",
+    aiRateLimit,
+    aiQuota,
+    zValidator("json", z.object({ query: z.string().min(1).max(300) })),
+    async (c) => {
+      const workspaceId = c.get("workspaceId");
+      const { query } = c.req.valid("json");
+
+      const rows = await db
+        .select({
+          id: contacts.id,
+          name: contacts.name,
+          email: contacts.email,
+          company: contacts.company,
+          type: contacts.type,
+          notes: contacts.notes,
+          tags: contacts.tags,
+          lastContactedAt: contacts.lastContactedAt,
+        })
+        .from(contacts)
+        .where(
+          and(
+            eq(contacts.workspaceId, workspaceId),
+            isNull(contacts.archivedAt),
+          ),
+        )
+        .orderBy(desc(contacts.lastContactedAt))
+        .limit(300);
+
+      if (rows.length === 0) {
+        return c.json({ matches: [] });
+      }
+
+      const now = Date.now();
+      const contactList = rows
+        .map((r, i) => {
+          const parts: string[] = [`[${i}] ${r.name}`];
+          if (r.company) parts.push(`at ${r.company}`);
+          if (r.type && r.type !== "lead") parts.push(r.type);
+          if (Array.isArray(r.tags) && r.tags.length > 0)
+            parts.push(`tags:${r.tags.join(",")}`);
+          if (r.notes) parts.push(`notes:${r.notes.slice(0, 120)}`);
+          if (r.lastContactedAt) {
+            const days = Math.floor(
+              (now - new Date(r.lastContactedAt).getTime()) / 86_400_000,
+            );
+            parts.push(`last:${days}d`);
+          }
+          return parts.join(" | ");
+        })
+        .join("\n");
+
+      const msg = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 500,
+        system:
+          'You find the most relevant contacts from a founder\'s CRM network based on a natural-language query. Return ONLY valid JSON: [{"index": number, "reason": "one short sentence"}]. Include up to 5 best matches (0-indexed). Return [] if none match well.',
+        messages: [
+          {
+            role: "user",
+            content: `Query: "${query}"\n\nContacts:\n${contactList}`,
+          },
+        ],
+      });
+
+      const raw = msg.content[0].type === "text" ? msg.content[0].text : "[]";
+      let parsed: { index: number; reason: string }[] = [];
+      try {
+        const found = raw.match(/\[[\s\S]*\]/);
+        if (found) parsed = JSON.parse(found[0]) as typeof parsed;
+      } catch {
+        parsed = [];
+      }
+
+      const matches = parsed
+        .filter(
+          (m) =>
+            Number.isInteger(m.index) && m.index >= 0 && m.index < rows.length,
+        )
+        .slice(0, 5)
+        .map((m) => ({
+          id: rows[m.index].id,
+          name: rows[m.index].name,
+          company: rows[m.index].company,
+          type: rows[m.index].type,
+          email: rows[m.index].email,
+          reason: m.reason,
+        }));
+
+      await db
+        .update(workspaces)
+        .set({ aiActionsUsed: sql`${workspaces.aiActionsUsed} + 1` })
+        .where(eq(workspaces.id, workspaceId));
+
+      return c.json({ matches });
+    },
+  );

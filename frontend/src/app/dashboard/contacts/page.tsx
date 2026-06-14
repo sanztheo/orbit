@@ -6,6 +6,7 @@ import { ContactFilters } from "./contact-filters";
 import { ExportButton } from "./export-button";
 import { ExportAllButton } from "./export-all-button";
 import { ContactsTable } from "./contacts-table";
+import { NetworkSearch } from "./network-search";
 import {
   UserPlus,
   Users,
@@ -152,6 +153,8 @@ export default async function ContactsPage({
           </Link>
         </div>
       )}
+
+      <NetworkSearch />
 
       <div className="flex justify-end">
         <Link
