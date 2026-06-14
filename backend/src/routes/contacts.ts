@@ -6,6 +6,7 @@ import {
   desc,
   eq,
   ilike,
+  inArray,
   isNotNull,
   isNull,
   lt,
@@ -487,6 +488,35 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
     const unique = [...new Set(rows.map((r) => r.tag))].sort();
     return c.json({ data: unique });
   })
+  .post(
+    "/bulk-tag",
+    zValidator(
+      "json",
+      z.object({
+        ids: z.array(z.string().min(1)).min(1).max(200),
+        action: z.enum(["add", "remove"]),
+        tag: z.string().min(1).max(50),
+      }),
+    ),
+    async (c) => {
+      const workspaceId = c.get("workspaceId");
+      const { ids, action, tag } = c.req.valid("json");
+      const tagExpr =
+        action === "add"
+          ? sql<
+              string[]
+            >`array_append(array_remove(${contacts.tags}, ${tag}), ${tag})`
+          : sql<string[]>`array_remove(${contacts.tags}, ${tag})`;
+      const result = await db
+        .update(contacts)
+        .set({ tags: tagExpr, updatedAt: new Date() })
+        .where(
+          and(eq(contacts.workspaceId, workspaceId), inArray(contacts.id, ids)),
+        )
+        .returning({ id: contacts.id });
+      return c.json({ updated: result.length });
+    },
+  )
   .get("/:id", async (c) => {
     const workspaceId = c.get("workspaceId");
     const [row] = await db

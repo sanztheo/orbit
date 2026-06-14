@@ -22,7 +22,9 @@ import {
   Loader2,
   CheckSquare,
   Trash2,
+  Tag,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { ContactLogButton } from "./contact-log-button";
 
 type ContactType = "lead" | "customer" | "investor" | "advisor" | "partner";
@@ -173,6 +175,9 @@ export function ContactsTable({ contacts }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [bulkTagMode, setBulkTagMode] = useState(false);
+  const [bulkTagInput, setBulkTagInput] = useState("");
+  const [bulkTagAction, setBulkTagAction] = useState<"add" | "remove">("add");
 
   const allIds = contacts.map((c) => c.id);
   const allSelected =
@@ -228,6 +233,25 @@ export function ContactsTable({ contacts }: Props) {
     );
     setSelected(new Set());
     setConfirmDelete(false);
+    startTransition(() => router.refresh());
+  }
+
+  async function applyBulkTag() {
+    const tag = bulkTagInput.trim();
+    if (!tag) return;
+    const token = await getToken();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+    await fetch(`${apiUrl}/api/contacts/bulk-tag`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ ids: [...selected], action: bulkTagAction, tag }),
+    });
+    setBulkTagMode(false);
+    setBulkTagInput("");
+    setSelected(new Set());
     startTransition(() => router.refresh());
   }
 
@@ -472,7 +496,55 @@ export function ContactsTable({ contacts }: Props) {
           <span className="text-sm font-medium text-muted-foreground">
             {selected.size} selected
           </span>
-          {confirmDelete ? (
+          {bulkTagMode ? (
+            <>
+              <Button
+                size="sm"
+                variant={bulkTagAction === "add" ? "default" : "outline"}
+                onClick={() =>
+                  setBulkTagAction(bulkTagAction === "add" ? "remove" : "add")
+                }
+                className="shrink-0"
+              >
+                {bulkTagAction === "add" ? "+ add" : "− remove"}
+              </Button>
+              <Input
+                autoFocus
+                className="h-8 w-32 text-sm"
+                placeholder="tag name"
+                value={bulkTagInput}
+                onChange={(e) => setBulkTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") applyBulkTag();
+                  if (e.key === "Escape") {
+                    setBulkTagMode(false);
+                    setBulkTagInput("");
+                  }
+                }}
+              />
+              <Button
+                size="sm"
+                onClick={applyBulkTag}
+                disabled={!bulkTagInput.trim() || isPending}
+              >
+                {isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Apply"
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  setBulkTagMode(false);
+                  setBulkTagInput("");
+                }}
+              >
+                Cancel
+              </Button>
+            </>
+          ) : confirmDelete ? (
             <>
               <span className="text-sm text-destructive font-medium">
                 Delete {selected.size} contact{selected.size !== 1 ? "s" : ""}?
@@ -508,6 +580,15 @@ export function ContactsTable({ contacts }: Props) {
                   <CheckSquare className="h-4 w-4 mr-2" />
                 )}
                 Mark contacted today
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setBulkTagMode(true)}
+                disabled={isPending}
+              >
+                <Tag className="h-4 w-4 mr-2" />
+                Tag
               </Button>
               <Button
                 size="sm"
