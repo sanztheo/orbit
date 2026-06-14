@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, BarChart2 } from "lucide-react";
+import { Search, BarChart2, CheckCircle2, Circle } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 
 type TaskStatus = "todo" | "in_progress" | "done" | "cancelled";
@@ -250,18 +250,39 @@ export default function TasksPage() {
                     movingId === task.id && "opacity-50",
                   )}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <Link
-                      href={`/dashboard/tasks/${task.id}`}
-                      className="text-sm font-medium leading-snug hover:underline"
+                  <div className="flex items-start gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (task.status !== "done") moveTo(task.id, "done");
+                      }}
+                      disabled={movingId === task.id}
+                      className="mt-0.5 shrink-0 text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors disabled:opacity-40"
+                      title={task.status === "done" ? "Done" : "Mark done"}
                     >
-                      {task.title}
-                    </Link>
-                    <span
-                      className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${PRIORITY_COLOR[task.priority]}`}
-                    >
-                      {task.priority.toUpperCase()}
-                    </span>
+                      {task.status === "done" ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                      ) : (
+                        <Circle className="h-4 w-4" />
+                      )}
+                    </button>
+                    <div className="flex-1 flex items-start justify-between gap-2 min-w-0">
+                      <Link
+                        href={`/dashboard/tasks/${task.id}`}
+                        className={cn(
+                          "text-sm font-medium leading-snug hover:underline",
+                          task.status === "done" &&
+                            "line-through text-muted-foreground",
+                        )}
+                      >
+                        {task.title}
+                      </Link>
+                      <span
+                        className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${PRIORITY_COLOR[task.priority]}`}
+                      >
+                        {task.priority.toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                   {task.description && (
                     <p className="mt-1 text-xs text-muted-foreground line-clamp-2">

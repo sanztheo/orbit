@@ -21,6 +21,7 @@ import {
   Settings2,
   Building2,
   Calendar,
+  Activity,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -45,6 +46,12 @@ const NAV_ITEMS = [
   },
   { label: "Deals", href: "/dashboard/deals", icon: Briefcase, mobile: true },
   { label: "Tasks", href: "/dashboard/tasks", icon: CheckSquare, mobile: true },
+  {
+    label: "Activities",
+    href: "/dashboard/activities",
+    icon: Activity,
+    mobile: false,
+  },
   {
     label: "Backlog",
     href: "/dashboard/backlog",
