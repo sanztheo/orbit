@@ -33,6 +33,8 @@ export default function NewContactPage() {
   const [type, setType] = useState<ContactType>("lead");
   const [company, setCompany] = useState("");
   const [notes, setNotes] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [twitterHandle, setTwitterHandle] = useState("");
   const [showMore, setShowMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [duplicateId, setDuplicateId] = useState<string | null>(null);
@@ -61,6 +63,8 @@ export default function NewContactPage() {
           company: company.trim() || null,
           type,
           notes: notes.trim() || null,
+          linkedinUrl: linkedinUrl.trim() || null,
+          twitterHandle: twitterHandle.trim() || null,
         }),
       });
       if (res.status === 409) {
@@ -177,7 +181,7 @@ export default function NewContactPage() {
             onClick={() => setShowMore(true)}
             className="self-start text-xs text-muted-foreground hover:text-foreground"
           >
-            + Company, notes, LinkedIn…
+            + Company, notes, LinkedIn, X…
           </button>
         )}
 
@@ -213,6 +217,29 @@ export default function NewContactPage() {
                 placeholder="Context, how you met, what they care about…"
                 rows={3}
                 className="resize-none"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="linkedin">LinkedIn URL</Label>
+              <Input
+                id="linkedin"
+                type="url"
+                value={linkedinUrl}
+                onChange={(e) => setLinkedinUrl(e.target.value)}
+                placeholder="https://linkedin.com/in/jane"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="twitter">X / Twitter handle</Label>
+              <Input
+                id="twitter"
+                value={twitterHandle}
+                onChange={(e) =>
+                  setTwitterHandle(e.target.value.replace(/^@/, ""))
+                }
+                placeholder="janedoe"
               />
             </div>
           </div>
