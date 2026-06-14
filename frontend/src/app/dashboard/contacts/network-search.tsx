@@ -87,7 +87,7 @@ export function NetworkSearch() {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-muted/20 p-4 flex flex-col gap-3">
+    <div className="w-full rounded-xl border border-border bg-muted/20 p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-semibold">Network search</p>

@@ -529,6 +529,60 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       return c.json({ updated: result.length });
     },
   )
+  .get("/duplicates", async (c) => {
+    const workspaceId = c.get("workspaceId");
+
+    const rows = await db
+      .select({
+        id: contacts.id,
+        name: contacts.name,
+        email: contacts.email,
+        company: contacts.company,
+        type: contacts.type,
+        lastContactedAt: contacts.lastContactedAt,
+      })
+      .from(contacts)
+      .where(
+        and(eq(contacts.workspaceId, workspaceId), isNull(contacts.archivedAt)),
+      );
+
+    type Row = (typeof rows)[0];
+    const pairs: { a: Row; b: Row; reason: "email" | "name" }[] = [];
+
+    const byEmail = new Map<string, Row[]>();
+    for (const r of rows) {
+      if (!r.email) continue;
+      const key = r.email.toLowerCase().trim();
+      if (!byEmail.has(key)) byEmail.set(key, []);
+      byEmail.get(key)!.push(r);
+    }
+    for (const group of byEmail.values()) {
+      for (let i = 0; i < group.length - 1; i++) {
+        pairs.push({ a: group[i], b: group[i + 1], reason: "email" });
+      }
+    }
+
+    const byName = new Map<string, Row[]>();
+    for (const r of rows) {
+      const key = r.name.toLowerCase().replace(/\s+/g, " ").trim();
+      if (!byName.has(key)) byName.set(key, []);
+      byName.get(key)!.push(r);
+    }
+    for (const group of byName.values()) {
+      if (group.length < 2) continue;
+      for (let i = 0; i < group.length - 1; i++) {
+        const alreadyPaired = pairs.some(
+          (p) =>
+            (p.a.id === group[i].id && p.b.id === group[i + 1].id) ||
+            (p.b.id === group[i].id && p.a.id === group[i + 1].id),
+        );
+        if (!alreadyPaired)
+          pairs.push({ a: group[i], b: group[i + 1], reason: "name" });
+      }
+    }
+
+    return c.json({ data: pairs, total: pairs.length });
+  })
   .get("/:id", async (c) => {
     const workspaceId = c.get("workspaceId");
     const [row] = await db

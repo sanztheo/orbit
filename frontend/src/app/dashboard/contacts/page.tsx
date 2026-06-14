@@ -7,6 +7,7 @@ import { ExportButton } from "./export-button";
 import { ExportAllButton } from "./export-all-button";
 import { ContactsTable } from "./contacts-table";
 import { NetworkSearch } from "./network-search";
+import { DuplicateFinder } from "./duplicate-finder";
 import {
   UserPlus,
   Users,
@@ -154,7 +155,10 @@ export default async function ContactsPage({
         </div>
       )}
 
-      <NetworkSearch />
+      <div className="flex flex-wrap gap-2">
+        <NetworkSearch />
+        <DuplicateFinder />
+      </div>
 
       <div className="flex justify-end">
         <Link
