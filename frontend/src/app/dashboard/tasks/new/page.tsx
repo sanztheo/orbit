@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ContactCombobox } from "@/components/contact-combobox";
 
 export default function NewTaskPage() {
   const router = useRouter();
@@ -23,6 +24,8 @@ export default function NewTaskPage() {
   const [error, setError] = useState<string | null>(null);
   const [priority, setPriority] = useState("p2");
   const [description, setDescription] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactId, setContactId] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -37,6 +40,7 @@ export default function NewTaskPage() {
       priority,
       description: description.trim() || undefined,
       dueAt: dueAtRaw ? new Date(dueAtRaw).toISOString() : undefined,
+      contactId: contactId ?? undefined,
     };
 
     setLoading(true);
@@ -95,6 +99,17 @@ export default function NewTaskPage() {
             placeholder="What needs to happen…"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label>Link to contact</Label>
+          <ContactCombobox
+            contactId={contactId}
+            contactName={contactName}
+            onChange={(name, id) => {
+              setContactName(name);
+              setContactId(id);
+            }}
           />
         </div>
         {error && <p className="text-sm text-red-600">{error}</p>}
