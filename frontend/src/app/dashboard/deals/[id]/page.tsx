@@ -20,6 +20,7 @@ import { DealActivityLog } from "./deal-activity-log";
 import { DeleteDealButton } from "./delete-button";
 import { DealInlineNotes } from "./inline-notes";
 import { DealFollowUpDraft } from "./deal-follow-up-draft";
+import { DealActionSuggestion } from "./deal-action-suggestion";
 import { DealStageSelector } from "./deal-stage-selector";
 import { DealNextAction } from "./deal-next-action";
 import { DealAddTask } from "./deal-add-task";
@@ -402,6 +403,9 @@ export default async function DealDetailPage({
           pipelineType={deal.pipelineType}
         />
       </div>
+
+      {/* AI next action suggestion */}
+      <DealActionSuggestion dealId={deal.id} />
 
       {/* AI follow-up draft */}
       {contact && (
