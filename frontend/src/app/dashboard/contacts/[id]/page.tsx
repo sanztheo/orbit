@@ -247,15 +247,12 @@ export default async function ContactDetailPage({
             Company
           </p>
           {contact.company ? (
-            <div className="flex items-center gap-2">
-              <p>{contact.company}</p>
-              <Link
-                href={`/dashboard/contacts?search=${encodeURIComponent(contact.company)}`}
-                className="text-xs text-blue-600 hover:underline shrink-0"
-              >
-                others →
-              </Link>
-            </div>
+            <Link
+              href={`/dashboard/companies/${encodeURIComponent(contact.company)}`}
+              className="text-sm hover:underline text-blue-600 dark:text-blue-400"
+            >
+              {contact.company} →
+            </Link>
           ) : (
             <p>—</p>
           )}

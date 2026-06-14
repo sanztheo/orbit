@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PenLine, Plus, User, Briefcase, X } from "lucide-react";
+import { PenLine, Plus, User, Briefcase, CheckSquare, X } from "lucide-react";
 
 export function MobileFab() {
   const router = useRouter();
@@ -51,6 +51,13 @@ export function MobileFab() {
           >
             <Briefcase className="h-4 w-4" />
             New deal
+          </button>
+          <button
+            onClick={() => go("/dashboard/tasks/new")}
+            className="flex items-center gap-2 rounded-full border border-border bg-card shadow-lg px-4 py-2 text-sm font-medium"
+          >
+            <CheckSquare className="h-4 w-4" />
+            New task
           </button>
         </div>
       )}
