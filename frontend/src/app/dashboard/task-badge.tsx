@@ -3,7 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 
-export function TaskBadge() {
+export function TaskBadge({ mobile }: { mobile?: boolean } = {}) {
   const { getToken } = useAuth();
   const [count, setCount] = useState(0);
 
@@ -24,7 +24,9 @@ export function TaskBadge() {
 
   if (count === 0) return null;
   return (
-    <span className="ml-auto flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+    <span
+      className={`flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white ${mobile ? "absolute -top-1.5 -right-1.5" : "ml-auto"}`}
+    >
       {count > 9 ? "9+" : count}
     </span>
   );

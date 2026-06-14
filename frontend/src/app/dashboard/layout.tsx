@@ -142,7 +142,13 @@ export default async function DashboardLayout({
               href={item.href}
               className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Icon className="h-5 w-5" />
+              <div className="relative">
+                <Icon className="h-5 w-5" />
+                {item.href === "/dashboard/follow-ups" && (
+                  <FollowUpBadge mobile />
+                )}
+                {item.href === "/dashboard/tasks" && <TaskBadge mobile />}
+              </div>
               <span className="text-[10px] font-medium">{item.label}</span>
             </Link>
           );
