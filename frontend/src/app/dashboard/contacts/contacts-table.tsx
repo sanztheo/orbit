@@ -19,6 +19,7 @@ import {
   Activity,
   AlertTriangle,
   Calendar,
+  CalendarPlus,
   Loader2,
   CheckSquare,
   Trash2,
@@ -60,6 +61,18 @@ function daysSince(iso: string | null): number | null {
   if (!iso) return null;
   return Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
 }
+
+function isoInDays(n: number): string {
+  return new Date(Date.now() + n * 86_400_000).toISOString();
+}
+
+const BULK_FOLLOW_UP_OPTIONS = [
+  { label: "Tomorrow", getDate: () => isoInDays(1) },
+  { label: "3 days", getDate: () => isoInDays(3) },
+  { label: "1 week", getDate: () => isoInDays(7) },
+  { label: "2 weeks", getDate: () => isoInDays(14) },
+  { label: "1 month", getDate: () => isoInDays(30) },
+];
 
 function healthColor(days: number | null): string {
   if (days === null) return "text-red-500";
@@ -179,6 +192,7 @@ export function ContactsTable({ contacts }: Props) {
   const [bulkTagMode, setBulkTagMode] = useState(false);
   const [bulkTagInput, setBulkTagInput] = useState("");
   const [bulkTagAction, setBulkTagAction] = useState<"add" | "remove">("add");
+  const [bulkFollowUpMode, setBulkFollowUpMode] = useState(false);
 
   const allIds = contacts.map((c) => c.id);
   const allSelected =
@@ -252,6 +266,26 @@ export function ContactsTable({ contacts }: Props) {
     });
     setBulkTagMode(false);
     setBulkTagInput("");
+    setSelected(new Set());
+    startTransition(() => router.refresh());
+  }
+
+  async function applyBulkFollowUp(nextFollowUpAt: string) {
+    const token = await getToken();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+    await Promise.all(
+      [...selected].map((id) =>
+        fetch(`${apiUrl}/api/contacts/${id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ nextFollowUpAt }),
+        }),
+      ),
+    );
+    setBulkFollowUpMode(false);
     setSelected(new Set());
     startTransition(() => router.refresh());
   }
@@ -548,6 +582,30 @@ export function ContactsTable({ contacts }: Props) {
                 Cancel
               </Button>
             </>
+          ) : bulkFollowUpMode ? (
+            <>
+              <span className="text-sm text-muted-foreground shrink-0">
+                Follow-up in:
+              </span>
+              {BULK_FOLLOW_UP_OPTIONS.map((opt) => (
+                <Button
+                  key={opt.label}
+                  size="sm"
+                  variant="outline"
+                  onClick={() => applyBulkFollowUp(opt.getDate())}
+                  disabled={isPending}
+                >
+                  {opt.label}
+                </Button>
+              ))}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setBulkFollowUpMode(false)}
+              >
+                Cancel
+              </Button>
+            </>
           ) : confirmDelete ? (
             <>
               <span className="text-sm text-destructive font-medium">
@@ -593,6 +651,15 @@ export function ContactsTable({ contacts }: Props) {
               >
                 <Tag className="h-4 w-4 mr-2" />
                 Tag
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setBulkFollowUpMode(true)}
+                disabled={isPending}
+              >
+                <CalendarPlus className="h-4 w-4 mr-2" />
+                Follow-up
               </Button>
               <Button
                 size="sm"
