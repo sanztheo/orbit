@@ -104,7 +104,7 @@ export function SprawlCalculator() {
                 Time lost ({hoursMonth.toFixed(1)} hrs/mo)
               </p>
               <p className="text-2xl font-bold text-red-700 dark:text-red-400">
-                ${timeCost.toLocaleString()}
+                ${timeCost.toLocaleString("en-US")}
               </p>
               <p className="text-xs text-red-600 dark:text-red-400 mt-0.5">
                 at ${rate}/hr
@@ -129,7 +129,7 @@ export function SprawlCalculator() {
                 $49/mo
               </p>
               <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
-                save ${savings.toLocaleString()}/mo
+                save ${savings.toLocaleString("en-US")}/mo
               </p>
             </div>
           </div>
@@ -139,7 +139,7 @@ export function SprawlCalculator() {
               href="/sign-up"
               className={cn(buttonVariants({ size: "lg" }))}
             >
-              Start saving ${savings.toLocaleString()}/month
+              Start saving ${savings.toLocaleString("en-US")}/month
             </Link>
             <p className="mt-2 text-xs text-muted-foreground">
               14-day free trial · no credit card
