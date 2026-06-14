@@ -13,6 +13,7 @@ import { DeleteContactButton } from "./delete-button";
 import { FollowUpDatePicker } from "./follow-up-date-picker";
 import { InlineNotes } from "./inline-notes";
 import { ContactTags } from "./contact-tags";
+import { CopyButton } from "@/components/copy-button";
 import {
   ArrowLeft,
   Pencil,
@@ -227,12 +228,15 @@ export default async function ContactDetailPage({
             Email
           </p>
           {contact.email ? (
-            <a
-              href={`mailto:${contact.email}`}
-              className="text-blue-600 hover:underline text-sm"
-            >
-              {contact.email}
-            </a>
+            <div className="flex items-center gap-1.5">
+              <a
+                href={`mailto:${contact.email}`}
+                className="text-blue-600 hover:underline text-sm"
+              >
+                {contact.email}
+              </a>
+              <CopyButton value={contact.email} />
+            </div>
           ) : (
             <p>—</p>
           )}
