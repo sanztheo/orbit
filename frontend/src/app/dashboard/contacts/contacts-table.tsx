@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContactLogButton } from "./contact-log-button";
+import { SetFollowUpButton } from "./set-follow-up-button";
 
 type ContactType = "lead" | "customer" | "investor" | "advisor" | "partner";
 
@@ -478,11 +479,14 @@ export function ContactsTable({ contacts }: Props) {
                     );
                   })()}
                 </TableCell>
-                <TableCell className="w-8 pr-3">
-                  <ContactLogButton
-                    contactId={contact.id}
-                    contactName={contact.name}
-                  />
+                <TableCell className="pr-3">
+                  <div className="flex items-center gap-1">
+                    <SetFollowUpButton contactId={contact.id} />
+                    <ContactLogButton
+                      contactId={contact.id}
+                      contactName={contact.name}
+                    />
+                  </div>
                 </TableCell>
               </TableRow>
             );
