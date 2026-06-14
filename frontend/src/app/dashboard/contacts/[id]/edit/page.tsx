@@ -35,6 +35,7 @@ export default function EditContactPage() {
   const [company, setCompany] = useState("");
   const [notes, setNotes] = useState("");
   const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [twitterHandle, setTwitterHandle] = useState("");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -60,6 +61,7 @@ export default function EditContactPage() {
       setCompany(data.company ?? "");
       setNotes(data.notes ?? "");
       setLinkedinUrl(data.linkedinUrl ?? "");
+      setTwitterHandle(data.twitterHandle ?? "");
       setLoaded(true);
     }
     load();
@@ -82,6 +84,7 @@ export default function EditContactPage() {
           type,
           notes: notes.trim() || null,
           linkedinUrl: linkedinUrl.trim() || null,
+          twitterHandle: twitterHandle.trim() || null,
         },
         token,
       );
@@ -203,6 +206,18 @@ export default function EditContactPage() {
               value={linkedinUrl}
               onChange={(e) => setLinkedinUrl(e.target.value)}
               placeholder="https://linkedin.com/in/jane"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="twitter">X / Twitter handle</Label>
+            <Input
+              id="twitter"
+              value={twitterHandle}
+              onChange={(e) =>
+                setTwitterHandle(e.target.value.replace(/^@/, ""))
+              }
+              placeholder="janedoe"
             />
           </div>
 
