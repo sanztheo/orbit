@@ -320,10 +320,19 @@ export default async function ContactDetailPage({
         {contact.twitterHandle && (
           <div>
             <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-              <ExternalLink className="h-3 w-3" />
-              Twitter
+              <ExternalLink className="h-3 w-3" />X / Twitter
             </p>
-            <p>@{contact.twitterHandle}</p>
+            <div className="flex items-center gap-1.5">
+              <a
+                href={`https://x.com/${contact.twitterHandle}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 hover:underline text-sm"
+              >
+                @{contact.twitterHandle}
+              </a>
+              <CopyButton value={`https://x.com/${contact.twitterHandle}`} />
+            </div>
           </div>
         )}
         <InlineNotes contactId={contact.id} initialNotes={contact.notes} />
