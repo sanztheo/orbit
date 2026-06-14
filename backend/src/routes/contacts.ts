@@ -322,6 +322,8 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
         "fullname",
         "contact name",
         "display name",
+        "people",
+        "contact",
       ]);
       if (!name) {
         const first = col(row, ["first name", "firstname", "given name"]);
@@ -393,6 +395,15 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
           "x url",
         ]),
         lastContactedAt,
+        tags: (() => {
+          const raw = col(row, ["tags", "tag", "labels", "label"]);
+          if (!raw) return [];
+          return raw
+            .split(/[;,|]/)
+            .map((t) => t.trim().toLowerCase().replace(/\s+/g, "-"))
+            .filter((t) => t.length > 0 && t.length <= 50)
+            .slice(0, 20);
+        })(),
       });
       if (email) existingEmails.add(email.toLowerCase());
       imported++;
