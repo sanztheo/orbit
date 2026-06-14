@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CompanyCombobox } from "@/components/company-combobox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
@@ -182,11 +183,10 @@ export default function NewContactPage() {
           <div className="flex flex-col gap-4 border-t border-border pt-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="company">Company</Label>
-              <Input
+              <CompanyCombobox
                 id="company"
-                type="text"
                 value={company}
-                onChange={(e) => setCompany(e.target.value)}
+                onChange={setCompany}
                 placeholder="Acme Inc."
               />
             </div>
