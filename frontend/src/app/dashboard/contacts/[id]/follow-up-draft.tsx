@@ -5,6 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { parseAiError } from "@/lib/ai-error";
+import { AIQuotaLine } from "@/app/dashboard/ai-quota-context";
 
 interface Props {
   contactId: string;
@@ -61,6 +62,7 @@ export function FollowUpDraft({ contactId, contactName }: Props) {
             Claude reads conversation history → drafts a contextual email to{" "}
             {contactName}
           </p>
+          <AIQuotaLine />
         </div>
         <button
           onClick={generate}

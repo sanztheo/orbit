@@ -5,6 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { parseAiError } from "@/lib/ai-error";
+import { AIQuotaLine } from "@/app/dashboard/ai-quota-context";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -48,6 +49,7 @@ export function MeetingBrief({ contactId }: { contactId: string }) {
           <p className="text-xs text-muted-foreground mt-0.5">
             AI-generated context card before a call
           </p>
+          <AIQuotaLine />
         </div>
         {!brief && (
           <button

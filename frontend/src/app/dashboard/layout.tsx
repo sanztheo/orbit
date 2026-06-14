@@ -7,6 +7,7 @@ import { KeyboardShortcuts } from "./keyboard-shortcuts";
 import { ThemeToggle } from "./theme-toggle";
 import { GlobalSearch } from "./global-search";
 import { AiQuotaIndicator } from "./ai-quota-indicator";
+import { AIQuotaProvider } from "./ai-quota-context";
 import { QuickLog } from "./quick-log";
 import { LogButton } from "./log-button";
 import { ShortcutsHelp } from "./shortcuts-help";
@@ -127,7 +128,7 @@ export default async function DashboardLayout({
 
       {/* Main content — extra top + bottom padding on mobile for bars */}
       <main className="flex flex-1 flex-col overflow-auto pt-12 pb-16 md:pt-0 md:pb-0">
-        {children}
+        <AIQuotaProvider>{children}</AIQuotaProvider>
       </main>
 
       <MobileFab />

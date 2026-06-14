@@ -5,6 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { parseAiError } from "@/lib/ai-error";
+import { AIQuotaLine } from "@/app/dashboard/ai-quota-context";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
@@ -75,6 +76,7 @@ export function ColdStart({ contactId }: Props) {
           <p className="text-xs text-muted-foreground mt-0.5">
             AI angle + draft for first outreach
           </p>
+          <AIQuotaLine />
         </div>
         <div className="flex items-center gap-2">
           {brief && (
