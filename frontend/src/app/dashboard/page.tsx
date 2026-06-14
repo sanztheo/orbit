@@ -129,7 +129,7 @@ function StatCard({
   return (
     <Link href={href} className="block">
       <Card
-        className={`transition-colors hover:bg-muted/40 ${urgent && value > 0 ? "border-red-200" : ""}`}
+        className={`transition-colors hover:bg-muted/40 ${urgent && value > 0 ? "border-red-200 dark:border-red-900/60" : ""}`}
       >
         <CardHeader className="pb-1 pt-4 px-4">
           {icon && <div className="mb-1">{icon}</div>}

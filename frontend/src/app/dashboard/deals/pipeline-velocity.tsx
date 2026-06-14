@@ -69,7 +69,7 @@ export function PipelineVelocity() {
         <span>{open ? "▾" : "▸"}</span>
         Pipeline velocity
         {data && data.winRate !== null && (
-          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+          <span className="rounded-full bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-400">
             {data.winRate}% win rate
           </span>
         )}
