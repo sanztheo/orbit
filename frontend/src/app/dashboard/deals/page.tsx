@@ -54,6 +54,16 @@ const STAGE_ORDER: DealStage[] = [
   "closed_lost",
 ];
 
+const STAGE_DEFAULT_PROBABILITY: Record<DealStage, number> = {
+  prospect: 10,
+  contacted: 20,
+  meeting: 40,
+  proposal: 60,
+  negotiation: 80,
+  closed_won: 100,
+  closed_lost: 0,
+};
+
 const STAGE_LABELS: Record<PipelineType, Record<DealStage, string>> = {
   sales: {
     prospect: "Prospect",
@@ -144,11 +154,24 @@ export default function DealsPage() {
     if (deal.stage === newStage) return;
     const token = await getToken();
     if (!token) return;
+    // Auto-set probability when deal has none yet
+    const autoProbability =
+      deal.probability == null || deal.probability === 0
+        ? STAGE_DEFAULT_PROBABILITY[newStage]
+        : undefined;
+
     // Optimistic update
     setAllDeals((prev) =>
       prev.map((d) =>
         d.id === deal.id
-          ? { ...d, stage: newStage, stageChangedAt: new Date().toISOString() }
+          ? {
+              ...d,
+              stage: newStage,
+              stageChangedAt: new Date().toISOString(),
+              ...(autoProbability != null
+                ? { probability: autoProbability }
+                : {}),
+            }
           : d,
       ),
     );
@@ -160,7 +183,10 @@ export default function DealsPage() {
     try {
       await apiClient.patch(
         `/api/deals/${deal.id}`,
-        { stage: newStage },
+        {
+          stage: newStage,
+          ...(autoProbability != null ? { probability: autoProbability } : {}),
+        },
         token,
       );
       if (newStage === "closed_won") {
