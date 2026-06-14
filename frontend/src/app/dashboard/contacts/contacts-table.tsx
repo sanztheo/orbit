@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import {
   Table,
@@ -154,7 +154,22 @@ interface Props {
 
 export function ContactsTable({ contacts }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { getToken } = useAuth();
+
+  const activeTag = searchParams.get("tag");
+
+  function tagHref(tag: string): string {
+    const qs = new URLSearchParams(searchParams.toString());
+    if (qs.get("tag") === tag) {
+      qs.delete("tag");
+    } else {
+      qs.set("tag", tag);
+    }
+    qs.delete("page");
+    return `/dashboard/contacts?${qs.toString()}`;
+  }
+
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -243,12 +258,14 @@ export function ContactsTable({ contacts }: Props) {
                 {contact.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {contact.tags.slice(0, 3).map((tag) => (
-                      <span
+                      <Link
                         key={tag}
-                        className="text-[10px] bg-muted rounded-full px-1.5 py-0.5 text-muted-foreground"
+                        href={tagHref(tag)}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`text-[10px] rounded-full px-1.5 py-0.5 transition-colors ${activeTag === tag ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"}`}
                       >
                         {tag}
-                      </span>
+                      </Link>
                     ))}
                     {contact.tags.length > 3 && (
                       <span className="text-[10px] text-muted-foreground">
@@ -361,12 +378,14 @@ export function ContactsTable({ contacts }: Props) {
                   {contact.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {contact.tags.slice(0, 4).map((tag) => (
-                        <span
+                        <Link
                           key={tag}
-                          className="text-[10px] bg-muted rounded-full px-1.5 py-0.5 text-muted-foreground"
+                          href={tagHref(tag)}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`text-[10px] rounded-full px-1.5 py-0.5 transition-colors ${activeTag === tag ? "bg-foreground text-background" : "bg-muted text-muted-foreground hover:bg-muted-foreground/20"}`}
                         >
                           {tag}
-                        </span>
+                        </Link>
                       ))}
                       {contact.tags.length > 4 && (
                         <span className="text-[10px] text-muted-foreground">

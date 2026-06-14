@@ -30,3 +30,4 @@ backend/drizzle/
 coverage
 .playwright-mcp/
 frontend/test-results/
+.gstack/
