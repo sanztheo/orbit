@@ -301,14 +301,20 @@ export default async function ContactDetailPage({
               <Link2 className="h-3 w-3" />
               LinkedIn
             </p>
-            <a
-              href={contact.linkedinUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 hover:underline"
-            >
-              {contact.linkedinUrl}
-            </a>
+            <div className="flex items-center gap-1.5">
+              <a
+                href={contact.linkedinUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 hover:underline text-sm truncate max-w-[160px]"
+              >
+                {contact.linkedinUrl.replace(
+                  /^https?:\/\/(www\.)?linkedin\.com\/in\//,
+                  "",
+                )}
+              </a>
+              <CopyButton value={contact.linkedinUrl} />
+            </div>
           </div>
         )}
         {contact.twitterHandle && (

@@ -64,6 +64,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
     const excludeId = c.req.query("excludeId");
     const tag = c.req.query("tag");
     const hasFollowUp = c.req.query("hasFollowUp") === "1";
+    const overdueFollowUp = c.req.query("overdueFollowUp") === "1";
     const limitParam = c.req.query("limit");
     const pageParam = c.req.query("page");
     const pageSize = limitParam
@@ -97,6 +98,9 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
     const followUpFilter = hasFollowUp
       ? isNotNull(contacts.nextFollowUpAt)
       : undefined;
+    const overdueFollowUpFilter = overdueFollowUp
+      ? lt(contacts.nextFollowUpAt, new Date())
+      : undefined;
 
     const orderBy = (() => {
       switch (sort) {
@@ -126,6 +130,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       excludeFilter,
       tagFilter,
       followUpFilter,
+      overdueFollowUpFilter,
     );
 
     let query = db

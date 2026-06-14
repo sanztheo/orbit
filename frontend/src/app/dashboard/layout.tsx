@@ -12,6 +12,7 @@ import { LogButton } from "./log-button";
 import { ShortcutsHelp } from "./shortcuts-help";
 import { MobileFab } from "./mobile-fab";
 import { ActivityRefresher } from "./activity-refresher";
+import { FollowUpBadge } from "./follow-up-badge";
 import {
   LayoutDashboard,
   Users,
@@ -102,6 +103,7 @@ export default async function DashboardLayout({
               >
                 <Icon className="h-4 w-4 mr-2" />
                 {item.label}
+                {item.href === "/dashboard/follow-ups" && <FollowUpBadge />}
               </Link>
             );
           })}
