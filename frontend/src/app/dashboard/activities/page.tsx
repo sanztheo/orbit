@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Mail,
@@ -15,6 +16,8 @@ import {
   Link2,
   Search,
   Clock,
+  PenLine,
+  Activity as ActivityIcon,
 } from "lucide-react";
 
 type ActivityType = "email" | "call" | "meeting" | "note" | "linkedin";
@@ -101,24 +104,34 @@ export default function ActivitiesPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<ActivityType | "all">("all");
   const [period, setPeriod] = useState<Period>("month");
+  const [tick, setTick] = useState(0);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const token = await getToken();
+    const dateFrom = periodDateFrom(period);
+    const qs = dateFrom ? `?dateFrom=${encodeURIComponent(dateFrom)}` : "";
+    const res = await fetch(`${API_URL}/api/activities${qs}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      const json: { data: Activity[] } = await res.json();
+      setActivities(json.data);
+    }
+    setLoading(false);
+  }, [getToken, period]);
 
   useEffect(() => {
-    async function load() {
-      setLoading(true);
-      const token = await getToken();
-      const dateFrom = periodDateFrom(period);
-      const qs = dateFrom ? `?dateFrom=${encodeURIComponent(dateFrom)}` : "";
-      const res = await fetch(`${API_URL}/api/activities${qs}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (res.ok) {
-        const json: { data: Activity[] } = await res.json();
-        setActivities(json.data);
-      }
-      setLoading(false);
-    }
     load();
-  }, [getToken, period]);
+  }, [load, tick]);
+
+  useEffect(() => {
+    function onLogged() {
+      setTick((n) => n + 1);
+    }
+    window.addEventListener("orbit:activity-logged", onLogged);
+    return () => window.removeEventListener("orbit:activity-logged", onLogged);
+  }, []);
 
   const filtered = activities.filter((a) => {
     if (typeFilter !== "all" && a.type !== typeFilter) return false;
@@ -135,14 +148,31 @@ export default function ActivitiesPage() {
 
   return (
     <div className="flex flex-col gap-5 p-6 max-w-2xl">
-      <div>
-        <h1 className="flex items-center gap-2 text-xl font-semibold">
-          <Clock className="h-5 w-5 text-muted-foreground" />
-          Activity History
-        </h1>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          All logged calls, emails, meetings and notes across contacts
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="flex items-center gap-2 text-xl font-semibold">
+            <Clock className="h-5 w-5 text-muted-foreground" />
+            Activity History
+          </h1>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            All logged calls, emails, meetings and notes across contacts
+          </p>
+        </div>
+        <button
+          onClick={() =>
+            window.dispatchEvent(new CustomEvent("orbit:quick-log"))
+          }
+          className={cn(
+            buttonVariants({ size: "sm" }),
+            "shrink-0 flex items-center gap-1.5",
+          )}
+        >
+          <PenLine className="h-3.5 w-3.5" />
+          Log activity
+          <kbd className="ml-1 hidden rounded border border-primary/30 bg-primary/10 px-1 text-[10px] font-mono sm:inline">
+            L
+          </kbd>
+        </button>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -199,10 +229,40 @@ export default function ActivitiesPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border py-16 text-center text-muted-foreground text-sm">
-          {search || typeFilter !== "all" || period !== "all"
-            ? "No activities match your filter"
-            : "No activities logged yet — use L to log one"}
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center px-4">
+          {activities.length > 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No activities match your filter
+            </p>
+          ) : (
+            <>
+              <ActivityIcon className="h-10 w-10 text-muted-foreground/30" />
+              <div>
+                <p className="font-medium text-sm">No activities logged yet</p>
+                <p className="mt-1 text-xs text-muted-foreground max-w-xs">
+                  Log calls, emails, meetings, and notes to build a complete
+                  relationship history with every contact.
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                <button
+                  onClick={() =>
+                    window.dispatchEvent(new CustomEvent("orbit:quick-log"))
+                  }
+                  className={buttonVariants({ size: "sm" })}
+                >
+                  <PenLine className="mr-1.5 h-4 w-4" />
+                  Log first activity
+                </button>
+                <Link
+                  href="/dashboard/contacts"
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  Browse contacts
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       ) : (
         <div className="flex flex-col gap-2">
