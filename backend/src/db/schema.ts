@@ -108,6 +108,7 @@ export const contacts = pgTable(
     cadenceDays: integer("cadence_days"),
     priorityScore: integer("priority_score").default(0),
     tags: text("tags").array().notNull().default([]),
+    archivedAt: timestamp("archived_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
   },

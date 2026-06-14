@@ -43,6 +43,7 @@ export interface ContactRow {
   cadenceDays: number | null;
   priorityScore: number | null;
   tags: string[];
+  archivedAt: string | null;
   createdAt: string;
 }
 
@@ -303,7 +304,17 @@ export function ContactsTable({ contacts }: Props) {
               className="flex items-start justify-between rounded-lg border border-border p-3 hover:bg-muted/40 transition-colors"
             >
               <div className="min-w-0">
-                <p className="font-medium truncate">{contact.name}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="font-medium truncate">{contact.name}</p>
+                  {contact.archivedAt && (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] shrink-0 text-muted-foreground"
+                    >
+                      archived
+                    </Badge>
+                  )}
+                </div>
                 {contact.email && (
                   <p className="text-xs text-muted-foreground truncate">
                     {contact.email}
@@ -419,12 +430,22 @@ export function ContactsTable({ contacts }: Props) {
                   />
                 </TableCell>
                 <TableCell className="font-medium">
-                  <Link
-                    href={`/dashboard/contacts/${contact.id}`}
-                    className="hover:underline"
-                  >
-                    {contact.name}
-                  </Link>
+                  <div className="flex items-center gap-1.5">
+                    <Link
+                      href={`/dashboard/contacts/${contact.id}`}
+                      className="hover:underline"
+                    >
+                      {contact.name}
+                    </Link>
+                    {contact.archivedAt && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] text-muted-foreground"
+                      >
+                        archived
+                      </Badge>
+                    )}
+                  </div>
                   {contact.email && (
                     <a
                       href={`mailto:${contact.email}`}

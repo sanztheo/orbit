@@ -37,6 +37,7 @@ export default async function ContactsPage({
     sort?: string;
     tag?: string;
     page?: string;
+    archived?: string;
   }>;
 }) {
   const { getToken } = await auth();
@@ -48,8 +49,10 @@ export default async function ContactsPage({
     sort,
     tag,
     page: pageParam,
+    archived,
   } = await searchParams;
   const page = Math.max(parseInt(pageParam ?? "1", 10) || 1, 1);
+  const showArchived = archived === "1";
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
   const qs = new URLSearchParams();
@@ -58,6 +61,7 @@ export default async function ContactsPage({
   if (stale === "1") qs.set("stale", "1");
   if (sort) qs.set("sort", sort);
   if (tag) qs.set("tag", tag);
+  if (showArchived) qs.set("includeArchived", "1");
   qs.set("limit", String(PAGE_SIZE));
   qs.set("page", String(page));
 
@@ -149,12 +153,27 @@ export default async function ContactsPage({
         </div>
       )}
 
+      <div className="flex justify-end">
+        <Link
+          href={
+            showArchived
+              ? `/dashboard/contacts?${new URLSearchParams({ ...(search && { search }), ...(type && { type }), ...(sort && { sort }), ...(tag && { tag }) }).toString()}`
+              : `/dashboard/contacts?${new URLSearchParams({ ...(search && { search }), ...(type && { type }), ...(sort && { sort }), ...(tag && { tag }), archived: "1" }).toString()}`
+          }
+          className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+        >
+          {showArchived ? "← Hide archived" : "Show archived"}
+        </Link>
+      </div>
+
       {contacts.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed py-20 text-center">
           <p className="text-muted-foreground">
             {search || type || tag
               ? "No contacts match your filter"
-              : "No contacts yet — import from CSV or add one manually"}
+              : showArchived
+                ? "No archived contacts"
+                : "No contacts yet — import from CSV or add one manually"}
           </p>
           {!search && !type && !tag && (
             <div className="flex gap-2">

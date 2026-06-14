@@ -10,6 +10,7 @@ import { CadencePicker } from "./cadence-picker";
 import { ActivityLog } from "./activity-log";
 import { ColdStart } from "./cold-start";
 import { DeleteContactButton } from "./delete-button";
+import { ArchiveContactButton } from "./archive-button";
 import { FollowUpDatePicker } from "./follow-up-date-picker";
 import { InlineNotes } from "./inline-notes";
 import { ContactTags } from "./contact-tags";
@@ -43,6 +44,7 @@ interface Contact {
   cadenceDays: number | null;
   priorityScore: number | null;
   tags: string[];
+  archivedAt: string | null;
   createdAt: string;
 }
 
@@ -152,6 +154,10 @@ export default async function ContactDetailPage({
         </div>
         <div className="flex items-center gap-2">
           <DeleteContactButton contactId={contact.id} />
+          <ArchiveContactButton
+            contactId={contact.id}
+            isArchived={!!contact.archivedAt}
+          />
           <Link
             href={`/dashboard/contacts/${contact.id}/edit`}
             className={buttonVariants({ variant: "outline", size: "sm" })}
@@ -161,6 +167,21 @@ export default async function ContactDetailPage({
           </Link>
         </div>
       </div>
+
+      {contact.archivedAt && (
+        <div className="rounded-lg border border-muted bg-muted/40 px-4 py-3 text-sm text-muted-foreground flex items-center gap-2">
+          <span className="text-base">📦</span>
+          <span>
+            Archived{" "}
+            {new Date(contact.archivedAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })}{" "}
+            — this contact is hidden from the main list.
+          </span>
+        </div>
+      )}
 
       {/* Staleness alert */}
       {isStale && (

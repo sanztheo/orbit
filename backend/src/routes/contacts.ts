@@ -45,6 +45,12 @@ const updateSchema = createSchema.partial().extend({
   nextFollowUpAt: toDate.optional(),
   cadenceDays: z.number().int().min(1).max(365).nullable().optional(),
   priorityScore: z.number().int().min(0).optional(),
+  archivedAt: z
+    .string()
+    .datetime()
+    .transform((s) => new Date(s))
+    .nullable()
+    .optional(),
 });
 
 export const contactsRouter = new Hono<WorkspaceEnv>()
@@ -60,6 +66,7 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       | undefined;
 
     const stale = c.req.query("stale") === "1";
+    const includeArchived = c.req.query("includeArchived") === "1";
     const sort = c.req.query("sort") ?? "name";
     const company = c.req.query("company");
     const excludeId = c.req.query("excludeId");
@@ -122,8 +129,13 @@ export const contactsRouter = new Hono<WorkspaceEnv>()
       }
     })();
 
+    const archivedFilter = includeArchived
+      ? undefined
+      : isNull(contacts.archivedAt);
+
     const whereClause = and(
       eq(contacts.workspaceId, workspaceId),
+      archivedFilter,
       searchFilter,
       typeFilter,
       staleFilter,
