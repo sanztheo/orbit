@@ -24,6 +24,7 @@ import {
   CheckSquare,
   Trash2,
   Tag,
+  Archive,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ContactLogButton } from "./contact-log-button";
@@ -287,6 +288,26 @@ export function ContactsTable({ contacts }: Props) {
       ),
     );
     setBulkFollowUpMode(false);
+    setSelected(new Set());
+    startTransition(() => router.refresh());
+  }
+
+  async function applyBulkArchive() {
+    const token = await getToken();
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+    const archivedAt = new Date().toISOString();
+    await Promise.all(
+      [...selected].map((id) =>
+        fetch(`${apiUrl}/api/contacts/${id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ archivedAt }),
+        }),
+      ),
+    );
     setSelected(new Set());
     startTransition(() => router.refresh());
   }
@@ -681,6 +702,15 @@ export function ContactsTable({ contacts }: Props) {
               >
                 <CalendarPlus className="h-4 w-4 mr-2" />
                 Follow-up
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={applyBulkArchive}
+                disabled={isPending}
+              >
+                <Archive className="h-4 w-4 mr-2" />
+                Archive
               </Button>
               <Button
                 size="sm"
