@@ -6,6 +6,34 @@ P0 = must ship for launch | P1 = ship within 60 days | P2 = ship within 90 days 
 
 ---
 
+## 🔥 Fresh from Research (Reddit/HN/Reviews — June 2026)
+
+[P0] [TODO] Fix dark mode — systematic audit using shadcn CSS variable conventions; many components use raw Tailwind colors (blue-500, red-600) that don't adapt. Every section needs `dark:` variants or switch to semantic tokens (foreground, muted-foreground, etc.) — "dark mode is a carnage" reported visually.
+
+[P1] [TODO] One-click activity logging from anywhere — founders abandon CRMs because logging takes too many steps. Add floating log button in dashboard header + keyboard shortcut visible everywhere (not just activities page). Source: folk review "I make notes after each interaction but never come back to the tool."
+
+[P1] [TODO] Smart "contacts going cold" weekly digest — email (via Resend) listing the 5 contacts most at risk of going cold this week, with 1-click log buttons. Source: HN "things slip and you lose clients — a lead asks for pricing but you forget to follow up." Biggest stated pain across all reviews.
+
+[P1] [TODO] "What did they tell me?" — AI memory search across notes, activity bodies, and deal descriptions. Type "who mentioned enterprise pricing" → finds the right contact. Source: HN collinmcnulty: "my #1 challenge isn't reminders to call people, it's remembering things people told me."
+
+[P1] [TODO] Conversational contact query — "who do I know in healthcare who hasn't heard from me in 30 days?" — extends network-search with time/staleness filters. Source: HN esafak: "allow me to enrich contacts with tags and query them with a conversational interface."
+
+[P1] [TODO] Smart follow-up nudges (not firehose) — surface 3 contacts to reach out to today based on relationship health + recency, not "daily reminder for every contact." Source: HN aeturnum: "daily reminders of every relationship is less of a promise and more of a threat."
+
+[P2] [TODO] Email open/click tracking — founders using Orbit for investor outreach need to know if their email was read. Integrate with Resend/Mailgun for tracked sends. Source: folk Capterra review — "missing number and timestamps of email opens/clicks, can't automate follow-ups based on opens."
+
+[P2] [TODO] Native mobile PWA improvements — folk users cite "no mobile app is a struggle for me, using a web browser all the time." Improve PWA install experience: service worker for offline viewing, home screen shortcuts, push notifications for overdue follow-ups.
+
+[P2] [TODO] LinkedIn CSV import — Clay and folk both parse LinkedIn connections export (name, company, position, connected date). Orbit should auto-map LinkedIn export fields and bulk-import without manual field mapping. Source: Clay/folk churned users switching to alternatives.
+
+[P2] [TODO] Contact enrichment cache — Clay's fatal flaw is burning credits on re-enrichment. Design `enrichment_cache` table (contact_id, provider, data JSONB, fetched_at, expires_at) so enrichment results survive sessions. Source: Clay review "cheaper to enrich with third-party APIs than Clay's credit system."
+
+[P3] [TODO] Deal-level email threading — link email conversations to deals, not just contacts. Show full email thread in deal detail. Source: Pipedrive reviews "email sync is paywalled, can't see conversation history without upgrading."
+
+[P3] [TODO] Webhook-based activity auto-log from Gmail — zero-friction capture: when a thread with a tracked contact hits Sent, auto-create activity (type=email, subject=thread subject). Source: Dex founder "I make notes after each interaction but never come back to the tool" — auto-capture eliminates the decision.
+
+---
+
 ## Infrastructure — Backend/Frontend Split
 
 [P0] [DONE] Create `backend/` — Hono.js REST API on :3001 with Clerk JWT middleware, CORS, contacts/deals/tasks CRUD, Drizzle ORM, full TypeScript (typecheck clean).
