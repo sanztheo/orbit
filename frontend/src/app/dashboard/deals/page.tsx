@@ -6,7 +6,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { X } from "lucide-react";
+import { X, Briefcase, Plus } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { PipelineVelocity } from "./pipeline-velocity";
@@ -469,14 +469,40 @@ export default function DealsPage() {
       )}
 
       {deals.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-          <p className="text-muted-foreground">No {activePipeline} deals yet</p>
-          <Link
-            href="/dashboard/deals/new"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            Add your first deal
-          </Link>
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center px-4">
+          <Briefcase className="h-10 w-10 text-muted-foreground/30" />
+          <div>
+            <p className="font-medium text-sm">No {activePipeline} deals yet</p>
+            <p className="mt-1 text-xs text-muted-foreground max-w-xs">
+              {activePipeline === "fundraising"
+                ? "Track every investor relationship from first intro to term sheet — in one place."
+                : activePipeline === "partnership"
+                  ? "Track partnership conversations from first contact to signed agreement."
+                  : "Track every opportunity from first touch to closed deal."}
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link
+              href="/dashboard/deals/new"
+              className={buttonVariants({ size: "sm" })}
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              Add first deal
+            </Link>
+            <Link
+              href="/dashboard/contacts"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Browse contacts
+            </Link>
+            <Link
+              href="/dashboard/contacts/new"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              Add a contact first
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="flex gap-3 overflow-x-auto pb-4">

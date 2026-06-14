@@ -7,7 +7,14 @@ import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search, BarChart2, CheckCircle2, Circle } from "lucide-react";
+import {
+  Search,
+  BarChart2,
+  CheckCircle2,
+  Circle,
+  CheckSquare,
+  Plus,
+} from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 
 type TaskStatus = "todo" | "in_progress" | "done" | "cancelled";
@@ -213,14 +220,35 @@ export default function TasksPage() {
       )}
 
       {tasks.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-border py-16 text-center">
-          <p className="text-muted-foreground">No tasks yet</p>
-          <Link
-            href="/dashboard/tasks/new"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
-          >
-            Add your first task
-          </Link>
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-border py-16 text-center px-4">
+          <CheckSquare className="h-10 w-10 text-muted-foreground/30" />
+          <div>
+            <p className="font-medium text-sm">Nothing on your plate yet</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Break down deals and contacts into concrete next actions.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link
+              href="/dashboard/tasks/new"
+              className={buttonVariants({ size: "sm" })}
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              New task
+            </Link>
+            <Link
+              href="/dashboard/contacts"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              Browse contacts
+            </Link>
+            <Link
+              href="/dashboard/deals"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              View deals
+            </Link>
+          </div>
         </div>
       ) : filteredTasks.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">

@@ -167,29 +167,47 @@ export default async function ContactsPage({
       </div>
 
       {contacts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed py-20 text-center">
-          <p className="text-muted-foreground">
-            {search || type || tag
-              ? "No contacts match your filter"
-              : showArchived
+        <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed py-20 text-center px-4">
+          {search || type || tag || showArchived ? (
+            <p className="text-sm text-muted-foreground">
+              {showArchived
                 ? "No archived contacts"
-                : "No contacts yet — import from CSV or add one manually"}
-          </p>
-          {!search && !type && !tag && (
-            <div className="flex gap-2">
-              <Link
-                href="/dashboard/contacts/new"
-                className={buttonVariants({ variant: "default" })}
-              >
-                Add contact
-              </Link>
-              <Link
-                href="/dashboard/contacts/import"
-                className={buttonVariants({ variant: "outline" })}
-              >
-                Import CSV
-              </Link>
-            </div>
+                : "No contacts match your filter"}
+            </p>
+          ) : (
+            <>
+              <Users className="h-10 w-10 text-muted-foreground/30" />
+              <div>
+                <p className="font-medium text-sm">No contacts yet</p>
+                <p className="mt-1 text-xs text-muted-foreground max-w-xs">
+                  Orbit is the single place for your customers, investors, and
+                  partners. Add your first contact to get started.
+                </p>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Link
+                  href="/dashboard/contacts/new"
+                  className={buttonVariants({ size: "sm" })}
+                >
+                  <UserPlus className="mr-1.5 h-4 w-4" />
+                  Add contact
+                </Link>
+                <Link
+                  href="/dashboard/contacts/import"
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  <Upload className="mr-1.5 h-4 w-4" />
+                  Import CSV
+                </Link>
+                <Link
+                  href="/dashboard/contacts/from-signature"
+                  className={buttonVariants({ variant: "outline", size: "sm" })}
+                >
+                  <Sparkles className="mr-1.5 h-4 w-4" />
+                  From email signature
+                </Link>
+              </div>
+            </>
           )}
         </div>
       ) : (
