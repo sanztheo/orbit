@@ -56,6 +56,30 @@ const TYPES: { value: ActivityType | "all"; label: string }[] = [
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
+type Period = "all" | "today" | "week" | "month";
+
+const PERIODS: { value: Period; label: string }[] = [
+  { value: "today", label: "Today" },
+  { value: "week", label: "This week" },
+  { value: "month", label: "This month" },
+  { value: "all", label: "All time" },
+];
+
+function periodDateFrom(period: Period): string | null {
+  if (period === "all") return null;
+  const d = new Date(Date.now());
+  if (period === "today") {
+    d.setHours(0, 0, 0, 0);
+  } else if (period === "week") {
+    d.setDate(d.getDate() - 7);
+    d.setHours(0, 0, 0, 0);
+  } else if (period === "month") {
+    d.setDate(d.getDate() - 30);
+    d.setHours(0, 0, 0, 0);
+  }
+  return d.toISOString();
+}
+
 function relativeTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const days = Math.floor(diff / 86_400_000);
@@ -76,11 +100,15 @@ export default function ActivitiesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<ActivityType | "all">("all");
+  const [period, setPeriod] = useState<Period>("month");
 
   useEffect(() => {
     async function load() {
+      setLoading(true);
       const token = await getToken();
-      const res = await fetch(`${API_URL}/api/activities`, {
+      const dateFrom = periodDateFrom(period);
+      const qs = dateFrom ? `?dateFrom=${encodeURIComponent(dateFrom)}` : "";
+      const res = await fetch(`${API_URL}/api/activities${qs}`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
@@ -90,7 +118,7 @@ export default function ActivitiesPage() {
       setLoading(false);
     }
     load();
-  }, [getToken]);
+  }, [getToken, period]);
 
   const filtered = activities.filter((a) => {
     if (typeFilter !== "all" && a.type !== typeFilter) return false;
@@ -130,6 +158,23 @@ export default function ActivitiesPage() {
         </div>
 
         <div className="flex flex-wrap gap-1.5">
+          {PERIODS.map((p) => (
+            <button
+              key={p.value}
+              onClick={() => setPeriod(p.value)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                period === p.value
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border hover:border-foreground/40",
+              )}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap gap-1.5">
           {TYPES.map((t) => (
             <button
               key={t.value}
@@ -155,7 +200,7 @@ export default function ActivitiesPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border py-16 text-center text-muted-foreground text-sm">
-          {search || typeFilter !== "all"
+          {search || typeFilter !== "all" || period !== "all"
             ? "No activities match your filter"
             : "No activities logged yet — use L to log one"}
         </div>

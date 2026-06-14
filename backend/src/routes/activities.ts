@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, desc } from "drizzle-orm";
+import { and, eq, desc, gte, lte } from "drizzle-orm";
 import { db, activities, contacts } from "../db/index.js";
 import { generateId } from "../lib/ids.js";
 import type { WorkspaceEnv } from "../middleware/workspace.js";
@@ -24,10 +24,14 @@ export const activitiesRouter = new Hono<WorkspaceEnv>()
     const workspaceId = c.get("workspaceId");
     const contactId = c.req.query("contactId");
     const dealId = c.req.query("dealId");
+    const dateFrom = c.req.query("dateFrom");
+    const dateTo = c.req.query("dateTo");
 
     const filters = [eq(activities.workspaceId, workspaceId)];
     if (contactId) filters.push(eq(activities.contactId, contactId));
     if (dealId) filters.push(eq(activities.dealId, dealId));
+    if (dateFrom) filters.push(gte(activities.occurredAt, new Date(dateFrom)));
+    if (dateTo) filters.push(lte(activities.occurredAt, new Date(dateTo)));
 
     const rows = await db
       .select({
