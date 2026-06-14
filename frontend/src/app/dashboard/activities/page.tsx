@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ActivityTrendChart } from "./activity-trend-chart";
 import {
   Mail,
   Phone,
@@ -320,6 +321,8 @@ export default function ActivitiesPage() {
           )}
         </div>
       )}
+
+      <ActivityTrendChart />
     </div>
   );
 }
