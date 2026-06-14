@@ -84,6 +84,16 @@ interface UpcomingContact {
   nextFollowUpAt: string;
 }
 
+interface ClosingDeal {
+  id: string;
+  title: string;
+  stage: string;
+  value: number | null;
+  expectedCloseAt: string;
+  contactId: string | null;
+  contactName: string | null;
+}
+
 interface ActionItems {
   stallingDeals: StallingDeal[];
   coldContacts: ColdContact[];
@@ -91,6 +101,7 @@ interface ActionItems {
   atRiskDeals: AtRiskDeal[];
   upcomingFollowUps: UpcomingContact[];
   missedFollowUps: UpcomingContact[];
+  closingThisMonth: ClosingDeal[];
 }
 
 function daysSince(iso: string | null): number {
@@ -409,6 +420,7 @@ export default function DashboardPage() {
     atRiskDeals: [],
     upcomingFollowUps: [],
     missedFollowUps: [],
+    closingThisMonth: [],
   };
 
   if (!loading && !offline && s.totalContacts === 0) {
@@ -750,6 +762,58 @@ export default function DashboardPage() {
                     Done
                   </button>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {a.closingThisMonth.length > 0 && (
+        <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/20 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Trophy className="h-4 w-4 text-emerald-600" />
+            <h2 className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
+              Closing This Month
+            </h2>
+            <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+              {a.closingThisMonth.length}
+            </span>
+          </div>
+          <div className="flex flex-col gap-2">
+            {a.closingThisMonth.map((deal) => {
+              const daysLeft = Math.floor(
+                (new Date(deal.expectedCloseAt).getTime() - Date.now()) /
+                  86_400_000,
+              );
+              return (
+                <Link
+                  key={deal.id}
+                  href={`/dashboard/deals/${deal.id}`}
+                  className="flex items-center gap-2 rounded-lg border border-emerald-200 dark:border-emerald-800 bg-card px-3 py-2 text-sm hover:opacity-80 transition-opacity"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{deal.title}</p>
+                    {deal.contactName && (
+                      <p className="text-xs text-muted-foreground truncate">
+                        {deal.contactName}
+                      </p>
+                    )}
+                  </div>
+                  {deal.value != null && (
+                    <span className="shrink-0 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                      ${deal.value.toLocaleString("en-US")}
+                    </span>
+                  )}
+                  <span
+                    className={`shrink-0 text-xs font-medium ${daysLeft <= 7 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}
+                  >
+                    {daysLeft === 0
+                      ? "today"
+                      : daysLeft === 1
+                        ? "tomorrow"
+                        : `${daysLeft}d left`}
+                  </span>
+                </Link>
               );
             })}
           </div>

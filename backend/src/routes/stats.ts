@@ -24,6 +24,7 @@ export const statsRouter = new Hono<WorkspaceEnv>()
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
     const now = new Date();
     const sevenDaysFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     const [
       stallingDealsList,
@@ -32,6 +33,7 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       atRiskDealsList,
       upcomingFollowUpsList,
       missedFollowUpsList,
+      closingThisMonthList,
     ] = await Promise.all([
       db
         .select({
@@ -155,6 +157,32 @@ export const statsRouter = new Hono<WorkspaceEnv>()
         )
         .orderBy(desc(contacts.nextFollowUpAt))
         .limit(5),
+
+      // Deals closing within 30 days (still active)
+      db
+        .select({
+          id: deals.id,
+          title: deals.title,
+          stage: deals.stage,
+          value: deals.value,
+          expectedCloseAt: deals.expectedCloseAt,
+          contactId: deals.contactId,
+          contactName: contacts.name,
+        })
+        .from(deals)
+        .leftJoin(contacts, eq(deals.contactId, contacts.id))
+        .where(
+          and(
+            eq(deals.workspaceId, workspaceId),
+            ne(deals.stage, "closed_won"),
+            ne(deals.stage, "closed_lost"),
+            isNotNull(deals.expectedCloseAt),
+            gte(deals.expectedCloseAt, now),
+            lt(deals.expectedCloseAt, thirtyDaysFromNow),
+          ),
+        )
+        .orderBy(asc(deals.expectedCloseAt))
+        .limit(5),
     ]);
 
     return c.json({
@@ -164,6 +192,7 @@ export const statsRouter = new Hono<WorkspaceEnv>()
       atRiskDeals: atRiskDealsList,
       upcomingFollowUps: upcomingFollowUpsList,
       missedFollowUps: missedFollowUpsList,
+      closingThisMonth: closingThisMonthList,
     });
   })
   .get("/", async (c) => {
