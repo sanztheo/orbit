@@ -18,6 +18,7 @@ import {
   ArrowLeft,
   Pencil,
   Mail,
+  Phone,
   Building2,
   Clock,
   Calendar,
@@ -31,6 +32,7 @@ interface Contact {
   id: string;
   name: string;
   email: string | null;
+  phone: string | null;
   company: string | null;
   type: string;
   notes: string | null;
@@ -239,6 +241,25 @@ export default async function ContactDetailPage({
             </div>
           ) : (
             <p>—</p>
+          )}
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+            <Phone className="h-3 w-3" />
+            Phone
+          </p>
+          {contact.phone ? (
+            <div className="flex items-center gap-1.5">
+              <a
+                href={`tel:${contact.phone}`}
+                className="text-sm hover:underline"
+              >
+                {contact.phone}
+              </a>
+              <CopyButton value={contact.phone} />
+            </div>
+          ) : (
+            <p className="text-sm">—</p>
           )}
         </div>
         <div>

@@ -30,6 +30,7 @@ export default function EditContactPage() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [type, setType] = useState<ContactType>("lead");
   const [company, setCompany] = useState("");
   const [notes, setNotes] = useState("");
@@ -54,6 +55,7 @@ export default function EditContactPage() {
       const { data } = await res.json();
       setName(data.name ?? "");
       setEmail(data.email ?? "");
+      setPhone(data.phone ?? "");
       setType(data.type ?? "lead");
       setCompany(data.company ?? "");
       setNotes(data.notes ?? "");
@@ -75,6 +77,7 @@ export default function EditContactPage() {
         {
           name: name.trim(),
           email: email.trim() || null,
+          phone: phone.trim() || null,
           company: company.trim() || null,
           type,
           notes: notes.trim() || null,
@@ -146,6 +149,17 @@ export default function EditContactPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="jane@example.com"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="phone">Phone</Label>
+          <Input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+1 555 000 0000"
           />
         </div>
 

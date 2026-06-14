@@ -97,6 +97,7 @@ export const contacts = pgTable(
       .references(() => workspaces.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     email: text("email"),
+    phone: text("phone"),
     company: text("company"),
     type: contactTypeEnum("type").notNull().default("lead"),
     notes: text("notes"),

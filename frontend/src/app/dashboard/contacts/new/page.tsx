@@ -29,6 +29,7 @@ export default function NewContactPage() {
 
   const [name, setName] = useState(searchParams.get("name") ?? "");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [type, setType] = useState<ContactType>("lead");
   const [company, setCompany] = useState("");
   const [notes, setNotes] = useState("");
@@ -56,6 +57,7 @@ export default function NewContactPage() {
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim() || null,
+          phone: phone.trim() || null,
           company: company.trim() || null,
           type,
           notes: notes.trim() || null,
@@ -181,6 +183,17 @@ export default function NewContactPage() {
 
         {showMore && (
           <div className="flex flex-col gap-4 border-t border-border pt-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="phone">Phone</Label>
+              <Input
+                id="phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+1 555 000 0000"
+              />
+            </div>
+
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="company">Company</Label>
               <CompanyCombobox

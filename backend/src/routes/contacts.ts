@@ -23,6 +23,7 @@ import type { WorkspaceEnv } from "../middleware/workspace.js";
 const createSchema = z.object({
   name: z.string().min(1),
   email: z.email().nullish(),
+  phone: z.string().nullish(),
   company: z.string().nullish(),
   type: z
     .enum(["lead", "customer", "investor", "advisor", "partner"])
