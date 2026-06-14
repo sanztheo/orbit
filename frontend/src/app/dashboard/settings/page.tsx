@@ -48,6 +48,8 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [workspace, setWorkspace] = useState<WorkspaceInfo | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<"ok" | "fail" | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -98,6 +100,23 @@ export default function SettingsPage() {
       setError("Network error");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function testWebhook() {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API_URL}/api/webhooks/test`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      setTestResult(res.ok ? "ok" : "fail");
+    } catch {
+      setTestResult("fail");
+    } finally {
+      setTesting(false);
     }
   }
 
@@ -255,10 +274,41 @@ export default function SettingsPage() {
                   </>
                 )}
               </Button>
+              {webhookUrl.trim() && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={testWebhook}
+                  disabled={testing}
+                >
+                  {testing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sending…
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-4 w-4 mr-2" />
+                      Test
+                    </>
+                  )}
+                </Button>
+              )}
               {saved && (
                 <span className="text-xs text-emerald-700 flex items-center">
                   <Check className="h-4 w-4 mr-1" />
                   Saved
+                </span>
+              )}
+              {testResult === "ok" && (
+                <span className="text-xs text-emerald-700 flex items-center">
+                  <Check className="h-4 w-4 mr-1" />
+                  Delivered
+                </span>
+              )}
+              {testResult === "fail" && (
+                <span className="text-xs text-red-600">
+                  Delivery failed — check URL
                 </span>
               )}
               {error && <span className="text-xs text-red-600">{error}</span>}
