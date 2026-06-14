@@ -54,6 +54,7 @@ export default function TasksPage() {
   const [priorityFilter, setPriorityFilter] = useState<Set<TaskPriority>>(
     new Set(),
   );
+  const [showOverdue, setShowOverdue] = useState(false);
 
   async function fetchTasks() {
     const token = await getToken();
@@ -100,15 +101,25 @@ export default function TasksPage() {
     });
   }
 
+  const now = useMemo(() => new Date(), []);
+
   const filteredTasks = useMemo(() => {
     const q = search.toLowerCase();
     return tasks.filter((t) => {
       if (q && !t.title.toLowerCase().includes(q)) return false;
       if (priorityFilter.size > 0 && !priorityFilter.has(t.priority))
         return false;
+      if (
+        showOverdue &&
+        (t.status === "done" ||
+          t.status === "cancelled" ||
+          !t.dueAt ||
+          new Date(t.dueAt) >= now)
+      )
+        return false;
       return true;
     });
-  }, [tasks, search, priorityFilter]);
+  }, [tasks, search, priorityFilter, showOverdue, now]);
 
   const byStatus = Object.fromEntries(
     COLUMNS.map(({ key }) => [
@@ -175,11 +186,23 @@ export default function TasksPage() {
               </button>
             ))}
           </div>
-          {(search || priorityFilter.size > 0) && (
+          <button
+            onClick={() => setShowOverdue((v) => !v)}
+            className={cn(
+              "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+              showOverdue
+                ? "bg-red-100 dark:bg-red-950/20 text-red-700 dark:text-red-300"
+                : "text-muted-foreground hover:bg-muted",
+            )}
+          >
+            ⚠ Overdue
+          </button>
+          {(search || priorityFilter.size > 0 || showOverdue) && (
             <button
               onClick={() => {
                 setSearch("");
                 setPriorityFilter(new Set());
+                setShowOverdue(false);
               }}
               className="text-xs text-muted-foreground hover:text-foreground"
             >

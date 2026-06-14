@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 const SHORTCUTS = [
   { key: "N", label: "New contact" },
   { key: "D", label: "New deal" },
-  { key: "B", label: "New backlog item" },
+  { key: "B", label: "New task" },
   { key: "L", label: "Log activity" },
   { key: "/", label: "Search" },
   { key: "?", label: "Show shortcuts" },
