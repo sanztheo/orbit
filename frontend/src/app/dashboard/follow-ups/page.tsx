@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Calendar, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ContactLogButton } from "@/app/dashboard/contacts/contact-log-button";
+import { SnoozeFollowUpButton } from "./snooze-button";
 
 interface FollowUpContact {
   id: string;
@@ -227,6 +228,7 @@ export default async function FollowUpsPage() {
                         >
                           {score}
                         </span>
+                        <SnoozeFollowUpButton contactId={contact.id} />
                         <ContactLogButton
                           contactId={contact.id}
                           contactName={contact.name}
