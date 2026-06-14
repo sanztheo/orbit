@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, CheckCircle2, Circle } from "lucide-react";
 
 type ContactType = "lead" | "customer" | "investor" | "advisor" | "partner";
 
@@ -115,6 +115,18 @@ export default function EditContactPage() {
     return <div className="p-6 text-sm text-muted-foreground">Loading…</div>;
   }
 
+  const COMPLETENESS_FIELDS = [
+    { label: "Email", done: !!email.trim() },
+    { label: "Phone", done: !!phone.trim() },
+    { label: "Company", done: !!company.trim() },
+    { label: "LinkedIn", done: !!linkedinUrl.trim() },
+    { label: "Notes", done: !!notes.trim() },
+  ];
+  const completedCount = COMPLETENESS_FIELDS.filter((f) => f.done).length;
+  const completenessScore = Math.round(
+    (completedCount / COMPLETENESS_FIELDS.length) * 100,
+  );
+
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 max-w-lg">
       <div className="flex items-center gap-3">
@@ -126,6 +138,46 @@ export default function EditContactPage() {
           Back
         </Link>
         <h1 className="text-xl font-semibold tracking-tight">Edit contact</h1>
+      </div>
+
+      <div className="rounded-lg border border-border bg-muted/30 p-3 flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-medium text-foreground">
+            Profile completeness
+          </p>
+          <p className="text-xs text-muted-foreground">{completenessScore}%</p>
+        </div>
+        <div className="flex gap-1">
+          {COMPLETENESS_FIELDS.map((f) => (
+            <div
+              key={f.label}
+              className={cn(
+                "h-1.5 flex-1 rounded-full transition-colors",
+                f.done ? "bg-emerald-500 dark:bg-emerald-400" : "bg-border",
+              )}
+            />
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+          {COMPLETENESS_FIELDS.map((f) => (
+            <span
+              key={f.label}
+              className={cn(
+                "text-[11px] flex items-center gap-0.5",
+                f.done
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-muted-foreground",
+              )}
+            >
+              {f.done ? (
+                <CheckCircle2 className="h-3 w-3" />
+              ) : (
+                <Circle className="h-3 w-3" />
+              )}
+              {f.label}
+            </span>
+          ))}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
